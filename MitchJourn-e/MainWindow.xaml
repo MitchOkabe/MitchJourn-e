@@ -1,0 +1,108 @@
+﻿<Window x:Class="MitchJourn_e.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MitchJourn_e"
+        mc:Ignorable="d"
+        Title="MitchJourn-E" Height="706" Width="537" KeyDown="Window_KeyDown">
+    <StackPanel Margin="8">
+        <TabControl>
+            <TabItem Header="MitchJourn-E" >
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Prompt:" Padding="2" Margin="0" VerticalAlignment="Center"/>
+                        <Border Padding="4">
+                            <CheckBox x:Name="chk_HighRes" Content="Upscale" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border Padding="4">
+                            <CheckBox x:Name="chk_IncrementSeed" Content="Increment Seed" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel x:Name="stack_aspectRatio" Orientation="Horizontal" Margin="8,0,0,0" >
+                            <Button x:Name="btn_11" Content="1:1" Margin="2" Click="btn_11_Click" Padding="4"/>
+                            <Button x:Name="btn_32" Content="3:2" Margin="2" Click="btn_32_Click" Padding="4"/>
+                            <Button x:Name="btn_169" Content="16:9" Margin="2" Click="btn_169_Click" Padding="4"/>
+                            <Button x:Name="btn23" Content="2:3" Margin="2" Click="btn23_Click" Padding="4"/>
+                            <Button x:Name="btn920" Content="9:20" Margin="2" Click="btn920_Click" Padding="4"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBox x:Name="txt_Prompt" FontSize="16" Padding="2" Margin="4" TabIndex="0"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btn_Go" Width="69" Padding="2" Margin="6" Click="btn_Go_Click" TabIndex="1">
+                            <Label Content="Go"/>
+                        </Button>
+                        <Button x:Name="btn_Stop" Content="Stop" Width="69" Padding="2" Margin="6" Click="btn_Stop_Click"/>
+                        <Menu HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4" Padding="8">
+                            <MenuItem Header="PromptHelper" x:Name="menuItem_PromptHelper"/>
+                        </Menu>
+
+                    </StackPanel>
+                    <Grid>
+                        <Label x:Name="lbl_Status" Content="Enter a prompt and press go!" FontFamily="OCR A Extended" Margin="28,0,0,0"/>
+                        <Expander>
+                            <StackPanel>
+                                
+                                <Label Content="Image prompt:" Padding="2"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox x:Name="txt_ImagePrompt" FontSize="16" Padding="2" Width="460"/>
+                                    <Button x:Name="btn_Clear" Content="Clear" Margin="2" Padding="2" Click="btn_Clear_Click"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Image prompt weight:" Padding="2"/>
+                                    <TextBox x:Name="txt_ImagePromptWeight" FontSize="12" Text=".65" Padding="2" Margin="4,0,0,0" Tag="ImagePromptWeight" TextChanged="SettingsTextChanged"/>
+                                </StackPanel>
+                                <Slider x:Name="slider_imagePromptWeight" Margin="2" Maximum="1" LargeChange="0.1" SmallChange="0.05" TickFrequency="0.05" Value="0.75" Minimum="0.05" ValueChanged="slider_imagePromptWeight_ValueChanged" IsSnapToTickEnabled="True"/>
+                            </StackPanel>
+                        </Expander>
+                    </Grid>
+                    
+                    
+                    <ScrollViewer x:Name="scroll_Images" Margin="4" MaxHeight="500" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"  CanContentScroll="False">
+                        <ItemsControl x:Name="stack_Images" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top"/>
+                    </ScrollViewer>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Settings">
+                <ScrollViewer MaxHeight="620">
+                    <StackPanel x:Name="stack_settings">
+                        <Label Content="Number of images to generate"/>
+                        <TextBox x:Name="txt_Iter" FontSize="16" Padding="2" Margin="6" Text="20" Tag="Iter" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Image width:"/>
+                        <TextBox x:Name="txt_Width" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Width" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Image height:"/>
+                        <TextBox x:Name="txt_Height" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Height" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Diffusion steps (10-500)"/>
+                        <TextBox x:Name="txt_Steps" FontSize="16" Padding="2" Margin="6" Text="50" Tag="Steps" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Seed"/>
+                        <TextBox x:Name="txt_Seed" FontSize="16" Padding="2" Margin="6" Text="random" Tag="Seed" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Automatically increment seed number for each go"/>
+                        <TextBox x:Name="txt_NextSeed" FontSize="16" Padding="2" Margin="6" Text="0" Tag="NextSeed" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Propt weight (unconditional guidance scale, recomended range: 1-10)"/>
+                        <TextBox x:Name="txt_Scale" FontSize="16" Padding="2" Margin="6" Text="5.0" Tag="Scale" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Main Stable Diffusion Folder Path"/>
+                        <TextBox x:Name="txt_MainPath" FontSize="16" Padding="2" Margin="6" Text="C:\\dif\\stable-diffusion-main" Tag="MainPath" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Text to Image Path"/>
+                        <TextBox x:Name="txt_TextToImagePath" FontSize="16" Padding="2" Margin="6" Text="scripts\txt2img.py" Tag="TextToImagePath" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Image to Image Path"/>
+                        <TextBox x:Name="txt_ImageToImagePath" FontSize="16" Padding="2" Margin="6" Text="scripts\img2img.py" Tag="ImageToImagePath" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Config File"/>
+                        <TextBox x:Name="txt_ConfigPath" FontSize="16" Padding="2" Margin="6" Text="configs\stable-diffusion\v1-inference.yaml" Tag="ConfigPath" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Model"/>
+                        <TextBox x:Name="txt_ModelPath" FontSize="16" Padding="2" Margin="6" Text="model 1.3.ckpt" Tag="ModelPath" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Display Scale"/>
+                        <TextBox x:Name="txt_DisplayScale" FontSize="16" Padding="2" Margin="6" Text="1" Tag="DisplayScale" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Face Correction Scale (recomended range: 0.1 - 1)"/>
+                        <TextBox x:Name="txt_gfpganScale" FontSize="16" Padding="2" Margin="6" Text="1" Tag="gfpganScale" TextChanged="SettingsTextChanged"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Console" Visibility="Collapsed">
+                <StackPanel>
+                    <Label Content="Console Output Log"/>
+                    <TextBox x:Name="txt_ConsoleOut"></TextBox>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+        <Label/>
+    </StackPanel>
+</Window>

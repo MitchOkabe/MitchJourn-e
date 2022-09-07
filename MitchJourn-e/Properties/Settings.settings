@@ -1,0 +1,48 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="MitchJourn_e.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ImagePromptWeight" Type="System.String" Scope="User">
+      <Value Profile="(Default)">.65</Value>
+    </Setting>
+    <Setting Name="Iter" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="Width" Type="System.String" Scope="User">
+      <Value Profile="(Default)">454</Value>
+    </Setting>
+    <Setting Name="Height" Type="System.String" Scope="User">
+      <Value Profile="(Default)">454</Value>
+    </Setting>
+    <Setting Name="Steps" Type="System.String" Scope="User">
+      <Value Profile="(Default)">25</Value>
+    </Setting>
+    <Setting Name="Seed" Type="System.String" Scope="User">
+      <Value Profile="(Default)">random</Value>
+    </Setting>
+    <Setting Name="Scale" Type="System.String" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="MainPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\dif\stable-diffusion-main2</Value>
+    </Setting>
+    <Setting Name="TextToImagePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">scripts\txt2img.py</Value>
+    </Setting>
+    <Setting Name="ImageToImagePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">scripts\img2img.py</Value>
+    </Setting>
+    <Setting Name="ConfigPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">configs\stable-diffusion\v1-inference.yaml</Value>
+    </Setting>
+    <Setting Name="ModelPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">model 1.3.ckpt</Value>
+    </Setting>
+    <Setting Name="SlowMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="gfpganScale" Type="System.String" Scope="User">
+      <Value Profile="(Default)">.5</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
