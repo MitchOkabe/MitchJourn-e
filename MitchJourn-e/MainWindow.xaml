@@ -26,7 +26,7 @@
                             <Button x:Name="btn920" Content="9:20" Margin="2" Click="btn920_Click" Padding="4"/>
                         </StackPanel>
                     </StackPanel>
-                    <TextBox x:Name="txt_Prompt" FontSize="16" Padding="2" Margin="4" TabIndex="0"/>
+                    <TextBox x:Name="txt_Prompt" FontSize="16" Padding="2" Margin="4" TabIndex="0" SpellCheck.IsEnabled="True"/>
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="btn_Go" Width="69" Padding="2" Margin="6" Click="btn_Go_Click" TabIndex="1">
                             <Label Content="Go"/>
