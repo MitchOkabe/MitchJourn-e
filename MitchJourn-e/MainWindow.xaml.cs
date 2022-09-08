@@ -65,7 +65,7 @@ namespace MitchJourn_e
             Application.Current.Dispatcher.Invoke((Action)async delegate
             {
                 string prerequisites = "";
-                string seed = txt_Seed.Text;
+                string seed = (string)Settings.Default["Seed"];
                 string uprez = "";
 
                 if (seed == "random")
@@ -85,12 +85,12 @@ namespace MitchJourn_e
 
                 promptText = "" +
                         $"{txt_Prompt.Text} " +
-                        $"-W {txt_Width.Text} " +
-                        $"-H {txt_Height.Text} " +
-                        $"-C {txt_Scale.Text} " +
+                        $"-W {Settings.Default["Width"]} " +
+                        $"-H {Settings.Default["Height"]} " +
+                        $"-C {Settings.Default["Scale"]} " +
                         $"-S {seed} " +
-                        $"-s {txt_Steps.Text} " +
-                        $"-n {txt_Iter.Text} ";
+                        $"-s {Settings.Default["Steps"]} " +
+                        $"-n {Settings.Default["Iter"]} ";
 
                 if (txt_ImagePrompt.Text != "")
                 {
@@ -124,10 +124,10 @@ namespace MitchJourn_e
                     string useFullPrecision = "-F"; // restart required (TODO: create setting box for this)
 
                     // move the cmd directory to the main stable diffusion path and open the python environment called ldm (environment used at python install)
-                    prerequisites = $"cd {txt_MainPath.Text} & call %userprofile%\\anaconda3\\Scripts\\activate.bat ldm &";
+                    prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat ldm &";
                     // send the command to the CMD window to start the python script, enable the upsampler
-                    process.StandardInput.WriteLine($"{prerequisites} python dream.py  --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
-                        $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path C:\\dif\\stable-diffusion-main2\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth");
+                    process.StandardInput.WriteLine($"{prerequisites} python dream.py --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
+                        $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path {Settings.Default["MainPath"]}\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth");
                     // send the command to the CMD window to set the image output directory (TODO: I don't think this is actually working, investigate escaped characters)
                     process.StandardInput.WriteLine($"cd {Settings.Default["MainPath"].ToString().Replace(@"\", @"\\")}\\outputs\\img-samples\\");
 
@@ -461,7 +461,7 @@ namespace MitchJourn_e
             txt_Seed.Text = renderedImage.seed;
             txt_ImagePromptWeight.Text = renderedImage.imagePromptWeight;
 
-            if (int.Parse(renderedImage.width) >= 640 || int.Parse(renderedImage.height) >= 576)
+            if (int.Parse(renderedImage.width) > 640 || int.Parse(renderedImage.height) > 576)
             {
                 chk_HighRes.IsChecked = false;
                 chk_IncrementSeed.IsChecked = false;

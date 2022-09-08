@@ -80,7 +80,7 @@
                         <Label Content="Propt weight (unconditional guidance scale, recomended range: 1-10)"/>
                         <TextBox x:Name="txt_Scale" FontSize="16" Padding="2" Margin="6" Text="5.0" Tag="Scale" TextChanged="SettingsTextChanged"/>
                         <Label Content="Main Stable Diffusion Folder Path"/>
-                        <TextBox x:Name="txt_MainPath" FontSize="16" Padding="2" Margin="6" Text="C:\\dif\\stable-diffusion-main" Tag="MainPath" TextChanged="SettingsTextChanged"/>
+                        <TextBox x:Name="txt_MainPath" FontSize="16" Padding="2" Margin="6" Text="C:\stable-diffusion-main" Tag="MainPath" TextChanged="SettingsTextChanged"/>
                         <Label Content="Text to Image Path"/>
                         <TextBox x:Name="txt_TextToImagePath" FontSize="16" Padding="2" Margin="6" Text="scripts\txt2img.py" Tag="TextToImagePath" TextChanged="SettingsTextChanged"/>
                         <Label Content="Image to Image Path"/>
@@ -93,6 +93,11 @@
                         <TextBox x:Name="txt_DisplayScale" FontSize="16" Padding="2" Margin="6" Text="1" Tag="DisplayScale" TextChanged="SettingsTextChanged"/>
                         <Label Content="Face Correction Scale (recomended range: 0.1 - 1)"/>
                         <TextBox x:Name="txt_gfpganScale" FontSize="16" Padding="2" Margin="6" Text="1" Tag="gfpganScale" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Uprez Scale (must stop and go to apply)"/>
+                        <TextBox x:Name="txt_gfpganUprezScale" FontSize="16" Padding="2" Margin="6" Text="2" Tag="gfpganUprezScale" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Uprez tile size (must stop and start to apply)"/>
+                        <TextBox x:Name="txt_gfpganBgTileSize" FontSize="16" Padding="2" Margin="6" Text="400" Tag="gfpganBgTileSize" TextChanged="SettingsTextChanged"/>
+                        
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

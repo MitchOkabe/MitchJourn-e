@@ -25,7 +25,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".65")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".35")]
         public string ImagePromptWeight {
             get {
                 return ((string)(this["ImagePromptWeight"]));
@@ -85,7 +85,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("random")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public string Seed {
             get {
                 return ((string)(this["Seed"]));
@@ -109,7 +109,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\dif\\stable-diffusion-main2")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\stable-diffusion-main")]
         public string MainPath {
             get {
                 return ((string)(this["MainPath"]));
@@ -188,6 +188,30 @@ namespace MitchJourn_e.Properties {
             }
             set {
                 this["gfpganScale"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public string gfpganUprezScale {
+            get {
+                return ((string)(this["gfpganUprezScale"]));
+            }
+            set {
+                this["gfpganUprezScale"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("400")]
+        public string gfpganBgTileSize {
+            get {
+                return ((string)(this["gfpganBgTileSize"]));
+            }
+            set {
+                this["gfpganBgTileSize"] = value;
             }
         }
     }
