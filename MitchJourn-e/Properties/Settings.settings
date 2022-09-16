@@ -50,5 +50,11 @@
     <Setting Name="gfpganBgTileSize" Type="System.String" Scope="User">
       <Value Profile="(Default)">400</Value>
     </Setting>
+    <Setting Name="SamplerType" Type="System.String" Scope="User">
+      <Value Profile="(Default)">k_euler_a</Value>
+    </Setting>
+    <Setting Name="UseFullPrecision" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

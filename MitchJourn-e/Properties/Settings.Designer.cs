@@ -214,5 +214,29 @@ namespace MitchJourn_e.Properties {
                 this["gfpganBgTileSize"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("k_euler_a")]
+        public string SamplerType {
+            get {
+                return ((string)(this["SamplerType"]));
+            }
+            set {
+                this["SamplerType"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public string UseFullPrecision {
+            get {
+                return ((string)(this["UseFullPrecision"]));
+            }
+            set {
+                this["UseFullPrecision"] = value;
+            }
+        }
     }
 }

@@ -41,7 +41,6 @@
                         <Label x:Name="lbl_Status" Content="Enter a prompt and press go!" FontFamily="OCR A Extended" Margin="28,0,0,0"/>
                         <Expander>
                             <StackPanel>
-                                
                                 <Label Content="Image prompt:" Padding="2"/>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBox x:Name="txt_ImagePrompt" FontSize="16" Padding="2" Width="460"/>
@@ -49,14 +48,13 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="Image prompt weight:" Padding="2"/>
-                                    <TextBox x:Name="txt_ImagePromptWeight" FontSize="12" Text=".65" Padding="2" Margin="4,0,0,0" Tag="ImagePromptWeight" TextChanged="SettingsTextChanged"/>
+                                    <TextBox x:Name="txt_ImagePromptWeight" FontSize="12" Text=".35" Padding="2" Margin="4,0,0,0" Tag="ImagePromptWeight" TextChanged="SettingsTextChanged"/>
                                 </StackPanel>
-                                <Slider x:Name="slider_imagePromptWeight" Margin="2" Maximum="1" LargeChange="0.1" SmallChange="0.05" TickFrequency="0.05" Value="0.75" Minimum="0.05" ValueChanged="slider_imagePromptWeight_ValueChanged" IsSnapToTickEnabled="True"/>
+                                <Slider x:Name="slider_imagePromptWeight" Margin="2" Maximum="1" LargeChange="0.1" SmallChange="0.05" TickFrequency="0.05" Value="0.35" Minimum="0.05" ValueChanged="slider_imagePromptWeight_ValueChanged" IsSnapToTickEnabled="True"/>
                             </StackPanel>
                         </Expander>
                     </Grid>
-                    
-                    
+
                     <ScrollViewer x:Name="scroll_Images" Margin="4" MaxHeight="500" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"  CanContentScroll="False">
                         <ItemsControl x:Name="stack_Images" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top"/>
                     </ScrollViewer>
@@ -65,20 +63,24 @@
             <TabItem Header="Settings">
                 <ScrollViewer MaxHeight="620">
                     <StackPanel x:Name="stack_settings">
-                        <Label Content="Number of images to generate"/>
-                        <TextBox x:Name="txt_Iter" FontSize="16" Padding="2" Margin="6" Text="20" Tag="Iter" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Sampler Type (ddim, k_dpm_2_a, k_dpm_2, k_euler_a, k_euler, k_heun, k_lms, plms) (must stop and start to apply)"/>
+                        <TextBox x:Name="txt_Sampler" FontSize="16" Padding="2" Margin="6" Text="k_euler_a" Tag="SamplerType" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Number of images to generate (not all images will show up in preview if greater than 1)"/>
+                        <TextBox x:Name="txt_Iter" FontSize="16" Padding="2" Margin="6" Text="1" Tag="Iter" TextChanged="SettingsTextChanged"/>
                         <Label Content="Image width:"/>
                         <TextBox x:Name="txt_Width" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Width" TextChanged="SettingsTextChanged"/>
                         <Label Content="Image height:"/>
                         <TextBox x:Name="txt_Height" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Height" TextChanged="SettingsTextChanged"/>
-                        <Label Content="Diffusion steps (10-500)"/>
-                        <TextBox x:Name="txt_Steps" FontSize="16" Padding="2" Margin="6" Text="50" Tag="Steps" TextChanged="SettingsTextChanged"/>
-                        <Label Content="Seed"/>
-                        <TextBox x:Name="txt_Seed" FontSize="16" Padding="2" Margin="6" Text="random" Tag="Seed" TextChanged="SettingsTextChanged"/>
-                        <Label Content="Automatically increment seed number for each go"/>
-                        <TextBox x:Name="txt_NextSeed" FontSize="16" Padding="2" Margin="6" Text="0" Tag="NextSeed" TextChanged="SettingsTextChanged"/>
-                        <Label Content="Propt weight (unconditional guidance scale, recomended range: 1-10)"/>
+                        <Label Content="Diffusion steps (recomended range 10-200)"/>
+                        <TextBox x:Name="txt_Steps" FontSize="16" Padding="2" Margin="6" Text="33" Tag="Steps" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Seed (use 'random' for a random seed)"/>
+                        <TextBox x:Name="txt_Seed" FontSize="16" Padding="2" Margin="6" Text="1" Tag="Seed" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Automatically increment seed number for each go" Visibility="Collapsed"/>
+                        <TextBox x:Name="txt_NextSeed" FontSize="16" Padding="2" Margin="6" Text="0" Tag="NextSeed" TextChanged="SettingsTextChanged" Visibility="Collapsed"/>
+                        <Label Content="Propt weight (unconditional guidance scale, recomended range: 2-10)"/>
                         <TextBox x:Name="txt_Scale" FontSize="16" Padding="2" Margin="6" Text="5.0" Tag="Scale" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Use full precision (must stop and start to apply)"/>
+                        <TextBox x:Name="txt_UsefullPrecision" FontSize="16" Padding="2" Margin="6" Text="1" Tag="UseFullPrecision" TextChanged="SettingsTextChanged"/>
                         <Label Content="Main Stable Diffusion Folder Path"/>
                         <TextBox x:Name="txt_MainPath" FontSize="16" Padding="2" Margin="6" Text="C:\stable-diffusion-main" Tag="MainPath" TextChanged="SettingsTextChanged"/>
                         <Label Content="Text to Image Path"/>

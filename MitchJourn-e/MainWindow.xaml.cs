@@ -67,6 +67,7 @@ namespace MitchJourn_e
                 string prerequisites = "";
                 string seed = (string)Settings.Default["Seed"];
                 string uprez = "";
+                string useFullPrecision = "";
 
                 if (seed == "random")
                 {
@@ -106,6 +107,11 @@ namespace MitchJourn_e
                     uprez = "-G 1";
                 }
 
+                if (Settings.Default["UseFullPrecision"].ToString() == "1")
+                {
+                    useFullPrecision = "-F";
+                }
+
                 // create the process properties
                 ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe");
                 processStartInfo.RedirectStandardInput = true;
@@ -121,13 +127,13 @@ namespace MitchJourn_e
                     currentCMDProcessID = process.Id;
                     rendererProcess = process;
                     textWriter = process.StandardInput;
-                    string useFullPrecision = "-F"; // restart required (TODO: create setting box for this)
+                    string sampler = Settings.Default["SamplerType"].ToString();
 
                     // move the cmd directory to the main stable diffusion path and open the python environment called ldm (environment used at python install)
                     prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat ldm &";
                     // send the command to the CMD window to start the python script, enable the upsampler
                     process.StandardInput.WriteLine($"{prerequisites} python dream.py --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
-                        $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path {Settings.Default["MainPath"]}\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth");
+                        $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path {Settings.Default["MainPath"]}\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth --sampler {sampler}");
                     // send the command to the CMD window to set the image output directory (TODO: I don't think this is actually working, investigate escaped characters)
                     process.StandardInput.WriteLine($"cd {Settings.Default["MainPath"].ToString().Replace(@"\", @"\\")}\\outputs\\img-samples\\");
 
@@ -222,14 +228,14 @@ namespace MitchJourn_e
                                 // Save As
                                 MenuItem menuItemSaveAs = new MenuItem();
                                 menuItemSaveAs.Header = "Save As";
-                                menuItemSaveAs.Tag = filePath;
+                                menuItemSaveAs.Tag = renderedImage.filePath;
                                 menuItemSaveAs.Click += MenuItemSaveAs_Click;
                                 rightClickMenu.Items.Add(menuItemSaveAs);
 
                                 // Open Containing Folder
                                 MenuItem menuItemOpenContainingFolder = new MenuItem();
                                 menuItemOpenContainingFolder.Header = "Open Containing Folder";
-                                menuItemOpenContainingFolder.Tag = Files.Last().DirectoryName;
+                                menuItemOpenContainingFolder.Tag = renderedImage.filePath;
                                 menuItemOpenContainingFolder.Click += MenuItemOpenContainingFolder_Click;
                                 rightClickMenu.Items.Add(menuItemOpenContainingFolder);
 
@@ -397,7 +403,7 @@ namespace MitchJourn_e
             try
             {
                 string folderPath = ((MenuItem)sender).Tag.ToString();
-                Process.Start("explorer.exe", $"\"{folderPath}\"");
+                Process.Start("explorer.exe", $"/select,\"{folderPath}\"");
             }
             catch { return; }
         }
