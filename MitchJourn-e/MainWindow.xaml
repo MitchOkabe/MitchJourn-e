@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MitchJourn_e"
         mc:Ignorable="d"
-        Title="MitchJourn-E" Height="706" Width="537" KeyDown="Window_KeyDown">
+        Title="MitchJourn-E" Height="706" Width="590" KeyDown="Window_KeyDown">
     <StackPanel Margin="8">
         <TabControl>
             <TabItem Header="MitchJourn-E" >
@@ -16,7 +16,10 @@
                             <CheckBox x:Name="chk_HighRes" Content="Upscale" VerticalAlignment="Center"/>
                         </Border>
                         <Border Padding="4">
-                            <CheckBox x:Name="chk_IncrementSeed" Content="Increment Seed" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="chk_IncrementSeed" Content="Increment Seed" VerticalAlignment="Center" IsChecked="True"/>
+                        </Border>
+                        <Border Padding="4">
+                            <CheckBox x:Name="chk_ContinuouslyPrompt" Content="Continuously Prompt" VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel x:Name="stack_aspectRatio" Orientation="Horizontal" Margin="8,0,0,0" >
                             <Button x:Name="btn_11" Content="1:1" Margin="2" Click="btn_11_Click" Padding="4"/>
@@ -35,15 +38,16 @@
                         <Menu HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4" Padding="8">
                             <MenuItem Header="PromptHelper" x:Name="menuItem_PromptHelper"/>
                         </Menu>
-
+                        <Label x:Name="lbl_Status" Content="Enter a prompt and press go!" FontFamily="OCR A Extended" VerticalContentAlignment="Center"/>
                     </StackPanel>
-                    <Grid>
-                        <Label x:Name="lbl_Status" Content="Enter a prompt and press go!" FontFamily="OCR A Extended" Margin="28,0,0,0"/>
-                        <Expander>
-                            <StackPanel>
+                    <Expander x:Name="expander_settings" Header="Settings">
+                        <Grid Height="174">
+                            <Label Content="Prompt helper text" Padding="2"/>
+                            <TextBox x:Name="txt_PromptHelper" FontSize="10" Padding="2" Margin="0,22,0,0" TabIndex="0" SpellCheck.IsEnabled="True" Height="22" VerticalAlignment="Top"/>
+                            <StackPanel Margin="0,48,0,0" VerticalAlignment="Top">
                                 <Label Content="Image prompt:" Padding="2"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBox x:Name="txt_ImagePrompt" FontSize="16" Padding="2" Width="460"/>
+                                    <TextBox x:Name="txt_ImagePrompt" FontSize="11" Padding="2" Width="460" Height="22"/>
                                     <Button x:Name="btn_Clear" Content="Clear" Margin="2" Padding="2" Click="btn_Clear_Click"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
@@ -51,16 +55,18 @@
                                     <TextBox x:Name="txt_ImagePromptWeight" FontSize="12" Text=".35" Padding="2" Margin="4,0,0,0" Tag="ImagePromptWeight" TextChanged="SettingsTextChanged"/>
                                 </StackPanel>
                                 <Slider x:Name="slider_imagePromptWeight" Margin="2" Maximum="1" LargeChange="0.1" SmallChange="0.05" TickFrequency="0.05" Value="0.35" Minimum="0.05" ValueChanged="slider_imagePromptWeight_ValueChanged" IsSnapToTickEnabled="True"/>
+                                <Border Padding="4">
+                                    <CheckBox x:Name="chk_AlternateToken" Content="Use alternative prompt tokens" VerticalAlignment="Center"/>
+                                </Border>
                             </StackPanel>
-                        </Expander>
-                    </Grid>
-
+                        </Grid>
+                    </Expander>
                     <ScrollViewer x:Name="scroll_Images" Margin="4" MaxHeight="500" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"  CanContentScroll="False">
                         <ItemsControl x:Name="stack_Images" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top"/>
                     </ScrollViewer>
                 </StackPanel>
             </TabItem>
-            <TabItem Header="Settings">
+            <TabItem Header="Advanced Settings">
                 <ScrollViewer MaxHeight="620">
                     <StackPanel x:Name="stack_settings">
                         <Label Content="Sampler Type (ddim, k_dpm_2_a, k_dpm_2, k_euler_a, k_euler, k_heun, k_lms, plms) (must stop and start to apply)"/>
@@ -79,8 +85,10 @@
                         <TextBox x:Name="txt_NextSeed" FontSize="16" Padding="2" Margin="6" Text="0" Tag="NextSeed" TextChanged="SettingsTextChanged" Visibility="Collapsed"/>
                         <Label Content="Propt weight (unconditional guidance scale, recomended range: 2-10)"/>
                         <TextBox x:Name="txt_Scale" FontSize="16" Padding="2" Margin="6" Text="5.0" Tag="Scale" TextChanged="SettingsTextChanged"/>
-                        <Label Content="Use full precision (must stop and start to apply)"/>
+                        <Label Content="Use full precision (1 or 0) (must stop and start to apply)"/>
                         <TextBox x:Name="txt_UsefullPrecision" FontSize="16" Padding="2" Margin="6" Text="1" Tag="UseFullPrecision" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Enable welcome prompt on startup (1 or 0)"/>
+                        <TextBox x:Name="txt_EnableWelcomePrompt" FontSize="16" Padding="2" Margin="6" Text="1" Tag="EnableWelcomePrompt" TextChanged="SettingsTextChanged"/>
                         <Label Content="Main Stable Diffusion Folder Path"/>
                         <TextBox x:Name="txt_MainPath" FontSize="16" Padding="2" Margin="6" Text="C:\stable-diffusion-main" Tag="MainPath" TextChanged="SettingsTextChanged"/>
                         <Label Content="Text to Image Path"/>
@@ -99,7 +107,38 @@
                         <TextBox x:Name="txt_gfpganUprezScale" FontSize="16" Padding="2" Margin="6" Text="2" Tag="gfpganUprezScale" TextChanged="SettingsTextChanged"/>
                         <Label Content="Uprez tile size (must stop and start to apply)"/>
                         <TextBox x:Name="txt_gfpganBgTileSize" FontSize="16" Padding="2" Margin="6" Text="400" Tag="gfpganBgTileSize" TextChanged="SettingsTextChanged"/>
-                        
+                        <Label Content="Aspect Ratio Preset 1:1"/>
+                        <TextBox x:Name="txt_AspectRatio11" FontSize="16" Padding="2" Margin="6" Text="512:512" Tag="AspectRatio11" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Aspect Ratio Preset 3:2"/>
+                        <TextBox x:Name="txt_AspectRatio32" FontSize="16" Padding="2" Margin="6" Text="576:384" Tag="AspectRatio32" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Aspect Ratio Preset 16:9"/>
+                        <TextBox x:Name="txt_AspectRatio169" FontSize="16" Padding="2" Margin="6" Text="640:384" Tag="AspectRatio169" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Aspect Ratio Preset 2:3"/>
+                        <TextBox x:Name="txt_AspectRatio23" FontSize="16" Padding="2" Margin="6" Text="384:576" Tag="AspectRatio23" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Aspect Ratio Preset 9:20"/>
+                        <TextBox x:Name="txt_AspectRatio920" FontSize="16" Padding="2" Margin="6" Text="256:576" Tag="AspectRatio920" TextChanged="SettingsTextChanged"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Prompt Helper">
+                <ScrollViewer>
+                    <StackPanel>
+                        <Label Content="Create prompt presets (format as 'Directory name/Item name=value to enter into the prompt')"/>
+                        <Label Content="Restart required to see changes"/>
+                        <StackPanel x:Name="stack_PromptHelperPresets"/>
+                        <Button x:Name="btn_AddPromptPreset" Content="Add preset" Padding="8" Margin="4" Click="btn_AddPromptPreset_Click"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Experiments">
+                <ScrollViewer>
+                    <StackPanel>
+                        <Label Content="Prompt Folder"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="txt_PromptFolder" FontSize="16" Padding="2" Margin="6"  Width="380"/>
+                            <Button x:Name="btn_BrowseFolder" Content="Browse Folder" Margin="4" Padding="4" Click="btn_BrowseFolder_Click"/>
+                        </StackPanel>
+                        <Button x:Name="btn_StartPromptFolder" Content="Start Prompt Folder" Width="150" Margin="4" Padding="4" Click="btn_StartPromptFolder_Click"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

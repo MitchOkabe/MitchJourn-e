@@ -15,6 +15,10 @@ using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using MessageBox = System.Windows.MessageBox;
 using System.Windows.Media;
 using Button = System.Windows.Controls.Button;
+using System.Windows.Forms;
+using System.Text;
+using System.Collections.Specialized;
+using System.Drawing.Imaging;
 
 namespace MitchJourn_e
 {
@@ -35,7 +39,7 @@ namespace MitchJourn_e
         public MainWindow()
         {
             InitializeComponent();
-            InitializePromptHelper();
+            InitializePromptHelper2();
             InitializeSettings();
             StartRendering();
         }
@@ -45,7 +49,15 @@ namespace MitchJourn_e
         /// </summary>
         private void btn_Go_Click(object sender, RoutedEventArgs e)
         {
-            StartRendering();
+            if ((string)lbl_Status.Content == "Stopped continuously prompting.")
+            {
+                chk_ContinuouslyPrompt.IsChecked = true;
+                StartRendering();
+            }
+            else
+            {
+                StartRendering();
+            }
         }
 
         /// <summary>
@@ -64,11 +76,23 @@ namespace MitchJourn_e
 
             Application.Current.Dispatcher.Invoke((Action)async delegate
             {
-                string prerequisites = "";
+                string prompt = CleanPrompt(txt_Prompt.Text);
+                string promptHelper = CleanPrompt(txt_PromptHelper.Text);
+                string promptSettings = "";
+                string imagePrompt = "";
+
                 string seed = (string)Settings.Default["Seed"];
                 string uprez = "";
                 string useFullPrecision = "";
 
+                lbl_Status.Content = "Loading...";
+
+                if (promptText != "")
+                {
+                    prompt = promptText;
+                }
+
+                // Seed
                 if (seed == "random")
                 {
                     seed = "" + DateTime.Now.Hour +
@@ -84,29 +108,33 @@ namespace MitchJourn_e
                     txt_Seed.Text = seed;
                 }
 
-                promptText = "" +
-                        $"{txt_Prompt.Text} " +
-                        $"-W {Settings.Default["Width"]} " +
-                        $"-H {Settings.Default["Height"]} " +
-                        $"-C {Settings.Default["Scale"]} " +
-                        $"-S {seed} " +
-                        $"-s {Settings.Default["Steps"]} " +
-                        $"-n {Settings.Default["Iter"]} ";
-
-                if (txt_ImagePrompt.Text != "")
-                {
-                    if (float.TryParse(txt_ImagePromptWeight.Text, out float imageWeight))
-                    {
-                        promptText += $"-I {txt_ImagePrompt.Text.Replace(@"\", @"\\")}";
-                        promptText += $" --strength {1 - imageWeight}";
-                    }
-                }
-
+                // Upscale
                 if ((bool)chk_HighRes.IsChecked)
                 {
                     uprez = "-G 1";
                 }
 
+                // Image Prompt
+                if (txt_ImagePrompt.Text != "")
+                {
+                    if (float.TryParse(txt_ImagePromptWeight.Text, out float imageWeight))
+                    {
+                        imagePrompt += $"-I {txt_ImagePrompt.Text.Replace(@"\", @"\\")}";
+                        imagePrompt += $" --strength {1 - imageWeight}";
+                    }
+                }
+                
+                promptSettings = "" +
+                        $"-W {Settings.Default["Width"]} " +
+                        $"-H {Settings.Default["Height"]} " +
+                        $"-C {Settings.Default["Scale"]} " +
+                        $"-S {seed} " +
+                        $"-s {Settings.Default["Steps"]} " +
+                        $"-n {Settings.Default["Iter"]} " +
+                        $"{uprez}" +
+                        $"{imagePrompt}";
+
+                // Full Precision
                 if (Settings.Default["UseFullPrecision"].ToString() == "1")
                 {
                     useFullPrecision = "-F";
@@ -130,7 +158,7 @@ namespace MitchJourn_e
                     string sampler = Settings.Default["SamplerType"].ToString();
 
                     // move the cmd directory to the main stable diffusion path and open the python environment called ldm (environment used at python install)
-                    prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat ldm &";
+                    string prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat ldm &";
                     // send the command to the CMD window to start the python script, enable the upsampler
                     process.StandardInput.WriteLine($"{prerequisites} python dream.py --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
                         $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path {Settings.Default["MainPath"]}\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth --sampler {sampler}");
@@ -139,17 +167,24 @@ namespace MitchJourn_e
 
                     if (isFirstRun)
                     {
-                        process.StandardInput.WriteLine($"Welcome -S 13{seed}37 -s 25");
+                        if (Settings.Default["EnableWelcomePrompt"].ToString() == "1")
+                        {
+                            process.StandardInput.WriteLine($"Welcome -S 13{seed}37 -s 25");
+                        }
+                        else
+                        {
+                            lbl_Status.Content = "Enter a prompt and press go!";
+                        }
                         isFirstRun = false;
                     }
                     else
                     {
-                        process.StandardInput.WriteLine($"{promptText} {uprez}");
+                        process.StandardInput.WriteLine($"{prompt} {promptHelper} {promptSettings}");
                     }
                 }
                 else // if the CMD window is already opened, send the prompt
                 {
-                    process.StandardInput.WriteLine($"{promptText} {uprez}");
+                    process.StandardInput.WriteLine($"{prompt} {promptHelper} {promptSettings}");
                 }
 
                 // start or restart the timer to check for a new image in the output directory
@@ -160,7 +195,6 @@ namespace MitchJourn_e
                 timer.Start();
 
                 lastPrompt = txt_Prompt.Text;
-                lbl_Status.Content = "Loading...";
             });
 
         }
@@ -170,7 +204,7 @@ namespace MitchJourn_e
         /// </summary>
         void DisplayImage(string promptRAW = "", bool hasImagePrompt = false)
         {
-            string imageDirectory = $"{Settings.Default["MainPath"].ToString()}\\outputs\\img-samples\\";
+            string imageDirectory = $"{Settings.Default["MainPath"]}\\outputs\\img-samples\\";
 
             if (Directory.Exists(imageDirectory))
             {
@@ -260,6 +294,7 @@ namespace MitchJourn_e
                                 stack_Images.Items.Insert(0, output);
                                 lastImg = filePath;
 
+                                // If trying to create variations of upscalled images (too large to recreate image size)
                                 if (lbl_Status.Content.ToString() != "Can't set upscaled image as image source, creating downrezed version instead...")
                                 {
                                     lbl_Status.Content = $"Created image from seed {txt_Seed.Text}";
@@ -268,12 +303,129 @@ namespace MitchJourn_e
                                 {
                                     lbl_Status.Content = "Created downrezed version.";
                                 }
+
+                                // continuous prompting
+                                if ((bool)chk_ContinuouslyPrompt.IsChecked)
+                                {
+                                    StartRendering();
+                                }
                             }
                         }
                         catch { return; }
                     });
                 }
             }
+        }
+
+        private void InitializePromptHelper2()
+        {
+            //Properties.Settings.Default.Reset();
+            /*
+                Artists/Greg=greg rutkowski
+                Artists/Thomas=thomas kinkade
+             */
+            string[] presets = ((StringCollection)Settings.Default["PromptHelperPresets"]).Cast<string>().ToArray<string>();
+
+            foreach (string preset in presets)
+            {
+                // add the presets to the prompt helper button
+                string[] directoriesAndValue = preset.Split('=');
+                string value = directoriesAndValue[1];
+                string allDirectories = directoriesAndValue[0];
+                string[] directories = allDirectories.Split('/');
+                string topDirectory = directories[0];
+                string menuHeader = directories[1];
+
+                MenuItem helperMenuItem = new MenuItem();
+
+                // check if it's a unique directory
+                bool isUniqueDirectory = true;
+                foreach (MenuItem menuItem in menuItem_PromptHelper.Items)
+                {
+                    if (menuItem.Header.ToString() == topDirectory)
+                    {
+                        isUniqueDirectory = false;
+                        helperMenuItem = menuItem;
+                        break;
+                    }
+                }
+
+                // add directory
+                if (isUniqueDirectory)
+                {
+                    helperMenuItem.Header = topDirectory;
+                    helperMenuItem.StaysOpenOnClick = true;
+                    menuItem_PromptHelper.Items.Add(helperMenuItem);
+                }
+
+                MenuItem MenuItemPrompt = new MenuItem();
+                MenuItemPrompt.Header = menuHeader;
+                MenuItemPrompt.StaysOpenOnClick = true;
+                MenuItemPrompt.Tag = value;
+                MenuItemPrompt.Click += PromptHelperMenuItem_Click2;
+                helperMenuItem.Items.Add(MenuItemPrompt);
+
+                // add the prompt helper editor text boxes and buttons
+                StackPanel stackPanel = new StackPanel
+                {
+                    Orientation = System.Windows.Controls.Orientation.Horizontal,
+                    Tag = helperMenuItem
+                };
+                TextBox textBox = new TextBox
+                {
+                    Text = preset,
+                    FontSize = 16,
+                    Padding = new Thickness(2),
+                    Margin = new Thickness(4),
+                    Width = 420,
+                    Tag = menuHeader
+                };
+                textBox.TextChanged += PromptPresetTextChanged;
+                Button btn_Delete = new Button
+                {
+                    Content = "Delete",
+                    Padding = new Thickness(2),
+                    Margin = new Thickness(4),
+                    Tag = stackPanel
+                };
+                btn_Delete.Click += Btn_Delete_Click;
+                stackPanel.Children.Add(textBox);
+                stackPanel.Children.Add(btn_Delete);
+                stack_PromptHelperPresets.Children.Add(stackPanel);
+            }
+        }
+
+        private void Btn_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            StackPanel stack_PromptToDelete = (StackPanel)((Button)sender).Tag;
+            MenuItem menuItem_TopDirectory = (MenuItem)stack_PromptToDelete.Tag;
+            string presetValue = "";
+
+            try
+            {
+                foreach (StackPanel stack in stack_PromptHelperPresets.Children)
+                {
+                    if (stack == stack_PromptToDelete && ((TextBox)stack.Children[0]).Tag != null)
+                    {
+                        stack.Visibility = Visibility.Collapsed;
+                        presetValue = ((TextBox)stack.Children[0]).Tag.ToString();
+                    }
+                }
+                foreach (MenuItem menuItemTopDirectories in menuItem_PromptHelper.Items)
+                {
+                    if (menuItemTopDirectories == menuItem_TopDirectory)
+                    {
+                        foreach (MenuItem menuItem in menuItemTopDirectories.Items)
+                        {
+                            if (presetValue == menuItem.Header.ToString())
+                            {
+                                menuItem.Visibility = Visibility.Collapsed;
+                            }
+                        }
+                    }
+                }
+            }
+            catch { return; }
         }
 
         /// <summary>
@@ -356,6 +508,102 @@ namespace MitchJourn_e
         }
 
         /// <summary>
+        /// Removes characters from the prompt that would disallow the generation to run
+        /// </summary>
+        private string CleanPrompt(string promptText)
+        {
+            string output = "";
+
+            if (promptText != null)
+            {
+                output = promptText;
+
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (char c in promptText)
+                {
+                    // rebuild the string, adding back only the following allowed characters
+                    if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == ' ' || c == '.' || c == '_' || c == ',' 
+                        || c == '/' || c == '?' || c == '!' || c == '&' || c == '+' || c == '$' || c == '%' || c == '^' || c == '#' || c == '@'
+                        || c == '(' || c == ')' || c == ':' || c == '-' || c == '\\')
+                    {
+                        stringBuilder.Append(c);
+                    }
+                }
+                output = stringBuilder.ToString();
+
+                if ((bool)chk_AlternateToken.IsChecked)
+                {
+                    output = CreateAlternatePromptTokens(output);
+                }
+            }
+
+            return output;
+        }
+
+        /// <summary>
+        /// Changes the spaces to underscores to slightly change the tokens used to generate the image
+        /// </summary>
+        /// <param name="promptText"></param>
+        /// <returns></returns>
+        private string CreateAlternatePromptTokens(string promptText)
+        {
+            string output = "";
+
+            if (promptText != null)
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (char c in promptText)
+                {
+                    if (c == ' ')
+                    {
+                        stringBuilder.Append('_');
+                    }
+                    else if (c == '_')
+                    {
+                        stringBuilder.Append(' ');
+                    }
+                    else
+                    {
+                        stringBuilder.Append(c);
+                    }
+                }
+
+                output = stringBuilder.ToString();
+            }
+
+            return output;
+        }
+
+        /// <summary>
+        /// Add selected menuItem's name to the prompt box
+        /// </summary>
+        /// <param name="sender">MenuItem</param>
+        private void PromptHelperMenuItem_Click2(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (txt_PromptHelper.Text != "")
+                {
+                    char[] prompt = txt_PromptHelper.Text.ToCharArray();
+                    if (prompt.Last() == ' ')
+                    {
+                        txt_PromptHelper.Text += ((MenuItem)sender).Tag;
+                    }
+                    else
+                    {
+                        txt_PromptHelper.Text += $" {((MenuItem)sender).Tag}";
+                    }
+                }
+                else
+                {
+                    txt_PromptHelper.Text += ((MenuItem)sender).Tag;
+                }
+                expander_settings.IsExpanded = true;
+            }
+            catch { return; }
+        }
+
+        /// <summary>
         /// Add selected menuItem's name to the prompt box
         /// </summary>
         /// <param name="sender">MenuItem</param>
@@ -366,12 +614,13 @@ namespace MitchJourn_e
                 char[] prompt = txt_Prompt.Text.ToCharArray();
                 if (prompt.Last() == ' ')
                 {
-                    txt_Prompt.Text += ((MenuItem)sender).Header;
+                    txt_PromptHelper.Text += ((MenuItem)sender).Header;
                 }
                 else
                 {
-                    txt_Prompt.Text += $" {((MenuItem)sender).Header}";
+                    txt_PromptHelper.Text += $" {((MenuItem)sender).Header}";
                 }
+                expander_settings.IsExpanded = true;
             }
             catch { return; }
         }
@@ -523,11 +772,19 @@ namespace MitchJourn_e
         /// </summary>
         private void btn_Stop_Click(object sender, RoutedEventArgs e)
         {
-            StopRendering();
+            if (chk_ContinuouslyPrompt.IsChecked != true)
+            {
+                StopRendering();
+            }
+            else
+            {
+                chk_ContinuouslyPrompt.IsChecked = false;
+                lbl_Status.Content = "Stopped continuously prompting.";
+            }
         }
 
         /// <summary>
-        /// Saves the setting if the sender is a TextBox with the property name as it's tag
+        /// Saves the setting if the sender is a TextBox with the setting property name as it's tag
         /// </summary>
         private void SettingsTextChanged(object sender, TextChangedEventArgs e)
         {
@@ -550,6 +807,34 @@ namespace MitchJourn_e
                 }
             }
             catch { return; }
+        }
+
+        /// <summary>
+        /// Saves the setting if the sender is a TextBox with the property name as it's tag
+        /// </summary>
+        /// TODO: make it not hurt anymore
+        private void PromptPresetTextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                List<string> presets = new List<string>();
+                foreach (StackPanel stack in stack_PromptHelperPresets.Children)
+                {
+                    foreach (Control control in stack.Children)
+                    {
+                        if (control is TextBox)
+                        {
+                            presets.Add(((TextBox)control).Text);
+                        }
+                    }
+                }
+                StringCollection stringCollection = new StringCollection();
+                stringCollection.AddRange(presets.ToArray());
+                Settings.Default["PromptHelperPresets"] = stringCollection;
+                Settings.Default.Save();
+            }
+            catch { return; }
+
         }
 
         /// <summary>
@@ -632,7 +917,12 @@ namespace MitchJourn_e
         /// </summary>
         private void btn_11_Click(object sender, RoutedEventArgs e)
         {
-            setAspectRatio("448", "448", sender);
+            try
+            {
+                string[] widthheight = Settings.Default["AspectRatio11"].ToString().Split(':');
+                setAspectRatio(widthheight[0], widthheight[1], sender);
+            }
+            catch { }
         }
 
         /// <summary>
@@ -640,7 +930,12 @@ namespace MitchJourn_e
         /// </summary>
         private void btn_32_Click(object sender, RoutedEventArgs e)
         {
-            setAspectRatio("576", "384", sender);
+            try
+            {
+                string[] widthheight = Settings.Default["AspectRatio32"].ToString().Split(':');
+                setAspectRatio(widthheight[0], widthheight[1], sender);
+            }
+            catch { }
         }
 
         /// <summary>
@@ -648,7 +943,12 @@ namespace MitchJourn_e
         /// </summary>
         private void btn_169_Click(object sender, RoutedEventArgs e)
         {
-            setAspectRatio("640", "384", sender);
+            try
+            {
+                string[] widthheight = Settings.Default["AspectRatio169"].ToString().Split(':');
+                setAspectRatio(widthheight[0], widthheight[1], sender);
+            }
+            catch { }
         }
 
         /// <summary>
@@ -656,7 +956,12 @@ namespace MitchJourn_e
         /// </summary>
         private void btn23_Click(object sender, RoutedEventArgs e)
         {
-            setAspectRatio("384", "576", sender);
+            try
+            {
+                string[] widthheight = Settings.Default["AspectRatio23"].ToString().Split(':');
+                setAspectRatio(widthheight[0], widthheight[1], sender);
+            }
+            catch { }
         }
 
         /// <summary>
@@ -664,7 +969,12 @@ namespace MitchJourn_e
         /// </summary>
         private void btn920_Click(object sender, RoutedEventArgs e)
         {
-            setAspectRatio("256", "576", sender);
+            try
+            {
+                string[] widthheight = Settings.Default["AspectRatio920"].ToString().Split(':');
+                setAspectRatio(widthheight[0], widthheight[1], sender);
+            }
+            catch { }
         }
 
         private void slider_imagePromptWeight_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -686,6 +996,65 @@ namespace MitchJourn_e
             {
                 StartRendering();
             }
+        }
+
+        private void btn_BrowseFolder_Click(object sender, RoutedEventArgs e)
+        {
+            using (var FolderSelector = new FolderBrowserDialog())
+            {
+                DialogResult result = FolderSelector.ShowDialog();
+
+                if (!string.IsNullOrWhiteSpace(FolderSelector.SelectedPath))
+                {
+                    txt_PromptFolder.Text = FolderSelector.SelectedPath;
+                }
+            }
+        }
+
+        private void btn_StartPromptFolder_Click(object sender, RoutedEventArgs e)
+        {
+            StartPromptFolderExperiment(txt_PromptFolder.Text);
+        }
+
+        void StartPromptFolderExperiment(string folderPath)
+        {
+            string[] files = Directory.GetFiles(folderPath);
+
+            foreach (string file in files)
+            {
+                txt_ImagePrompt.Text = $"\"{file}\"";
+                StartRendering();
+            }
+        }
+        private void btn_AddPromptPreset_Click(object sender, RoutedEventArgs e)
+        {
+            // add the prompt helper editor text boxes and buttons
+            StackPanel stackPanel = new StackPanel
+            {
+                Orientation = System.Windows.Controls.Orientation.Horizontal,
+                //Tag = helperMenuItem
+            };
+            TextBox textBox = new TextBox
+            {
+                Text = "",
+                FontSize = 16,
+                Padding = new Thickness(2),
+                Margin = new Thickness(4),
+                Width = 420,
+                //Tag = menuHeader
+            };
+            textBox.TextChanged += PromptPresetTextChanged;
+            Button btn_Delete = new Button
+            {
+                Content = "Delete",
+                Padding = new Thickness(2),
+                Margin = new Thickness(4),
+                Tag = stackPanel
+            };
+            btn_Delete.Click += Btn_Delete_Click;
+            stackPanel.Children.Add(textBox);
+            stackPanel.Children.Add(btn_Delete);
+            stack_PromptHelperPresets.Children.Add(stackPanel);
         }
     }
 }

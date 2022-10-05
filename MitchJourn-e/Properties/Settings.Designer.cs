@@ -49,7 +49,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("454")]
+        [global::System.Configuration.DefaultSettingValueAttribute("512")]
         public string Width {
             get {
                 return ((string)(this["Width"]));
@@ -61,7 +61,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("454")]
+        [global::System.Configuration.DefaultSettingValueAttribute("512")]
         public string Height {
             get {
                 return ((string)(this["Height"]));
@@ -205,7 +205,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("400")]
+        [global::System.Configuration.DefaultSettingValueAttribute("512")]
         public string gfpganBgTileSize {
             get {
                 return ((string)(this["gfpganBgTileSize"]));
@@ -236,6 +236,121 @@ namespace MitchJourn_e.Properties {
             }
             set {
                 this["UseFullPrecision"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("512:512")]
+        public string AspectRatio11 {
+            get {
+                return ((string)(this["AspectRatio11"]));
+            }
+            set {
+                this["AspectRatio11"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("576:384")]
+        public string AspectRatio32 {
+            get {
+                return ((string)(this["AspectRatio32"]));
+            }
+            set {
+                this["AspectRatio32"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("640:384")]
+        public string AspectRatio169 {
+            get {
+                return ((string)(this["AspectRatio169"]));
+            }
+            set {
+                this["AspectRatio169"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("384:576")]
+        public string AspectRatio23 {
+            get {
+                return ((string)(this["AspectRatio23"]));
+            }
+            set {
+                this["AspectRatio23"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("256:576")]
+        public string AspectRatio920 {
+            get {
+                return ((string)(this["AspectRatio920"]));
+            }
+            set {
+                this["AspectRatio920"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public string EnableWelcomePrompt {
+            get {
+                return ((string)(this["EnableWelcomePrompt"]));
+            }
+            set {
+                this["EnableWelcomePrompt"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
+            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\r\n  <s" +
+            "tring>Artists/Greg=greg rutkowski</string>\r\n  <string>Artists/Thomas=thomas kink" +
+            "ade</string>\r\n  <string>Styles/Flowery Landscape=thomas kinkade</string>\r\n  <str" +
+            "ing>Styles/Midjourney1=Splash art, light dust, magnificent, theme park, medium s" +
+            "hot, details, sharp focus, elegant, highly detailed, illustration, by jordan gri" +
+            "mmer and greg rutkowski and ocellus and alphonse mucha and wlop, intricate, beau" +
+            "tiful, triadic contrast colors, trending artstation, pixiv, digital art</string>" +
+            "\r\n  <string>Styles/Midjourney2=Splash art, light dust, magnificent, details, sha" +
+            "rp focus, intricate, beautiful, triadic contrast colors, trending artstation, pi" +
+            "xiv, digital art</string>\r\n  <string>Styles/Photo=f/1.4 50mm 200iso 4k</string>\r" +
+            "\n  <string>Styles/Portrait Photography1=facial asymmetry, striking features, tac" +
+            "k sharp, fine-art photography, 180mm f/1.8 200iso</string>\r\n  <string>Styles/Lan" +
+            "dscape=octane render 4k unreal engine 200iso dynamic range hdr wonderous awesome" +
+            " greg rutkowski sung choi thomas kinkade vincent van gogh</string>\r\n  <string>St" +
+            "yles/High Quality=hyperdetailed hd 4k 8k sharp focus highly detailed</string>\r\n " +
+            " <string>Styles/Elegant Portrait=portrait photo headshot by mucha, sharp focus, " +
+            "elegant, render, octane, detailed, award winning photography, masterpiece, rim l" +
+            "it</string>\r\n  <string>Styles/Artistic Portrait=a vibrant professional studio po" +
+            "rtrait photography of a young, attractive, friendly, casual, delightful, intrica" +
+            "te, gorgeous, piercing eyes, nouveau, curated collection, annie leibovitz, nikon" +
+            ", award winning, breathtaking, groundbreaking, superb, outstanding, lensculture " +
+            "portrait awards, photoshopped, dramatic lighting, 8k</string>\r\n  <string>Styles/" +
+            "Rendered Portrait=gorgeous young by window, soft, octane render, unreal engine, " +
+            "photograph, realistic skin texture, photorealistic, hyper realism, highly detail" +
+            "ed, 85mm portrait photography, award winning, hard rim lighting photography</str" +
+            "ing>\r\n  <string>Styles/Stary Portrait=a portrait with a luminous clothing, eyes " +
+            "shut, mouth closed, wind, sky, clouds, the moon, moonlight, stars, universe, fir" +
+            "eflies, butterflies, lights, lens flares effects, swirly bokeh, brush effect, In" +
+            " style of Yoji Shinkawa, Jackson Pollock, wojtek fus, by Makoto Shinkai, concept" +
+            " art, celestial, amazing, astonishing, wonderful, beautiful, highly detailed, ce" +
+            "ntered</string>\r\n</ArrayOfString>")]
+        public global::System.Collections.Specialized.StringCollection PromptHelperPresets {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["PromptHelperPresets"]));
+            }
+            set {
+                this["PromptHelperPresets"] = value;
             }
         }
     }

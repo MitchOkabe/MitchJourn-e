@@ -9,10 +9,10 @@
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="Width" Type="System.String" Scope="User">
-      <Value Profile="(Default)">454</Value>
+      <Value Profile="(Default)">512</Value>
     </Setting>
     <Setting Name="Height" Type="System.String" Scope="User">
-      <Value Profile="(Default)">454</Value>
+      <Value Profile="(Default)">512</Value>
     </Setting>
     <Setting Name="Steps" Type="System.String" Scope="User">
       <Value Profile="(Default)">25</Value>
@@ -48,13 +48,49 @@
       <Value Profile="(Default)">2</Value>
     </Setting>
     <Setting Name="gfpganBgTileSize" Type="System.String" Scope="User">
-      <Value Profile="(Default)">400</Value>
+      <Value Profile="(Default)">512</Value>
     </Setting>
     <Setting Name="SamplerType" Type="System.String" Scope="User">
       <Value Profile="(Default)">k_euler_a</Value>
     </Setting>
     <Setting Name="UseFullPrecision" Type="System.String" Scope="User">
       <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="AspectRatio11" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512:512</Value>
+    </Setting>
+    <Setting Name="AspectRatio32" Type="System.String" Scope="User">
+      <Value Profile="(Default)">576:384</Value>
+    </Setting>
+    <Setting Name="AspectRatio169" Type="System.String" Scope="User">
+      <Value Profile="(Default)">640:384</Value>
+    </Setting>
+    <Setting Name="AspectRatio23" Type="System.String" Scope="User">
+      <Value Profile="(Default)">384:576</Value>
+    </Setting>
+    <Setting Name="AspectRatio920" Type="System.String" Scope="User">
+      <Value Profile="(Default)">256:576</Value>
+    </Setting>
+    <Setting Name="EnableWelcomePrompt" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="PromptHelperPresets" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;string&gt;Artists/Greg=greg rutkowski&lt;/string&gt;
+  &lt;string&gt;Artists/Thomas=thomas kinkade&lt;/string&gt;
+  &lt;string&gt;Styles/Flowery Landscape=thomas kinkade&lt;/string&gt;
+  &lt;string&gt;Styles/Midjourney1=Splash art, light dust, magnificent, theme park, medium shot, details, sharp focus, elegant, highly detailed, illustration, by jordan grimmer and greg rutkowski and ocellus and alphonse mucha and wlop, intricate, beautiful, triadic contrast colors, trending artstation, pixiv, digital art&lt;/string&gt;
+  &lt;string&gt;Styles/Midjourney2=Splash art, light dust, magnificent, details, sharp focus, intricate, beautiful, triadic contrast colors, trending artstation, pixiv, digital art&lt;/string&gt;
+  &lt;string&gt;Styles/Photo=f/1.4 50mm 200iso 4k&lt;/string&gt;
+  &lt;string&gt;Styles/Portrait Photography1=facial asymmetry, striking features, tack sharp, fine-art photography, 180mm f/1.8 200iso&lt;/string&gt;
+  &lt;string&gt;Styles/Landscape=octane render 4k unreal engine 200iso dynamic range hdr wonderous awesome greg rutkowski sung choi thomas kinkade vincent van gogh&lt;/string&gt;
+  &lt;string&gt;Styles/High Quality=hyperdetailed hd 4k 8k sharp focus highly detailed&lt;/string&gt;
+  &lt;string&gt;Styles/Elegant Portrait=portrait photo headshot by mucha, sharp focus, elegant, render, octane, detailed, award winning photography, masterpiece, rim lit&lt;/string&gt;
+  &lt;string&gt;Styles/Artistic Portrait=a vibrant professional studio portrait photography of a young, attractive, friendly, casual, delightful, intricate, gorgeous, piercing eyes, nouveau, curated collection, annie leibovitz, nikon, award winning, breathtaking, groundbreaking, superb, outstanding, lensculture portrait awards, photoshopped, dramatic lighting, 8k&lt;/string&gt;
+  &lt;string&gt;Styles/Rendered Portrait=gorgeous young by window, soft, octane render, unreal engine, photograph, realistic skin texture, photorealistic, hyper realism, highly detailed, 85mm portrait photography, award winning, hard rim lighting photography&lt;/string&gt;
+  &lt;string&gt;Styles/Stary Portrait=a portrait with a luminous clothing, eyes shut, mouth closed, wind, sky, clouds, the moon, moonlight, stars, universe, fireflies, butterflies, lights, lens flares effects, swirly bokeh, brush effect, In style of Yoji Shinkawa, Jackson Pollock, wojtek fus, by Makoto Shinkai, concept art, celestial, amazing, astonishing, wonderful, beautiful, highly detailed, centered&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
     </Setting>
   </Settings>
 </SettingsFile>
