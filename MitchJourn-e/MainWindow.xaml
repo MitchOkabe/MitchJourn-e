@@ -43,21 +43,25 @@
                     <Expander x:Name="expander_settings" Header="Settings">
                         <Grid Height="174">
                             <Label Content="Prompt helper text" Padding="2"/>
-                            <TextBox x:Name="txt_PromptHelper" FontSize="10" Padding="2" Margin="0,22,0,0" TabIndex="0" SpellCheck.IsEnabled="True" Height="22" VerticalAlignment="Top"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,20,0,126">
+                                <TextBox x:Name="txt_PromptHelper" FontSize="10" Padding="2" TabIndex="0" SpellCheck.IsEnabled="True" Width="460" Height="22"/>
+                                <Button x:Name="btn_ClearPromptHelper" Content="Clear" Margin="2" Padding="2" Click="btn_ClearPromptHelper_Click"/>
+                            </StackPanel>
                             <StackPanel Margin="0,48,0,0" VerticalAlignment="Top">
                                 <Label Content="Image prompt:" Padding="2"/>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBox x:Name="txt_ImagePrompt" FontSize="11" Padding="2" Width="460" Height="22"/>
-                                    <Button x:Name="btn_Clear" Content="Clear" Margin="2" Padding="2" Click="btn_Clear_Click"/>
+                                    <Button x:Name="btn_ClearImagePrompt" Content="Clear" Margin="2" Padding="2" Click="btn_ClearImagePrompt_Click"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="Image prompt weight:" Padding="2"/>
                                     <TextBox x:Name="txt_ImagePromptWeight" FontSize="12" Text=".35" Padding="2" Margin="4,0,0,0" Tag="ImagePromptWeight" TextChanged="SettingsTextChanged"/>
                                 </StackPanel>
                                 <Slider x:Name="slider_imagePromptWeight" Margin="2" Maximum="1" LargeChange="0.1" SmallChange="0.05" TickFrequency="0.05" Value="0.35" Minimum="0.05" ValueChanged="slider_imagePromptWeight_ValueChanged" IsSnapToTickEnabled="True"/>
-                                <Border Padding="4">
+                                <StackPanel Orientation="Horizontal">
                                     <CheckBox x:Name="chk_AlternateToken" Content="Use alternative prompt tokens" VerticalAlignment="Center"/>
-                                </Border>
+                                    <CheckBox x:Name="chk_SequencialPrompting" Content="Start sequential prompting" Margin="8"/>
+                                </StackPanel>
                             </StackPanel>
                         </Grid>
                     </Expander>

@@ -131,8 +131,8 @@ namespace MitchJourn_e
                         $"-S {seed} " +
                         $"-s {Settings.Default["Steps"]} " +
                         $"-n {Settings.Default["Iter"]} " +
-                        $"{uprez}" +
-                        $"{imagePrompt}";
+                        $"{imagePrompt} " +
+                        $"{uprez}";
 
                 // Full Precision
                 if (Settings.Default["UseFullPrecision"].ToString() == "1")
@@ -307,6 +307,10 @@ namespace MitchJourn_e
                                 // continuous prompting
                                 if ((bool)chk_ContinuouslyPrompt.IsChecked)
                                 {
+                                    if ((bool)chk_SequencialPrompting.IsChecked)
+                                    {
+                                        txt_ImagePrompt.Text = renderedImage.filePath;
+                                    }
                                     StartRendering();
                                 }
                             }
@@ -982,9 +986,15 @@ namespace MitchJourn_e
             txt_ImagePromptWeight.Text = Math.Round(slider_imagePromptWeight.Value, 3).ToString();
         }
 
-        private void btn_Clear_Click(object sender, RoutedEventArgs e)
+        private void btn_ClearImagePrompt_Click(object sender, RoutedEventArgs e)
         {
             txt_ImagePrompt.Text = "";
+            chk_SequencialPrompting.IsChecked = false;
+        }
+
+        private void btn_ClearPromptHelper_Click(object sender, RoutedEventArgs e)
+        {
+            txt_PromptHelper.Text = "";
         }
 
         /// <summary>
