@@ -22,10 +22,11 @@ namespace MitchJourn_e
         public string height;
         public string imagePrompt;
         public string imagePromptWeight;
+        public bool WasUpscalled;
 
         public RenderedImage(){}
 
-        public RenderedImage CreateRenderedImage(Image image, string filePath, string prompt, string promptWeight, string seed, string diffusionSteps, string width, string height, string imagePrompt, string ImagePromptWeight)
+        public RenderedImage CreateRenderedImage(Image image, string filePath, string prompt, string promptWeight, string seed, string diffusionSteps, string width, string height, string imagePrompt, string ImagePromptWeight, bool WasUpscalled = false)
         {
             this.image = image;
             this.filePath = filePath;
@@ -37,6 +38,7 @@ namespace MitchJourn_e
             this.height = height;
             this.imagePrompt = imagePrompt;
             this.imagePromptWeight = ImagePromptWeight;
+            this.WasUpscalled = WasUpscalled;
             return this;
         }
     }

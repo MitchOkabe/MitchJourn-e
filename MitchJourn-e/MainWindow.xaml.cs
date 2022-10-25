@@ -19,6 +19,11 @@ using System.Windows.Forms;
 using System.Text;
 using System.Collections.Specialized;
 using System.Drawing.Imaging;
+using System.Security.Policy;
+using static System.Net.WebRequestMethods;
+using File = System.IO.File;
+using MetadataExtractor;
+using Directory = System.IO.Directory;
 
 namespace MitchJourn_e
 {
@@ -35,6 +40,8 @@ namespace MitchJourn_e
         public Process rendererProcess;
         public StreamWriter textWriter;
         bool isFirstRun = true;
+        bool firstUpscaleRequest = false;
+        
 
         public MainWindow()
         {
@@ -42,6 +49,9 @@ namespace MitchJourn_e
             InitializePromptHelper2();
             InitializeSettings();
             StartRendering();
+
+            if (Debugger.IsAttached)
+                Settings.Default.Reset();
         }
 
         /// <summary>
@@ -78,6 +88,7 @@ namespace MitchJourn_e
             {
                 string prompt = CleanPrompt(txt_Prompt.Text);
                 string promptHelper = CleanPrompt(txt_PromptHelper.Text);
+                string negativePrompt = CleanPrompt(txt_NegativePrompt.Text);
                 string promptSettings = "";
                 string imagePrompt = "";
 
@@ -111,7 +122,7 @@ namespace MitchJourn_e
                 // Upscale
                 if ((bool)chk_HighRes.IsChecked)
                 {
-                    uprez = "-G 1";
+                    uprez = $"-U {Settings.Default["gfpganUprezScale"]} -G {Settings.Default["gfpganScale"]}"; //--save_orig
                 }
 
                 // Image Prompt
@@ -132,7 +143,8 @@ namespace MitchJourn_e
                         $"-s {Settings.Default["Steps"]} " +
                         $"-n {Settings.Default["Iter"]} " +
                         $"{imagePrompt} " +
-                        $"{uprez}";
+                        $"{uprez} "+
+                        $"--sampler {Settings.Default["SamplerType"]}";
 
                 // Full Precision
                 if (Settings.Default["UseFullPrecision"].ToString() == "1")
@@ -156,14 +168,15 @@ namespace MitchJourn_e
                     rendererProcess = process;
                     textWriter = process.StandardInput;
                     string sampler = Settings.Default["SamplerType"].ToString();
+                    //ddim, k_dpm_2_a, k_dpm_2, k_euler_a, k_euler, k_heun, k_lms, plms
 
                     // move the cmd directory to the main stable diffusion path and open the python environment called ldm (environment used at python install)
-                    string prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat ldm &";
+                    string prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat invokeai & python scripts\\invoke.py &";
                     // send the command to the CMD window to start the python script, enable the upsampler
                     process.StandardInput.WriteLine($"{prerequisites} python dream.py --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
                         $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path {Settings.Default["MainPath"]}\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth --sampler {sampler}");
                     // send the command to the CMD window to set the image output directory (TODO: I don't think this is actually working, investigate escaped characters)
-                    process.StandardInput.WriteLine($"cd {Settings.Default["MainPath"].ToString().Replace(@"\", @"\\")}\\outputs\\img-samples\\");
+                    //process.StandardInput.WriteLine($"cd {Settings.Default["MainPath"].ToString().Replace(@"\", @"\\")}\\outputs\\img-samples\\");
 
                     if (isFirstRun)
                     {
@@ -179,12 +192,21 @@ namespace MitchJourn_e
                     }
                     else
                     {
-                        process.StandardInput.WriteLine($"{prompt} {promptHelper} {promptSettings}");
+                        
+                        process.StandardInput.WriteLine($"{prompt} [{negativePrompt}] {promptHelper} {promptSettings}");
+                        
                     }
                 }
                 else // if the CMD window is already opened, send the prompt
                 {
-                    process.StandardInput.WriteLine($"{prompt} {promptHelper} {promptSettings}");
+                    if ((bool)chk_OutPainting.IsChecked)
+                    {
+                        process.StandardInput.WriteLine($"!fix {txt_OutPaintImage.Text} --outcrop {txt_OutPaintDirection.Text}");
+                    }
+                    else
+                    {
+                        process.StandardInput.WriteLine($"{prompt} [{negativePrompt}] {promptHelper} {promptSettings}");
+                    }
                 }
 
                 // start or restart the timer to check for a new image in the output directory
@@ -197,6 +219,18 @@ namespace MitchJourn_e
                 lastPrompt = txt_Prompt.Text;
             });
 
+        }
+
+        RenderedImage GetLastRenderedImage()
+        {
+            RenderedImage renderedImage = (RenderedImage)((Image)stack_Images.Items[stack_Images.Items.Count - 1]).Tag;
+
+            if (renderedImage == null)
+            {
+                renderedImage = new RenderedImage();
+            }
+
+            return renderedImage;
         }
 
         /// <summary>
@@ -221,10 +255,32 @@ namespace MitchJourn_e
                             string filePath = Files.Last().FullName;
                             if (filePath != lastImg)
                             {
+                                // Don't display an image from last boot
                                 if (lastImg == "")
                                 {
                                     lastImg = filePath;
                                     return;
+                                }
+
+                                // bool upscaleRequested is true if the chk_HighRes is checked
+                                bool.TryParse(chk_HighRes.IsChecked.ToString(), out bool upscaleRequested);
+                                
+                                // if upscale has been requested and an image shows up in the folder
+                                // and that image is too small to be an upscale, don't display it
+                                if (upscaleRequested || firstUpscaleRequest)
+                                {
+                                    long fileSizeKB = 0;
+
+                                    if (File.Exists(filePath))
+                                    {
+                                        fileSizeKB = new FileInfo(filePath).Length / 1024;
+                                    }
+
+                                    if (fileSizeKB < 725)
+                                    {
+                                        return;
+                                    }
+                                    firstUpscaleRequest = false;
                                 }
 
                                 // create a bitmap from the image file
@@ -242,11 +298,21 @@ namespace MitchJourn_e
                                 };
                                 scroll_Images.MaxHeight = myBitmapImage.Height + 50;
 
+                                //ImageBrush imageBrush = new ImageBrush
+                                //{
+                                //    ImageSource = myBitmapImage,
+                                //    Stretch = System.Windows.Media.Stretch.UniformToFill
+                                //};
+
+                                bool upscalledImage = false;
+
+                                // Create the renderedImage object and store useful metadata. This could be embeded in the png?
                                 RenderedImage renderedImage = new RenderedImage().CreateRenderedImage(output, filePath, txt_Prompt.Text, txt_Scale.Text, txt_Seed.Text,
-                                    txt_Steps.Text, myBitmapImage.Width.ToString(), myBitmapImage.Height.ToString(), txt_ImagePrompt.Text, txt_ImagePromptWeight.Text);
+                                    txt_Steps.Text, myBitmapImage.Width.ToString(), myBitmapImage.Height.ToString(), txt_ImagePrompt.Text, txt_ImagePromptWeight.Text, upscalledImage);
 
                                 output.Tag = renderedImage;
-                                
+
+
                                 // Add the right click menu to the image
                                 ContextMenu rightClickMenu = new ContextMenu();
                                 
@@ -304,13 +370,15 @@ namespace MitchJourn_e
                                     lbl_Status.Content = "Created downrezed version.";
                                 }
 
+                                // sequential prompting
+                                if ((bool)chk_SequencialPrompting.IsChecked)
+                                {
+                                    txt_ImagePrompt.Text = renderedImage.filePath;
+                                }
+
                                 // continuous prompting
                                 if ((bool)chk_ContinuouslyPrompt.IsChecked)
                                 {
-                                    if ((bool)chk_SequencialPrompting.IsChecked)
-                                    {
-                                        txt_ImagePrompt.Text = renderedImage.filePath;
-                                    }
                                     StartRendering();
                                 }
                             }
@@ -432,84 +500,84 @@ namespace MitchJourn_e
             catch { return; }
         }
 
-        /// <summary>
-        /// Creates the menu button with words to add to the prompt box
-        /// </summary>
-        private void InitializePromptHelper()
-        {
-            string[] mainMenuItems = { "Artists", "Styles", "Sources", "Effects", "Mediums" };
-            string[] artists = { "greg rutkowski", "wlop", "sung choi", "ilya kuvshinov", "andreas rocha", "lois van baarle", "rossdraws", "Rembrandt", "marc simonetti", "Luis Royo", "beksiński", "hieronymus bosch", "thomas kinkade",
-                "vincent van gogh", "leonid afremov", "claude monet", "edward hopper", "norman rockwell", "william-adolphe bouguereau", "albert bierstadt", "john singer sargent", "pierre-auguste renoir"};
-            string[] styles = { "atmospheric", "hyperdetailed", "hd", "magical world", "cinematic lighting", "concept art", "logo", "editorial photography", "wildlife photography", "technicolour", "anaglyph" };
-            string[] sources = { "artstation", "deviantart", "behance", "cgsociety", "dribble", "flickr", "instagram", "pexels", "pinterest", "pixabay", "pixiv", "polycount", "reddit", "shutterstock", "tumblr", "unsplash", "zbrush central" };
-            string[] effects = { "post processing", "cgi" , "chromatic aberration", "anaglyph", "cropped", "glowing edges", "glow effect", "bokeh", "dramatic", "glamor shot", "colourful", "complimentary-colours", "golden hour", "dark mood",
-                "multiverse", "soft lighting", "hard lighting", "volumetric", "lumen global illumination", "beautiful lighting", "octane render" };
-            string[] mediums = { "photo realistic", "graphic novel", "fountain pen", "pastel art", "fine art", "acrylic paint", "oil paint", "watercolour", "digital art", "magazine", "comic book", "pokemon card", "puzzle" };
+        ///// <summary>
+        ///// Creates the menu button with words to add to the prompt box
+        ///// </summary>
+        //private void InitializePromptHelper()
+        //{
+        //    string[] mainMenuItems = { "Artists", "Styles", "Sources", "Effects", "Mediums" };
+        //    string[] artists = { "greg rutkowski", "wlop", "sung choi", "ilya kuvshinov", "andreas rocha", "lois van baarle", "rossdraws", "Rembrandt", "marc simonetti", "Luis Royo", "beksiński", "hieronymus bosch", "thomas kinkade",
+        //        "vincent van gogh", "leonid afremov", "claude monet", "edward hopper", "norman rockwell", "william-adolphe bouguereau", "albert bierstadt", "john singer sargent", "pierre-auguste renoir"};
+        //    string[] styles = { "atmospheric", "hyperdetailed", "hd", "magical world", "cinematic lighting", "concept art", "logo", "editorial photography", "wildlife photography", "technicolour", "anaglyph" };
+        //    string[] sources = { "artstation", "deviantart", "behance", "cgsociety", "dribble", "flickr", "instagram", "pexels", "pinterest", "pixabay", "pixiv", "polycount", "reddit", "shutterstock", "tumblr", "unsplash", "zbrush central" };
+        //    string[] effects = { "post processing", "cgi" , "chromatic aberration", "anaglyph", "cropped", "glowing edges", "glow effect", "bokeh", "dramatic", "glamor shot", "colourful", "complimentary-colours", "golden hour", "dark mood",
+        //        "multiverse", "soft lighting", "hard lighting", "volumetric", "lumen global illumination", "beautiful lighting", "octane render" };
+        //    string[] mediums = { "photo realistic", "graphic novel", "fountain pen", "pastel art", "fine art", "acrylic paint", "oil paint", "watercolour", "digital art", "magazine", "comic book", "pokemon card", "puzzle" };
 
-            foreach (string mainMenuItemName in mainMenuItems)
-            {
-                MenuItem mainMenuItem = new MenuItem();
-                mainMenuItem.Header = mainMenuItemName;
-                mainMenuItem.StaysOpenOnClick = true;
-                menuItem_PromptHelper.Items.Add(mainMenuItem);
+        //    foreach (string mainMenuItemName in mainMenuItems)
+        //    {
+        //        MenuItem mainMenuItem = new MenuItem();
+        //        mainMenuItem.Header = mainMenuItemName;
+        //        mainMenuItem.StaysOpenOnClick = true;
+        //        menuItem_PromptHelper.Items.Add(mainMenuItem);
 
-                if (mainMenuItemName == "Artists")
-                {
-                    foreach (string artistsMenuItemName in artists)
-                    {
-                        MenuItem ArtistsMenuItem = new MenuItem();
-                        ArtistsMenuItem.Header = artistsMenuItemName;
-                        ArtistsMenuItem.Click += PromptHelperMenuItem_Click;
-                        ArtistsMenuItem.StaysOpenOnClick = true;
-                        mainMenuItem.Items.Add(ArtistsMenuItem);
-                    }
-                }
-                else if (mainMenuItemName == "Styles")
-                {
-                    foreach (string stylesMenuItemName in styles)
-                    {
-                        MenuItem stylesMenuItem = new MenuItem();
-                        stylesMenuItem.Header = stylesMenuItemName;
-                        stylesMenuItem.Click += PromptHelperMenuItem_Click;
-                        stylesMenuItem.StaysOpenOnClick = true;
-                        mainMenuItem.Items.Add(stylesMenuItem);
-                    }
-                }
-                else if (mainMenuItemName == "Sources")
-                {
-                    foreach (string sourcesMenuItemName in sources)
-                    {
-                        MenuItem sourcesMenuItem = new MenuItem();
-                        sourcesMenuItem.Header = sourcesMenuItemName;
-                        sourcesMenuItem.Click += PromptHelperMenuItem_Click;
-                        sourcesMenuItem.StaysOpenOnClick = true;
-                        mainMenuItem.Items.Add(sourcesMenuItem);
-                    }
-                }
-                else if (mainMenuItemName == "Effects")
-                {
-                    foreach (string effectsMenuItemName in effects)
-                    {
-                        MenuItem effectsMenuItem = new MenuItem();
-                        effectsMenuItem.Header = effectsMenuItemName;
-                        effectsMenuItem.Click += PromptHelperMenuItem_Click;
-                        effectsMenuItem.StaysOpenOnClick = true;
-                        mainMenuItem.Items.Add(effectsMenuItem);
-                    }
-                }
-                else if (mainMenuItemName == "Mediums")
-                {
-                    foreach (string mediumsMenuItemName in mediums)
-                    {
-                        MenuItem mediumsMenuItem = new MenuItem();
-                        mediumsMenuItem.Header = mediumsMenuItemName;
-                        mediumsMenuItem.Click += PromptHelperMenuItem_Click;
-                        mediumsMenuItem.StaysOpenOnClick = true;
-                        mainMenuItem.Items.Add(mediumsMenuItem);
-                    }
-                }
-            }
-        }
+        //        if (mainMenuItemName == "Artists")
+        //        {
+        //            foreach (string artistsMenuItemName in artists)
+        //            {
+        //                MenuItem ArtistsMenuItem = new MenuItem();
+        //                ArtistsMenuItem.Header = artistsMenuItemName;
+        //                ArtistsMenuItem.Click += PromptHelperMenuItem_Click;
+        //                ArtistsMenuItem.StaysOpenOnClick = true;
+        //                mainMenuItem.Items.Add(ArtistsMenuItem);
+        //            }
+        //        }
+        //        else if (mainMenuItemName == "Styles")
+        //        {
+        //            foreach (string stylesMenuItemName in styles)
+        //            {
+        //                MenuItem stylesMenuItem = new MenuItem();
+        //                stylesMenuItem.Header = stylesMenuItemName;
+        //                stylesMenuItem.Click += PromptHelperMenuItem_Click;
+        //                stylesMenuItem.StaysOpenOnClick = true;
+        //                mainMenuItem.Items.Add(stylesMenuItem);
+        //            }
+        //        }
+        //        else if (mainMenuItemName == "Sources")
+        //        {
+        //            foreach (string sourcesMenuItemName in sources)
+        //            {
+        //                MenuItem sourcesMenuItem = new MenuItem();
+        //                sourcesMenuItem.Header = sourcesMenuItemName;
+        //                sourcesMenuItem.Click += PromptHelperMenuItem_Click;
+        //                sourcesMenuItem.StaysOpenOnClick = true;
+        //                mainMenuItem.Items.Add(sourcesMenuItem);
+        //            }
+        //        }
+        //        else if (mainMenuItemName == "Effects")
+        //        {
+        //            foreach (string effectsMenuItemName in effects)
+        //            {
+        //                MenuItem effectsMenuItem = new MenuItem();
+        //                effectsMenuItem.Header = effectsMenuItemName;
+        //                effectsMenuItem.Click += PromptHelperMenuItem_Click;
+        //                effectsMenuItem.StaysOpenOnClick = true;
+        //                mainMenuItem.Items.Add(effectsMenuItem);
+        //            }
+        //        }
+        //        else if (mainMenuItemName == "Mediums")
+        //        {
+        //            foreach (string mediumsMenuItemName in mediums)
+        //            {
+        //                MenuItem mediumsMenuItem = new MenuItem();
+        //                mediumsMenuItem.Header = mediumsMenuItemName;
+        //                mediumsMenuItem.Click += PromptHelperMenuItem_Click;
+        //                mediumsMenuItem.StaysOpenOnClick = true;
+        //                mainMenuItem.Items.Add(mediumsMenuItem);
+        //            }
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Removes characters from the prompt that would disallow the generation to run
@@ -528,7 +596,7 @@ namespace MitchJourn_e
                     // rebuild the string, adding back only the following allowed characters
                     if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == ' ' || c == '.' || c == '_' || c == ',' 
                         || c == '/' || c == '?' || c == '!' || c == '&' || c == '+' || c == '$' || c == '%' || c == '^' || c == '#' || c == '@'
-                        || c == '(' || c == ')' || c == ':' || c == '-' || c == '\\')
+                        || c == '(' || c == ')' || c == ':' || c == '-' || c == '\\' || c == '[' || c == ']')
                     {
                         stringBuilder.Append(c);
                     }
@@ -894,6 +962,27 @@ namespace MitchJourn_e
             }
         }
 
+        private string GetImageMetaData(string imagePath)
+        {
+            string output = "";
+            try
+            {
+                List<MetadataExtractor.Directory> directories = (List<MetadataExtractor.Directory>)ImageMetadataReader.ReadMetadata(CleanPrompt(imagePath));
+                foreach (MetadataExtractor.Directory directory in directories)
+                {
+                    foreach (Tag tag in directory.Tags)
+                    {
+                        output += tag.ToString() + Environment.NewLine;
+                    }
+                }
+            }
+            catch
+            {
+                output = "Failed.";
+            }
+            return output;
+        }
+
         /// <summary>
         /// Sets the width and height settings and saves to the settings registry
         /// </summary>
@@ -1066,5 +1155,81 @@ namespace MitchJourn_e
             stackPanel.Children.Add(btn_Delete);
             stack_PromptHelperPresets.Children.Add(stackPanel);
         }
+
+        private void btn_OpenInstallGuideClick(object sender, RoutedEventArgs e)
+        {
+            ProcessStartInfo openWebsite = new ProcessStartInfo
+            {
+                FileName = "https://github.com/invoke-ai/InvokeAI/blob/main/docs/installation/INSTALL_WINDOWS.md",
+                UseShellExecute = true
+            };
+            Process.Start(openWebsite);
+        }
+
+        private void btn_MitchGitHub_Click(object sender, RoutedEventArgs e)
+        {
+            ProcessStartInfo openWebsite = new ProcessStartInfo
+            {
+                FileName = "https://github.com/MitchJaehrlich/MitchJourn-e",
+                UseShellExecute = true
+            };
+            Process.Start(openWebsite);
+        }
+
+        private void btn_StableDiffusionGitHub_Click(object sender, RoutedEventArgs e)
+        {
+            ProcessStartInfo openWebsite = new ProcessStartInfo
+            {
+                FileName = "https://github.com/CompVis/stable-diffusion",
+                UseShellExecute = true
+            };
+            Process.Start(openWebsite);
+        }
+
+        private void btn_InvokeAIGitHub_Click(object sender, RoutedEventArgs e)
+        {
+            ProcessStartInfo openWebsite = new ProcessStartInfo
+            {
+                FileName = "https://github.com/invoke-ai/InvokeAI",
+                UseShellExecute = true
+            };
+            Process.Start(openWebsite);
+        }
+
+        private void btn_ClearNegativePrompt_Click(object sender, RoutedEventArgs e)
+        {
+            txt_NegativePrompt.Text = "";
+        }
+
+        private void chk_HighRes_Checked(object sender, RoutedEventArgs e)
+        {
+            firstUpscaleRequest = true;
+        }
+
+        private void btn_MetadataExtractor_Click(object sender, RoutedEventArgs e)
+        {
+            txt_extractedMetadata.Text = GetImageMetaData(txt_ImagePathMetaData.Text);
+        }
+
+        private void chk_SequencialPrompting_Unchecked(object sender, RoutedEventArgs e)
+        {
+            txt_ImagePrompt.Text = "";
+        }
+
+        private void chk_SequencialPrompting_Checked(object sender, RoutedEventArgs e)
+        {
+            string lastImageFilePath = "";
+            try
+            {
+                lastImageFilePath = ((RenderedImage)((Image)stack_Images.Items[0]).Tag).filePath;
+            }
+            catch { }
+            txt_ImagePrompt.Text = lastImageFilePath;
+        }
+
+        //private void btn_StartOutPainting_Click(object sender, RoutedEventArgs e)
+        //{
+        //    StartRendering();
+        //}
     }
 }

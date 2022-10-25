@@ -85,7 +85,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1337")]
         public string Seed {
             get {
                 return ((string)(this["Seed"]));
@@ -109,7 +109,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\stable-diffusion-main")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\InvokeAI-main")]
         public string MainPath {
             get {
                 return ((string)(this["MainPath"]));
@@ -157,7 +157,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("model 1.3.ckpt")]
+        [global::System.Configuration.DefaultSettingValueAttribute("models\\ldm\\stable-diffusion-v1\\model.ckpt")]
         public string ModelPath {
             get {
                 return ((string)(this["ModelPath"]));
@@ -315,36 +315,53 @@ namespace MitchJourn_e.Properties {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
             "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\r\n  <s" +
-            "tring>Artists/Greg=greg rutkowski</string>\r\n  <string>Artists/Thomas=thomas kink" +
-            "ade</string>\r\n  <string>Styles/Flowery Landscape=thomas kinkade</string>\r\n  <str" +
-            "ing>Styles/Midjourney1=Splash art, light dust, magnificent, theme park, medium s" +
-            "hot, details, sharp focus, elegant, highly detailed, illustration, by jordan gri" +
-            "mmer and greg rutkowski and ocellus and alphonse mucha and wlop, intricate, beau" +
+            "tring>Artists/Greg Rutkowski (dark concept art)=greg rutkowski</string>\r\n  <stri" +
+            "ng>Artists/Thoma Kinkades (Flowery Landscape)=thomas kinkade</string>\r\n  <string" +
+            ">Artists/John Berkey (Detailed paintings)=very detailed painting by John Berkey<" +
+            "/string>\r\n  <string>Artists/William-Adolphe Bouguereau (Old style painting)=pain" +
+            "ting by William-Adolphe Bouguereau</string>\r\n  <string>Artists/Claude Monet (Noi" +
+            "sy painting)=painting by Claude Monet</string>\r\n  <string>Artists/Ernest Zachare" +
+            "vic (Wall mural)=wall mural by Ernest Zacharevic</string>\r\n  <string>Artists/Ste" +
+            "phan Martiniere (sci-fi concept art)=by Stephan Martiniere</string>\r\n  <string>A" +
+            "rtists/Carl Barks (Cartoonist)=cartoon by Carl Barks</string>\r\n  <string>Artists" +
+            "/Peter Gric (Creepy drawings)=Peter Gric print</string>\r\n  <string>Styles/Midjou" +
+            "rney1=Splash art, light dust, magnificent, details, sharp focus, intricate, beau" +
             "tiful, triadic contrast colors, trending artstation, pixiv, digital art</string>" +
-            "\r\n  <string>Styles/Midjourney2=Splash art, light dust, magnificent, details, sha" +
-            "rp focus, intricate, beautiful, triadic contrast colors, trending artstation, pi" +
-            "xiv, digital art</string>\r\n  <string>Styles/Photo=f/1.4 50mm 200iso 4k</string>\r" +
-            "\n  <string>Styles/Portrait Photography1=facial asymmetry, striking features, tac" +
-            "k sharp, fine-art photography, 180mm f/1.8 200iso</string>\r\n  <string>Styles/Lan" +
-            "dscape=octane render 4k unreal engine 200iso dynamic range hdr wonderous awesome" +
-            " greg rutkowski sung choi thomas kinkade vincent van gogh</string>\r\n  <string>St" +
-            "yles/High Quality=hyperdetailed hd 4k 8k sharp focus highly detailed</string>\r\n " +
-            " <string>Styles/Elegant Portrait=portrait photo headshot by mucha, sharp focus, " +
-            "elegant, render, octane, detailed, award winning photography, masterpiece, rim l" +
-            "it</string>\r\n  <string>Styles/Artistic Portrait=a vibrant professional studio po" +
-            "rtrait photography of a young, attractive, friendly, casual, delightful, intrica" +
-            "te, gorgeous, piercing eyes, nouveau, curated collection, annie leibovitz, nikon" +
-            ", award winning, breathtaking, groundbreaking, superb, outstanding, lensculture " +
-            "portrait awards, photoshopped, dramatic lighting, 8k</string>\r\n  <string>Styles/" +
-            "Rendered Portrait=gorgeous young by window, soft, octane render, unreal engine, " +
-            "photograph, realistic skin texture, photorealistic, hyper realism, highly detail" +
-            "ed, 85mm portrait photography, award winning, hard rim lighting photography</str" +
-            "ing>\r\n  <string>Styles/Stary Portrait=a portrait with a luminous clothing, eyes " +
-            "shut, mouth closed, wind, sky, clouds, the moon, moonlight, stars, universe, fir" +
-            "eflies, butterflies, lights, lens flares effects, swirly bokeh, brush effect, In" +
-            " style of Yoji Shinkawa, Jackson Pollock, wojtek fus, by Makoto Shinkai, concept" +
-            " art, celestial, amazing, astonishing, wonderful, beautiful, highly detailed, ce" +
-            "ntered</string>\r\n</ArrayOfString>")]
+            "\r\n  <string>Styles/Midjourney2=trending Professional majestic oil painting of es" +
+            "tablishing shot by Ed Blinkey and Atey Ghailan and Studio Ghibli and Jeremy Mann" +
+            " and Greg Manchess and Antonio Moro volumetric lighting, dramatic lighting</stri" +
+            "ng>\r\n  <string>Styles/Photo=f/1.4 50mm 200iso 4k</string>\r\n  <string>Styles/Port" +
+            "rait Photography1=facial asymmetry, striking features, tack sharp, fine-art phot" +
+            "ography, 180mm f/1.8 200iso</string>\r\n  <string>Styles/Landscape=octane render 4" +
+            "k unreal engine 200iso dynamic range hdr wonderous awesome greg rutkowski sung c" +
+            "hoi thomas kinkade vincent van gogh</string>\r\n  <string>Styles/High Quality=hype" +
+            "rdetailed hd 4k 8k sharp focus highly detailed</string>\r\n  <string>Styles/Elegan" +
+            "t Portrait=portrait photo headshot by mucha, sharp focus, elegant, render, octan" +
+            "e, detailed, award winning photography, masterpiece, rim lit</string>\r\n  <string" +
+            ">Styles/Artistic Portrait=a vibrant professional studio portrait photography of " +
+            "a young, attractive, friendly, casual, delightful, intricate, gorgeous, piercing" +
+            " eyes, nouveau, curated collection, annie leibovitz, nikon, award winning, breat" +
+            "htaking, groundbreaking, superb, outstanding, lensculture portrait awards, photo" +
+            "shopped, dramatic lighting, 8k</string>\r\n  <string>Styles/Rendered Portrait=gorg" +
+            "eous young by window, soft, octane render, unreal engine, photograph, realistic " +
+            "skin texture, photorealistic, hyper realism, highly detailed, 85mm portrait phot" +
+            "ography, award winning, hard rim lighting photography</string>\r\n  <string>Styles" +
+            "/Stary Portrait=a portrait with a luminous clothing, eyes shut, mouth closed, wi" +
+            "nd, sky, clouds, the moon, moonlight, stars, universe, fireflies, butterflies, l" +
+            "ights, lens flares effects, swirly bokeh, brush effect, In style of Yoji Shinkaw" +
+            "a, Jackson Pollock, wojtek fus, by Makoto Shinkai, concept art, celestial, amazi" +
+            "ng, astonishing, wonderful, beautiful, highly detailed, centered</string>\r\n  <st" +
+            "ring>Styles/Photobashing=photobashing</string>\r\n  <string>Styles/Algorithmic Art" +
+            "=algorithmic art</string>\r\n  <string>Styles/Stars and Galaxies=composed of billi" +
+            "ons of stars, digital art</string>\r\n  <string>Styles/Cartoon dramatic style=digi" +
+            "tal art, 2.5D style</string>\r\n  <string>Styles/Made of smoke=made of very detail" +
+            "ed curling wispy glowing multicolored smoke, digital art, volumetric, 3D render," +
+            " Octane render</string>\r\n  <string>Styles/Detailed Particles=particle explosion," +
+            " digital art</string>\r\n  <string>Styles/Mixed Media=mixed media</string>\r\n  <str" +
+            "ing>Cinematography/Low Angle=photograph, taken from a low angle</string>\r\n  <str" +
+            "ing>Cinematography/Over the shoulder=photograph, over-the-shoulder</string>\r\n  <" +
+            "string>Cinematography/Drone footage=photograph taken from a drone</string>\r\n</Ar" +
+            "rayOfString>")]
         public global::System.Collections.Specialized.StringCollection PromptHelperPresets {
             get {
                 return ((global::System.Collections.Specialized.StringCollection)(this["PromptHelperPresets"]));
