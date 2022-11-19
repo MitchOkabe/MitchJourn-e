@@ -24,13 +24,21 @@ using static System.Net.WebRequestMethods;
 using File = System.IO.File;
 using MetadataExtractor;
 using Directory = System.IO.Directory;
+using System.Globalization;
+using System.Drawing;
+using static System.Net.Mime.MediaTypeNames;
+using Image = System.Windows.Controls.Image;
+using Color = System.Windows.Media.Color;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using MitchJourn_e.Windows;
+using Clipboard = System.Windows.Clipboard;
 
 namespace MitchJourn_e
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : System.Windows.Window
     {
         System.Timers.Timer timer;
         string lastImg = "";
@@ -41,7 +49,10 @@ namespace MitchJourn_e
         public StreamWriter textWriter;
         bool isFirstRun = true;
         bool firstUpscaleRequest = false;
-        
+        Random rand = new Random();
+        string globalPrompt = "";
+        string globalNegativePrompt = "";
+        bool windowClosing = false;
 
         public MainWindow()
         {
@@ -91,8 +102,9 @@ namespace MitchJourn_e
                 string negativePrompt = CleanPrompt(txt_NegativePrompt.Text);
                 string promptSettings = "";
                 string imagePrompt = "";
+                string seamlessTile = "";
 
-                string seed = (string)Settings.Default["Seed"];
+                string seed = txt_Seed.Text;
                 string uprez = "";
                 string useFullPrecision = "";
 
@@ -134,6 +146,12 @@ namespace MitchJourn_e
                         imagePrompt += $" --strength {1 - imageWeight}";
                     }
                 }
+
+                // SeamlessTile
+                if ((bool)chk_seamlessTile.IsChecked)
+                {
+                    seamlessTile = "--seamless";
+                }
                 
                 promptSettings = "" +
                         $"-W {Settings.Default["Width"]} " +
@@ -144,7 +162,9 @@ namespace MitchJourn_e
                         $"-n {Settings.Default["Iter"]} " +
                         $"{imagePrompt} " +
                         $"{uprez} "+
-                        $"--sampler {Settings.Default["SamplerType"]}";
+                        $"--sampler {Settings.Default["SamplerType"]} " +
+                        $"--threshold {txt_Limiter.Text} --perlin {txt_Noise.Text} " +
+                        $"{seamlessTile}";
 
                 // Full Precision
                 if (Settings.Default["UseFullPrecision"].ToString() == "1")
@@ -193,7 +213,7 @@ namespace MitchJourn_e
                     else
                     {
                         
-                        process.StandardInput.WriteLine($"{prompt} [{negativePrompt}] {promptHelper} {promptSettings}");
+                        process.StandardInput.WriteLine($"{globalPrompt} {prompt} {promptHelper} [{globalNegativePrompt}] [{negativePrompt}] {promptSettings}");
                         
                     }
                 }
@@ -205,7 +225,7 @@ namespace MitchJourn_e
                     }
                     else
                     {
-                        process.StandardInput.WriteLine($"{prompt} [{negativePrompt}] {promptHelper} {promptSettings}");
+                        process.StandardInput.WriteLine($"{globalPrompt} {prompt} {promptHelper} [{globalNegativePrompt}] [{negativePrompt}] {promptSettings}");
                     }
                 }
 
@@ -238,153 +258,167 @@ namespace MitchJourn_e
         /// </summary>
         void DisplayImage(string promptRAW = "", bool hasImagePrompt = false)
         {
-            string imageDirectory = $"{Settings.Default["MainPath"]}\\outputs\\img-samples\\";
-
-            if (Directory.Exists(imageDirectory))
+            if (!windowClosing)
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(imageDirectory);
+                string imageDirectory = $"{Settings.Default["MainPath"]}\\outputs\\img-samples\\";
 
-                FileInfo[] Files = directoryInfo.GetFiles("*.png"); //Getting Text files
-
-                if (Files.Length > 0)
+                if (Directory.Exists(imageDirectory))
                 {
-                    Application.Current.Dispatcher.Invoke((Action)delegate {
-                        try
+                    DirectoryInfo directoryInfo = new DirectoryInfo(imageDirectory);
+
+                    FileInfo[] Files = directoryInfo.GetFiles("*.png"); //Getting Text files
+
+                    if (Files.Length > 0)
+                    {
+                        Application.Current.Dispatcher.Invoke((Action)delegate
                         {
-                            // Check if there is a new image in the folder
-                            string filePath = Files.Last().FullName;
-                            if (filePath != lastImg)
+                            try
                             {
-                                // Don't display an image from last boot
-                                if (lastImg == "")
+                                // Check if there is a new image in the folder
+                                string filePath = Files.Last().FullName;
+                                if (filePath != lastImg)
                                 {
-                                    lastImg = filePath;
-                                    return;
-                                }
-
-                                // bool upscaleRequested is true if the chk_HighRes is checked
-                                bool.TryParse(chk_HighRes.IsChecked.ToString(), out bool upscaleRequested);
-                                
-                                // if upscale has been requested and an image shows up in the folder
-                                // and that image is too small to be an upscale, don't display it
-                                if (upscaleRequested || firstUpscaleRequest)
-                                {
-                                    long fileSizeKB = 0;
-
-                                    if (File.Exists(filePath))
+                                    // Don't display an image from last boot
+                                    if (lastImg == "")
                                     {
-                                        fileSizeKB = new FileInfo(filePath).Length / 1024;
-                                    }
-
-                                    if (fileSizeKB < 725)
-                                    {
+                                        lastImg = filePath;
                                         return;
                                     }
-                                    firstUpscaleRequest = false;
-                                }
 
-                                // create a bitmap from the image file
-                                BitmapImage myBitmapImage = new BitmapImage();
-                                myBitmapImage.BeginInit();
-                                myBitmapImage.UriSource = new Uri(filePath);
-                                myBitmapImage.EndInit();
-                               
-                                // Create the image using the bitmap
-                                Image output = new Image
-                                {
-                                    Margin = new Thickness(8),
-                                    Stretch = System.Windows.Media.Stretch.Uniform,
-                                    Source = myBitmapImage
-                                };
-                                scroll_Images.MaxHeight = myBitmapImage.Height + 50;
+                                    // bool upscaleRequested is true if the chk_HighRes is checked
+                                    bool.TryParse(chk_HighRes.IsChecked.ToString(), out bool upscaleRequested);
 
-                                //ImageBrush imageBrush = new ImageBrush
-                                //{
-                                //    ImageSource = myBitmapImage,
-                                //    Stretch = System.Windows.Media.Stretch.UniformToFill
-                                //};
+                                    // if upscale has been requested and an image shows up in the folder
+                                    // and that image is too small to be an upscale, don't display it
+                                    if (upscaleRequested || firstUpscaleRequest)
+                                    {
+                                        long fileSizeKB = 0;
 
-                                bool upscalledImage = false;
+                                        if (File.Exists(filePath))
+                                        {
+                                            fileSizeKB = new FileInfo(filePath).Length / 1024;
+                                        }
 
-                                // Create the renderedImage object and store useful metadata. This could be embeded in the png?
-                                RenderedImage renderedImage = new RenderedImage().CreateRenderedImage(output, filePath, txt_Prompt.Text, txt_Scale.Text, txt_Seed.Text,
-                                    txt_Steps.Text, myBitmapImage.Width.ToString(), myBitmapImage.Height.ToString(), txt_ImagePrompt.Text, txt_ImagePromptWeight.Text, upscalledImage);
+                                        if (fileSizeKB < 725)
+                                        {
+                                            return;
+                                        }
+                                        firstUpscaleRequest = false;
+                                    }
 
-                                output.Tag = renderedImage;
+                                    // create a bitmap from the image file
+                                    BitmapImage myBitmapImage = new BitmapImage();
+                                    myBitmapImage.BeginInit();
+                                    myBitmapImage.UriSource = new Uri(filePath);
+                                    myBitmapImage.EndInit();
+
+                                    // Create the image using the bitmap
+                                    Image output = new Image
+                                    {
+                                        Margin = new Thickness(8),
+                                        Stretch = System.Windows.Media.Stretch.Uniform,
+                                        Source = myBitmapImage
+                                    };
+                                    scroll_Images.MaxHeight = myBitmapImage.Height + 50;
+
+                                    //ImageBrush imageBrush = new ImageBrush
+                                    //{
+                                    //    ImageSource = myBitmapImage,
+                                    //    Stretch = System.Windows.Media.Stretch.UniformToFill
+                                    //};
+
+                                    bool upscalledImage = false;
+
+                                    // Create the renderedImage object and store useful metadata. This could be embeded in the png?
+                                    RenderedImage renderedImage = new RenderedImage().CreateRenderedImage(output, filePath, txt_Prompt.Text, txt_Scale.Text, txt_Seed.Text,
+                                        txt_Steps.Text, myBitmapImage.Width.ToString(), myBitmapImage.Height.ToString(), txt_ImagePrompt.Text, txt_ImagePromptWeight.Text, upscalledImage);
+
+                                    output.Tag = renderedImage;
 
 
-                                // Add the right click menu to the image
-                                ContextMenu rightClickMenu = new ContextMenu();
-                                
-                                output.ContextMenu = rightClickMenu;
+                                    // Add the right click menu to the image
+                                    ContextMenu rightClickMenu = new ContextMenu();
 
-                                // Create Variation
-                                MenuItem menuItemCreateVariation = new MenuItem();
-                                menuItemCreateVariation.Header = "Create Variations";
-                                menuItemCreateVariation.Tag = renderedImage;
-                                menuItemCreateVariation.Click += MenuItemCreateVariation_Click;
-                                rightClickMenu.Items.Add(menuItemCreateVariation);
+                                    output.ContextMenu = rightClickMenu;
 
-                                // Save As
-                                MenuItem menuItemSaveAs = new MenuItem();
-                                menuItemSaveAs.Header = "Save As";
-                                menuItemSaveAs.Tag = renderedImage.filePath;
-                                menuItemSaveAs.Click += MenuItemSaveAs_Click;
-                                rightClickMenu.Items.Add(menuItemSaveAs);
+                                    // Create Variation
+                                    MenuItem menuItemCreateVariation = new MenuItem();
+                                    menuItemCreateVariation.Header = "Create Variations";
+                                    menuItemCreateVariation.Tag = renderedImage;
+                                    menuItemCreateVariation.Click += MenuItemCreateVariation_Click;
+                                    rightClickMenu.Items.Add(menuItemCreateVariation);
 
-                                // Open Containing Folder
-                                MenuItem menuItemOpenContainingFolder = new MenuItem();
-                                menuItemOpenContainingFolder.Header = "Open Containing Folder";
-                                menuItemOpenContainingFolder.Tag = renderedImage.filePath;
-                                menuItemOpenContainingFolder.Click += MenuItemOpenContainingFolder_Click;
-                                rightClickMenu.Items.Add(menuItemOpenContainingFolder);
+                                    // Recreate prompt
+                                    MenuItem menuItemRecreatePrompt = new MenuItem();
+                                    menuItemRecreatePrompt.Header = "Recreate Prompt";
+                                    menuItemRecreatePrompt.Tag = renderedImage;
+                                    menuItemRecreatePrompt.Click += MenuItemRecreatePrompt_Click;
+                                    rightClickMenu.Items.Add(menuItemRecreatePrompt);
 
-                                // Recreate prompt
-                                MenuItem menuItemRecreatePrompt = new MenuItem();
-                                menuItemRecreatePrompt.Header = "Recreate Prompt";
-                                menuItemRecreatePrompt.Tag = renderedImage;
-                                menuItemRecreatePrompt.Click += MenuItemRecreatePrompt_Click;
-                                rightClickMenu.Items.Add(menuItemRecreatePrompt);
+                                    // ----
+                                    rightClickMenu.Items.Add(new Separator());
 
-                                // ----
-                                rightClickMenu.Items.Add(new Separator());
+                                    // Save As
+                                    MenuItem menuItemSaveAs = new MenuItem();
+                                    menuItemSaveAs.Header = "Save As";
+                                    menuItemSaveAs.Tag = renderedImage.filePath;
+                                    menuItemSaveAs.Click += MenuItemSaveAs_Click;
+                                    rightClickMenu.Items.Add(menuItemSaveAs);
 
-                                // Delete
-                                MenuItem menuItemDelete = new MenuItem();
-                                menuItemDelete.Header = "Delete";
-                                menuItemDelete.Tag = renderedImage;
-                                menuItemDelete.Click += MenuItemDelete_Click;
-                                rightClickMenu.Items.Add(menuItemDelete);
+                                    // Get File Path
+                                    MenuItem menuItemGetFilePath = new MenuItem();
+                                    menuItemGetFilePath.Header = "Get File Path";
+                                    menuItemGetFilePath.Tag = renderedImage.filePath;
+                                    menuItemGetFilePath.Click += MenuItemGetFilePath_Click;
+                                    rightClickMenu.Items.Add(menuItemGetFilePath);
 
-                                // Add the image to the top of the image stack
-                                stack_Images.Items.Insert(0, output);
-                                lastImg = filePath;
+                                    // Open Containing Folder
+                                    MenuItem menuItemOpenContainingFolder = new MenuItem();
+                                    menuItemOpenContainingFolder.Header = "Open Containing Folder";
+                                    menuItemOpenContainingFolder.Tag = renderedImage.filePath;
+                                    menuItemOpenContainingFolder.Click += MenuItemOpenContainingFolder_Click;
+                                    rightClickMenu.Items.Add(menuItemOpenContainingFolder);
 
-                                // If trying to create variations of upscalled images (too large to recreate image size)
-                                if (lbl_Status.Content.ToString() != "Can't set upscaled image as image source, creating downrezed version instead...")
-                                {
-                                    lbl_Status.Content = $"Created image from seed {txt_Seed.Text}";
-                                }
-                                else
-                                {
-                                    lbl_Status.Content = "Created downrezed version.";
-                                }
+                                    // ----
+                                    rightClickMenu.Items.Add(new Separator());
 
-                                // sequential prompting
-                                if ((bool)chk_SequencialPrompting.IsChecked)
-                                {
-                                    txt_ImagePrompt.Text = renderedImage.filePath;
-                                }
+                                    // Delete
+                                    MenuItem menuItemDelete = new MenuItem();
+                                    menuItemDelete.Header = "Delete";
+                                    menuItemDelete.Tag = renderedImage;
+                                    menuItemDelete.Click += MenuItemDelete_Click;
+                                    rightClickMenu.Items.Add(menuItemDelete);
 
-                                // continuous prompting
-                                if ((bool)chk_ContinuouslyPrompt.IsChecked)
-                                {
-                                    StartRendering();
+                                    // Add the image to the top of the image stack
+                                    stack_Images.Items.Insert(0, output);
+                                    lastImg = filePath;
+
+                                    // If trying to create variations of upscalled images (too large to recreate image size)
+                                    if (lbl_Status.Content.ToString() != "Can't set upscaled image as image source, creating downrezed version instead...")
+                                    {
+                                        lbl_Status.Content = $"Created image from seed {txt_Seed.Text}";
+                                    }
+                                    else
+                                    {
+                                        lbl_Status.Content = "Created downrezed version.";
+                                    }
+
+                                    // sequential prompting
+                                    if ((bool)chk_SequencialPrompting.IsChecked)
+                                    {
+                                        txt_ImagePrompt.Text = renderedImage.filePath;
+                                    }
+
+                                    // continuous prompting
+                                    if ((bool)chk_ContinuouslyPrompt.IsChecked)
+                                    {
+                                        StartRendering();
+                                    }
                                 }
                             }
-                        }
-                        catch { return; }
-                    });
+                            catch { return; }
+                        });
+                    }
                 }
             }
         }
@@ -499,85 +533,6 @@ namespace MitchJourn_e
             }
             catch { return; }
         }
-
-        ///// <summary>
-        ///// Creates the menu button with words to add to the prompt box
-        ///// </summary>
-        //private void InitializePromptHelper()
-        //{
-        //    string[] mainMenuItems = { "Artists", "Styles", "Sources", "Effects", "Mediums" };
-        //    string[] artists = { "greg rutkowski", "wlop", "sung choi", "ilya kuvshinov", "andreas rocha", "lois van baarle", "rossdraws", "Rembrandt", "marc simonetti", "Luis Royo", "beksiński", "hieronymus bosch", "thomas kinkade",
-        //        "vincent van gogh", "leonid afremov", "claude monet", "edward hopper", "norman rockwell", "william-adolphe bouguereau", "albert bierstadt", "john singer sargent", "pierre-auguste renoir"};
-        //    string[] styles = { "atmospheric", "hyperdetailed", "hd", "magical world", "cinematic lighting", "concept art", "logo", "editorial photography", "wildlife photography", "technicolour", "anaglyph" };
-        //    string[] sources = { "artstation", "deviantart", "behance", "cgsociety", "dribble", "flickr", "instagram", "pexels", "pinterest", "pixabay", "pixiv", "polycount", "reddit", "shutterstock", "tumblr", "unsplash", "zbrush central" };
-        //    string[] effects = { "post processing", "cgi" , "chromatic aberration", "anaglyph", "cropped", "glowing edges", "glow effect", "bokeh", "dramatic", "glamor shot", "colourful", "complimentary-colours", "golden hour", "dark mood",
-        //        "multiverse", "soft lighting", "hard lighting", "volumetric", "lumen global illumination", "beautiful lighting", "octane render" };
-        //    string[] mediums = { "photo realistic", "graphic novel", "fountain pen", "pastel art", "fine art", "acrylic paint", "oil paint", "watercolour", "digital art", "magazine", "comic book", "pokemon card", "puzzle" };
-
-        //    foreach (string mainMenuItemName in mainMenuItems)
-        //    {
-        //        MenuItem mainMenuItem = new MenuItem();
-        //        mainMenuItem.Header = mainMenuItemName;
-        //        mainMenuItem.StaysOpenOnClick = true;
-        //        menuItem_PromptHelper.Items.Add(mainMenuItem);
-
-        //        if (mainMenuItemName == "Artists")
-        //        {
-        //            foreach (string artistsMenuItemName in artists)
-        //            {
-        //                MenuItem ArtistsMenuItem = new MenuItem();
-        //                ArtistsMenuItem.Header = artistsMenuItemName;
-        //                ArtistsMenuItem.Click += PromptHelperMenuItem_Click;
-        //                ArtistsMenuItem.StaysOpenOnClick = true;
-        //                mainMenuItem.Items.Add(ArtistsMenuItem);
-        //            }
-        //        }
-        //        else if (mainMenuItemName == "Styles")
-        //        {
-        //            foreach (string stylesMenuItemName in styles)
-        //            {
-        //                MenuItem stylesMenuItem = new MenuItem();
-        //                stylesMenuItem.Header = stylesMenuItemName;
-        //                stylesMenuItem.Click += PromptHelperMenuItem_Click;
-        //                stylesMenuItem.StaysOpenOnClick = true;
-        //                mainMenuItem.Items.Add(stylesMenuItem);
-        //            }
-        //        }
-        //        else if (mainMenuItemName == "Sources")
-        //        {
-        //            foreach (string sourcesMenuItemName in sources)
-        //            {
-        //                MenuItem sourcesMenuItem = new MenuItem();
-        //                sourcesMenuItem.Header = sourcesMenuItemName;
-        //                sourcesMenuItem.Click += PromptHelperMenuItem_Click;
-        //                sourcesMenuItem.StaysOpenOnClick = true;
-        //                mainMenuItem.Items.Add(sourcesMenuItem);
-        //            }
-        //        }
-        //        else if (mainMenuItemName == "Effects")
-        //        {
-        //            foreach (string effectsMenuItemName in effects)
-        //            {
-        //                MenuItem effectsMenuItem = new MenuItem();
-        //                effectsMenuItem.Header = effectsMenuItemName;
-        //                effectsMenuItem.Click += PromptHelperMenuItem_Click;
-        //                effectsMenuItem.StaysOpenOnClick = true;
-        //                mainMenuItem.Items.Add(effectsMenuItem);
-        //            }
-        //        }
-        //        else if (mainMenuItemName == "Mediums")
-        //        {
-        //            foreach (string mediumsMenuItemName in mediums)
-        //            {
-        //                MenuItem mediumsMenuItem = new MenuItem();
-        //                mediumsMenuItem.Header = mediumsMenuItemName;
-        //                mediumsMenuItem.Click += PromptHelperMenuItem_Click;
-        //                mediumsMenuItem.StaysOpenOnClick = true;
-        //                mainMenuItem.Items.Add(mediumsMenuItem);
-        //            }
-        //        }
-        //    }
-        //}
 
         /// <summary>
         /// Removes characters from the prompt that would disallow the generation to run
@@ -787,29 +742,28 @@ namespace MitchJourn_e
             txt_Prompt.Text = renderedImage.prompt;
             txt_Seed.Text = renderedImage.seed;
             txt_ImagePromptWeight.Text = renderedImage.imagePromptWeight;
+            txt_ImagePrompt.Text = renderedImage.filePath;
+            txt_Width.Text = renderedImage.width;
+            txt_Height.Text = renderedImage.height;
 
-            if (int.Parse(renderedImage.width) > 640 || int.Parse(renderedImage.height) > 576)
+            if (lbl_Status.Content.ToString() == "Created downrezed version.")
             {
-                chk_HighRes.IsChecked = false;
-                chk_IncrementSeed.IsChecked = false;
-                //txt_Seed.Text = image.seed;
-                StartRendering();
-                lbl_Status.Content = "Can't set upscaled image as image source, creating downrezed version instead...";
+                chk_IncrementSeed.IsChecked = true;
+                chk_HighRes.IsChecked = true;
             }
-            else
+
+            if (!(bool)chk_ContinuouslyPrompt.IsChecked)
             {
-                txt_ImagePrompt.Text = renderedImage.filePath;
-                txt_Width.Text = renderedImage.width;
-                txt_Height.Text = renderedImage.height;
-
-                if (lbl_Status.Content.ToString() == "Created downrezed version.")
-                {
-                    chk_IncrementSeed.IsChecked = true;
-                    chk_HighRes.IsChecked = true;
-                }
-
+                chk_ContinuouslyPrompt.IsChecked = true;
                 StartRendering();
             }
+            
+        }
+
+        private void MenuItemGetFilePath_Click(object sender, RoutedEventArgs e)
+        {
+            string renderedImage = ((MenuItem)sender).Tag.ToString();
+            Clipboard.SetText(renderedImage);
         }
 
         /// <summary>
@@ -936,6 +890,8 @@ namespace MitchJourn_e
         private void InitializeSettings()
         {
             List<TextBox> textBoxes = new List<TextBox>();
+            TextBox[] otherTextBoxes = new TextBox[] { txt_Scale, txt_Steps, txt_ImagePromptWeight };
+            Slider[] otherTextBoxesSliders = new Slider[] { slider_PromptWeight, slider_Steps, slider_imagePromptWeight };
 
             // Get all the settings text boxes
             foreach (Control control in stack_settings.Children)
@@ -959,6 +915,20 @@ namespace MitchJourn_e
                         }
                     }
                 }
+            }
+
+            for (int i = 0; i < otherTextBoxes.Length; i++)
+            {
+                string value = Settings.Default[otherTextBoxes[i].Tag.ToString()].ToString();
+                otherTextBoxes[i].Text = value;
+                otherTextBoxesSliders[i].Value = double.Parse(value);
+            }
+
+            txt_SortItems.Text = Settings.Default["SortList"].ToString();
+
+            if ((bool)Settings.Default["EnableSortList"])
+            {
+                chk_SortOutputImagesByPrompt.IsChecked = true;
             }
         }
 
@@ -1225,6 +1195,120 @@ namespace MitchJourn_e
             }
             catch { }
             txt_ImagePrompt.Text = lastImageFilePath;
+        }
+
+        private void myCanvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            //Render();
+        }
+
+        private void btn_StartInPainting_Click(object sender, RoutedEventArgs e)
+        {
+            //Render();
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            txt_Scale.Text = Math.Round(slider_PromptWeight.Value, 3).ToString();
+        }
+
+        private void slider_Steps_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            txt_Steps.Text = Math.Round(slider_Steps.Value, 3).ToString();
+        }
+
+        private void slider_Creativity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            txt_Creativity.Text = Math.Round(slider_Creativity.Value, 3).ToString();
+        }
+
+        /// <summary>
+        /// Attempts to change settings to make the generation more creative or realistic (similar to midjourney)
+        /// </summary>
+        private void txt_Creativity_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            globalPrompt = "";
+            globalNegativePrompt = "";
+            try
+            {
+                if (txt_Creativity != null && txt_Scale != null & txt_Limiter != null)
+                {
+                    double creativity = double.Parse(txt_Creativity.Text);
+                    double scale = double.Parse(txt_Scale.Text);
+                    double limiter = double.Parse(txt_Limiter.Text);
+                    double newScale = 0;
+                    double newLimiter = 0;
+                    double newNoise = 0;
+                    if (creativity > 7)
+                    {
+                        newScale = Math.Max(creativity * 1.5, 5);
+                        newNoise = Math.Max(6 - (10 - creativity * 0.5), 0);
+                        globalPrompt = "(masterpiece intricate amazing awesome splash-art award-winning hyperdetailed trending work-of-art incredible perfect artistic creative)";
+                        if (creativity >= 8)
+                        {
+                            globalPrompt += "+";
+                            newScale -= 4;
+                        }
+                        else if (creativity >= 9)
+                        {
+                            globalPrompt += "++";
+                            newScale -= 5;
+                        }
+                        else if (creativity >= 10)
+                        {
+                            globalPrompt += "+++";
+                            globalNegativePrompt += "(photograph ugly out of focus blurry grainy noisy text writing watermark logo oversaturation over saturation over shadow)+";
+                            newScale -= 6;
+                        }
+                    }
+                    else if (creativity >= 3)
+                    {
+                        newScale = Math.Max(creativity * 1.5, 5);
+                    }
+                    else
+                    {
+                        newScale = 3 * (3.1 - creativity) * 10;
+                        newLimiter = creativity * 0.75;
+                        newNoise = Math.Max((1 - creativity / 3) * 3, 0);
+                        globalPrompt = "(photography photo of a)";
+                        globalNegativePrompt = "(cartoon anime art painting)+";
+                        if (creativity <= 2.5)
+                        {
+                            globalPrompt += "++";
+                            globalNegativePrompt += "++";
+                        }
+                    }
+
+                    txt_Scale.Text = newScale.ToString();
+                    txt_Limiter.Text = newLimiter.ToString();
+                    txt_Noise.Text = newNoise.ToString();
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// When exiting the app. Used to prompt for image sorting
+        /// </summary>
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            StopRendering();
+            windowClosing = true;
+
+            if ((bool)chk_SortOutputImagesByPrompt.IsChecked)
+            {
+                if (MessageBox.Show("Start image output sorting?", "Bye!",
+                       (MessageBoxButton)MessageBoxButtons.YesNo) == MessageBoxResult.Yes)
+                {
+                    ImageSorter newWindow = new ImageSorter();
+                }
+            }
+        }
+
+        private void chk_SortOutputImagesByPrompt_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.Default["EnableSortList"] = (bool)chk_SortOutputImagesByPrompt.IsChecked;
+            Settings.Default.Save();
         }
 
         //private void btn_StartOutPainting_Click(object sender, RoutedEventArgs e)

@@ -5,10 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MitchJourn_e"
         mc:Ignorable="d"
-        Title="MitchJourn-E" Height="906" Width="746" KeyDown="Window_KeyDown">
+        Title="MitchJourn-E" Height="906" Width="746" KeyDown="Window_KeyDown" Closing="Window_Closing" Background="#FF4C4C4C">
     <StackPanel Margin="8">
-        <TabControl>
+        <TabControl Background="#FFCECECE">
             <TabItem Header="MitchJourn-E" >
+                <TabItem.Background>
+                    <LinearGradientBrush EndPoint="0,1">
+                        <GradientStop Color="#FFF0F0F0"/>
+                        <GradientStop Color="#FF797979" Offset="1"/>
+                    </LinearGradientBrush>
+                </TabItem.Background>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Prompt:" Padding="2" Margin="0" VerticalAlignment="Center"/>
@@ -44,8 +50,23 @@
                         <Label x:Name="lbl_Status" Content="Enter a prompt and press go!" FontFamily="OCR A Extended" VerticalContentAlignment="Center"/>
                     </StackPanel>
                     <Expander x:Name="expander_settings" Header="Settings">
-                        <Grid Height="211">
+                        <Grid Height="340">
                             <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Padding="2" Content="Propt Weight"/>
+                                    <TextBox x:Name="txt_Scale" Text="7.5" Margin="4,0,0,0" Width="32" Tag="Scale" TextChanged="SettingsTextChanged"/>
+                                </StackPanel>
+                                <Slider x:Name="slider_PromptWeight" Margin="2" Maximum="20" LargeChange="0.5" SmallChange="0.1" TickFrequency="0.1" Value="7.5" Minimum="1" IsSnapToTickEnabled="True" ValueChanged="Slider_ValueChanged"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Padding="2" Content="Generation Steps"/>
+                                    <TextBox x:Name="txt_Steps" Text="50" Margin="4,0,0,0" Width="32" Tag="Steps" TextChanged="SettingsTextChanged"/>
+                                </StackPanel>
+                                <Slider x:Name="slider_Steps" Margin="2" Maximum="200" LargeChange="10" SmallChange="1" TickFrequency="1" Value="50" Minimum="10" IsSnapToTickEnabled="True" ValueChanged="slider_Steps_ValueChanged"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Padding="2" Content="Creativity"/>
+                                    <TextBox x:Name="txt_Creativity" Text="5" Margin="4,0,0,0" Width="32" Tag="Steps" TextChanged="txt_Creativity_TextChanged"/>
+                                </StackPanel>
+                                <Slider x:Name="slider_Creativity" Margin="2" Maximum="10" LargeChange="1" SmallChange="0.1" TickFrequency="0.1" Value="5" Minimum="2.2" IsSnapToTickEnabled="True" ValueChanged="slider_Creativity_ValueChanged"/>
                                 <Label Content="Prompt helper text" Padding="2"/>
                                 <StackPanel Orientation="Horizontal" >
                                     <TextBox x:Name="txt_PromptHelper" FontSize="10" Padding="2" TabIndex="0" SpellCheck.IsEnabled="True" Width="460" Height="22"/>
@@ -66,9 +87,14 @@
                                     <Label Content="Image prompt weight:" Padding="2"/>
                                     <TextBox x:Name="txt_ImagePromptWeight" FontSize="12" Text=".35" Padding="2" Margin="4,0,0,0" Tag="ImagePromptWeight" TextChanged="SettingsTextChanged"/>
                                 </StackPanel>
-                                <Slider x:Name="slider_imagePromptWeight" Margin="2" Maximum="1" LargeChange="0.1" SmallChange="0.05" TickFrequency="0.05" Value="0.35" Minimum="0.05" ValueChanged="slider_imagePromptWeight_ValueChanged" IsSnapToTickEnabled="True"/>
+                                <Slider x:Name="slider_imagePromptWeight" Margin="2" Maximum="1" LargeChange="0.05" SmallChange="0.01" TickFrequency="0.01" Value="0.25" Minimum="0.01" ValueChanged="slider_imagePromptWeight_ValueChanged" IsSnapToTickEnabled="True"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <CheckBox x:Name="chk_AlternateToken" Content="Use alternative prompt tokens" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="chk_AlternateToken" Content="Use alternative prompt tokens." VerticalAlignment="Center" Margin="4"/>
+                                    <Label Content="Add noise (0.1-1)" Margin="4"/>
+                                    <TextBox x:Name="txt_Noise" Text="0" Width="24" Margin="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <Label Content="Latent Limiter (1-100)" Margin="4"/>
+                                    <TextBox x:Name="txt_Limiter" Text="0" Width="24" Margin="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <CheckBox x:Name="chk_seamlessTile" Content="Seamless Tile" VerticalAlignment="Center" Margin="4"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
@@ -89,14 +115,10 @@
                         <TextBox x:Name="txt_Width" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Width" TextChanged="SettingsTextChanged"/>
                         <Label Content="Image height:"/>
                         <TextBox x:Name="txt_Height" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Height" TextChanged="SettingsTextChanged"/>
-                        <Label Content="Diffusion steps (recomended range 10-200)"/>
-                        <TextBox x:Name="txt_Steps" FontSize="16" Padding="2" Margin="6" Text="33" Tag="Steps" TextChanged="SettingsTextChanged"/>
                         <Label Content="Seed (use 'random' for a random seed)"/>
                         <TextBox x:Name="txt_Seed" FontSize="16" Padding="2" Margin="6" Text="1" Tag="Seed" TextChanged="SettingsTextChanged"/>
                         <Label Content="Automatically increment seed number for each go" Visibility="Collapsed"/>
                         <TextBox x:Name="txt_NextSeed" FontSize="16" Padding="2" Margin="6" Text="0" Tag="NextSeed" TextChanged="SettingsTextChanged" Visibility="Collapsed"/>
-                        <Label Content="Propt weight (unconditional guidance scale, recomended range: 2-10)"/>
-                        <TextBox x:Name="txt_Scale" FontSize="16" Padding="2" Margin="6" Text="5.0" Tag="Scale" TextChanged="SettingsTextChanged"/>
                         <Label Content="Use full precision (1 or 0) (must stop and start to apply)"/>
                         <TextBox x:Name="txt_UsefullPrecision" FontSize="16" Padding="2" Margin="6" Text="1" Tag="UseFullPrecision" TextChanged="SettingsTextChanged"/>
                         <Label Content="Enable welcome prompt on startup (1 or 0)"/>
@@ -144,33 +166,72 @@
             </TabItem>
             <TabItem Header="Experiments">
                 <ScrollViewer>
-                    <StackPanel>
-                        <Label Content="Prompt Folder" FontSize="20"/>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBox x:Name="txt_PromptFolder" FontSize="16" Padding="2" Margin="6"  Width="380"/>
-                            <Button x:Name="btn_BrowseFolder" Content="Browse Folder" Margin="4" Padding="4" Click="btn_BrowseFolder_Click"/>
-                        </StackPanel>
-                        <Button x:Name="btn_StartPromptFolder" Content="Start Prompt Folder" Width="150" Margin="4" Padding="4" Click="btn_StartPromptFolder_Click"/>
-                        
-                        <Label Content="Out Painting" FontSize="20"/>
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Image path:"/>
-                            <TextBox x:Name="txt_OutPaintImage" FontSize="16" Padding="2" Margin="6"  Width="380"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="direction"></Label>
-                            <TextBox x:Name="txt_OutPaintDirection" FontSize="16" Padding="2" Margin="6"  Width="380"/>
-                            <Label Content="example: top 64 right 64"/>
-                        </StackPanel>
-                        <CheckBox x:Name="chk_OutPainting" Content="Start Outpainting"/>
+                    <StackPanel Height="842">
+                        <Border  Background="#FFF3F3F3">
+                            <StackPanel>
+                                <Label Content="Prompt Folder" FontSize="20"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox x:Name="txt_PromptFolder" FontSize="16" Padding="2" Margin="6"  Width="380"/>
+                                    <Button x:Name="btn_BrowseFolder" Content="Browse Folder" Margin="4" Padding="4" Click="btn_BrowseFolder_Click"/>
+                                </StackPanel>
+                                <Button x:Name="btn_StartPromptFolder" Content="Start Prompt Folder" Width="150" Margin="4" Padding="4" Click="btn_StartPromptFolder_Click"/>
+                            </StackPanel>
+                        </Border>
 
-                        <Label Content="Metadata Extractor" FontSize="20"/>
-                        <Label Content="Enter the file path of an image:"/>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBox x:Name="txt_ImagePathMetaData" FontSize="16" Padding="2" Margin="6"  Width="380"/>
-                        </StackPanel>
-                        <Button x:Name="btn_MetadataExtractor" Content="Get Metadata" Width="150" Margin="4" Padding="4" Click="btn_MetadataExtractor_Click"/>
-                        <TextBox x:Name="txt_extractedMetadata" />
+                        <Border  Background="#FFEAEAEA">
+                            <StackPanel>
+                                <Label Content="Out Painting" FontSize="20"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Image path:"/>
+                                    <TextBox x:Name="txt_OutPaintImage" FontSize="16" Padding="2" Margin="6"  Width="380"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="direction"></Label>
+                                    <TextBox x:Name="txt_OutPaintDirection" FontSize="16" Padding="2" Margin="6"  Width="380"/>
+                                    <Label Content="example: top 64 right 64"/>
+                                </StackPanel>
+                                <CheckBox x:Name="chk_OutPainting" Content="Start Outpainting"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border  Background="#FFF3F3F3">
+                            <StackPanel>
+                                <Label Content="Metadata Extractor" FontSize="20"/>
+                                <Label Content="Enter the file path of an image:"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox x:Name="txt_ImagePathMetaData" FontSize="16" Padding="2" Margin="6"  Width="380"/>
+                                </StackPanel>
+                                <Button x:Name="btn_MetadataExtractor" Content="Get Metadata" Width="150" Margin="4" Padding="4" Click="btn_MetadataExtractor_Click"/>
+                                <TextBox x:Name="txt_extractedMetadata" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border  Background="#FFEAEAEA">
+                            <StackPanel>
+                                <Label Content="In Painting" FontSize="20"/>
+                                <Label Content="Source:"/>
+                                <TextBox x:Name="txt_inPaintingSource"/>
+                                <Button x:Name="btn_StartInPainting" Content="Start In Painting" Click="btn_StartInPainting_Click"/>
+                                <Canvas Name="myCanvas" MouseDown="myCanvas_MouseDown">
+                                    <Image Name="img_inPainting" MinHeight="100" MinWidth="100"/>
+                                </Canvas>
+                            </StackPanel>
+                        </Border>
+                        
+                        <Border  Background="#FFF3F3F3">
+                            <StackPanel>
+                                <Label Content="Sort Output By Prompt" FontSize="20"/>
+                                <Label Content="Sort into folders by these keywords (separated by comma)"/>
+                                <TextBox x:Name="txt_SortItems" Text="Welcome,Test" TextChanged="SettingsTextChanged" Tag="SortList"/>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox x:Name="chk_SortOutputImagesByPrompt" IsChecked="False" VerticalContentAlignment="Center" Click="chk_SortOutputImagesByPrompt_Click">
+                                        <Label Content="On close, put all the generated images into folders based on the prompt used."/>
+                                    </CheckBox>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

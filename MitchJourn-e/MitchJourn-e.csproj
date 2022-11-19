@@ -10,7 +10,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="DALL·E 2022-07-29 08.13.04 - a reflection of a tropical tree in a cup of coffee.png" />
+    <None Remove="DALL·E 2022-11-02 07.09.48 - beautiful british columbia landscape photography f_1.2 150mm 200iso 4k hyperdetailed hd 4k 8k sharp focus highly detailed octane render 4k unreal engi.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MetadataExtractor" Version="2.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="DALL·E 2022-07-29 08.13.04 - a reflection of a tropical tree in a cup of coffee.png" />
+    <Resource Include="DALL·E 2022-11-02 07.09.48 - beautiful british columbia landscape photography f_1.2 150mm 200iso 4k hyperdetailed hd 4k 8k sharp focus highly detailed octane render 4k unreal engi.png" />
   </ItemGroup>
 
   <ItemGroup>

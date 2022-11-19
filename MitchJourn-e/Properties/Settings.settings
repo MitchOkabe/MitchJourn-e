@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="ImagePromptWeight" Type="System.String" Scope="User">
-      <Value Profile="(Default)">.35</Value>
+      <Value Profile="(Default)">.25</Value>
     </Setting>
     <Setting Name="Iter" Type="System.String" Scope="User">
       <Value Profile="(Default)">1</Value>
@@ -15,13 +15,13 @@
       <Value Profile="(Default)">512</Value>
     </Setting>
     <Setting Name="Steps" Type="System.String" Scope="User">
-      <Value Profile="(Default)">25</Value>
+      <Value Profile="(Default)">50</Value>
     </Setting>
     <Setting Name="Seed" Type="System.String" Scope="User">
       <Value Profile="(Default)">1337</Value>
     </Setting>
     <Setting Name="Scale" Type="System.String" Scope="User">
-      <Value Profile="(Default)">5</Value>
+      <Value Profile="(Default)">7.5</Value>
     </Setting>
     <Setting Name="MainPath" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\InvokeAI-main</Value>
@@ -39,7 +39,7 @@
       <Value Profile="(Default)">models\ldm\stable-diffusion-v1\model.ckpt</Value>
     </Setting>
     <Setting Name="SlowMode" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="gfpganScale" Type="System.String" Scope="User">
       <Value Profile="(Default)">.5</Value>
@@ -77,8 +77,8 @@
     <Setting Name="PromptHelperPresets" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
-  &lt;string&gt;Artists/Greg Rutkowski (dark concept art)=greg rutkowski&lt;/string&gt;
-  &lt;string&gt;Artists/Thoma Kinkades (Flowery Landscape)=thomas kinkade&lt;/string&gt;
+  &lt;string&gt;Artists/Greg Rutkowski (dark concept art)=by greg rutkowski&lt;/string&gt;
+  &lt;string&gt;Artists/Thoma Kinkades (Flowery Landscape)=by thomas kinkade&lt;/string&gt;
   &lt;string&gt;Artists/John Berkey (Detailed paintings)=very detailed painting by John Berkey&lt;/string&gt;
   &lt;string&gt;Artists/William-Adolphe Bouguereau (Old style painting)=painting by William-Adolphe Bouguereau&lt;/string&gt;
   &lt;string&gt;Artists/Claude Monet (Noisy painting)=painting by Claude Monet&lt;/string&gt;
@@ -86,27 +86,105 @@
   &lt;string&gt;Artists/Stephan Martiniere (sci-fi concept art)=by Stephan Martiniere&lt;/string&gt;
   &lt;string&gt;Artists/Carl Barks (Cartoonist)=cartoon by Carl Barks&lt;/string&gt;
   &lt;string&gt;Artists/Peter Gric (Creepy drawings)=Peter Gric print&lt;/string&gt;
+  &lt;string&gt;Artists/Sung Choi (Sci-Fi fantacy concept art)=trending on artstation by sung choi&lt;/string&gt;
+  &lt;string&gt;Artists/Ilya Kuvshinov (Retro anime portraits)=by ilya kuvshinov&lt;/string&gt;
+  &lt;string&gt;Artists/Andreas Rocha (Fantacy landscapes)=by andreas rocha&lt;/string&gt;
+  &lt;string&gt;Artists/Lois Van Baarle (Paited portraits)=by lois van baarle&lt;/string&gt;
+  &lt;string&gt;Artists/Rossdraws (Digital art portraits)=by rossdraws&lt;/string&gt;
+  &lt;string&gt;Artists/Rembrandt (Baroque paintings)=by Rembrandt&lt;/string&gt;
+  &lt;string&gt;Artists/Marc Simonetti (Detailed dark digital landscapes)=highly detailed by marc simonetti&lt;/string&gt;
+  &lt;string&gt;Artists/Luis Royo (Creepy detailed portraits)=by Luis Royo&lt;/string&gt;
+  &lt;string&gt;Artists/Beksiński (Creepy abstract paintings)=by beksiński&lt;/string&gt;
+  &lt;string&gt;Artists/Hieronymus Bosch (Renaissance paintings)=by hieronymus bosch&lt;/string&gt;
   &lt;string&gt;Styles/Midjourney1=Splash art, light dust, magnificent, details, sharp focus, intricate, beautiful, triadic contrast colors, trending artstation, pixiv, digital art&lt;/string&gt;
-  &lt;string&gt;Styles/Midjourney2=trending Professional majestic oil painting of establishing shot by Ed Blinkey and Atey Ghailan and Studio Ghibli and Jeremy Mann and Greg Manchess and Antonio Moro volumetric lighting, dramatic lighting&lt;/string&gt;
+  &lt;string&gt;Styles/Midjourney2=Splash art light dust trending Professional majestic oil painting of establishing shot by Ed Blinkey and Atey Ghailan and Studio Ghibli and Jeremy Mann and Greg Manchess and Antonio Moro volumetric lighting, dramatic lighting&lt;/string&gt;
   &lt;string&gt;Styles/Photo=f/1.4 50mm 200iso 4k&lt;/string&gt;
+  &lt;string&gt;Styles/iPhone photo=iPhone photo&lt;/string&gt;
   &lt;string&gt;Styles/Portrait Photography1=facial asymmetry, striking features, tack sharp, fine-art photography, 180mm f/1.8 200iso&lt;/string&gt;
   &lt;string&gt;Styles/Landscape=octane render 4k unreal engine 200iso dynamic range hdr wonderous awesome greg rutkowski sung choi thomas kinkade vincent van gogh&lt;/string&gt;
   &lt;string&gt;Styles/High Quality=hyperdetailed hd 4k 8k sharp focus highly detailed&lt;/string&gt;
   &lt;string&gt;Styles/Elegant Portrait=portrait photo headshot by mucha, sharp focus, elegant, render, octane, detailed, award winning photography, masterpiece, rim lit&lt;/string&gt;
-  &lt;string&gt;Styles/Artistic Portrait=a vibrant professional studio portrait photography of a young, attractive, friendly, casual, delightful, intricate, gorgeous, piercing eyes, nouveau, curated collection, annie leibovitz, nikon, award winning, breathtaking, groundbreaking, superb, outstanding, lensculture portrait awards, photoshopped, dramatic lighting, 8k&lt;/string&gt;
-  &lt;string&gt;Styles/Rendered Portrait=gorgeous young by window, soft, octane render, unreal engine, photograph, realistic skin texture, photorealistic, hyper realism, highly detailed, 85mm portrait photography, award winning, hard rim lighting photography&lt;/string&gt;
+  &lt;string&gt;Styles/Artistic Portrait=a vibrant professional studio portrait photography casual, delightful, intricate, piercing eyes, nouveau, curated collection, annie leibovitz, nikon, award winning, breathtaking, groundbreaking, superb, outstanding, lensculture portrait awards, photoshopped, dramatic lighting, 8k&lt;/string&gt;
+  &lt;string&gt;Styles/Rendered Portrait=soft, octane render, unreal engine, photograph, realistic skin texture, photorealistic, hyper realism, highly detailed, 85mm portrait photography, award winning, hard rim lighting photography&lt;/string&gt;
   &lt;string&gt;Styles/Stary Portrait=a portrait with a luminous clothing, eyes shut, mouth closed, wind, sky, clouds, the moon, moonlight, stars, universe, fireflies, butterflies, lights, lens flares effects, swirly bokeh, brush effect, In style of Yoji Shinkawa, Jackson Pollock, wojtek fus, by Makoto Shinkai, concept art, celestial, amazing, astonishing, wonderful, beautiful, highly detailed, centered&lt;/string&gt;
   &lt;string&gt;Styles/Photobashing=photobashing&lt;/string&gt;
   &lt;string&gt;Styles/Algorithmic Art=algorithmic art&lt;/string&gt;
   &lt;string&gt;Styles/Stars and Galaxies=composed of billions of stars, digital art&lt;/string&gt;
   &lt;string&gt;Styles/Cartoon dramatic style=digital art, 2.5D style&lt;/string&gt;
   &lt;string&gt;Styles/Made of smoke=made of very detailed curling wispy glowing multicolored smoke, digital art, volumetric, 3D render, Octane render&lt;/string&gt;
-  &lt;string&gt;Styles/Detailed Particles=particle explosion, digital art&lt;/string&gt;
+  &lt;string&gt;Styles/Detailed Particles=detailed particle, digital art&lt;/string&gt;
   &lt;string&gt;Styles/Mixed Media=mixed media&lt;/string&gt;
-  &lt;string&gt;Cinematography/Low Angle=photograph, taken from a low angle&lt;/string&gt;
+  &lt;string&gt;Styles/Magical world=magical world&lt;/string&gt;
+  &lt;string&gt;Styles/concept art=concept art splash art&lt;/string&gt;
+  &lt;string&gt;Cinematography/Cinematic lighting=cinematic lighting&lt;/string&gt;
+  &lt;string&gt;Cinematography/Low angle=photograph, taken from a low angle&lt;/string&gt;
   &lt;string&gt;Cinematography/Over the shoulder=photograph, over-the-shoulder&lt;/string&gt;
   &lt;string&gt;Cinematography/Drone footage=photograph taken from a drone&lt;/string&gt;
+  &lt;string&gt;Cinematography/Close up=close up&lt;/string&gt;
+  &lt;string&gt;Cinematography/Wide angle=wide angle&lt;/string&gt;
+  &lt;string&gt;Cinematography/Movie ccene=anamorphic lens film scene movie still f/2 800iso 35mm light dust haze&lt;/string&gt;
+  &lt;string&gt;Cinematography/Golden hour=golden hour&lt;/string&gt;
+  &lt;string&gt;Cinematography/beautiful lighting=beautiful lighting&lt;/string&gt;
+  &lt;string&gt;Sources/artstation=artstation&lt;/string&gt;
+  &lt;string&gt;Sources/instagram=instagram&lt;/string&gt;
+  &lt;string&gt;Sources/deviantart=deviantart&lt;/string&gt;
+  &lt;string&gt;Sources/reddit=reddit&lt;/string&gt;
+  &lt;string&gt;Sources/shutterstock=shutterstock&lt;/string&gt;
+  &lt;string&gt;Sources/tumblr=tumblr&lt;/string&gt;
+  &lt;string&gt;Sources/cgsociety=cgsociety&lt;/string&gt;
+  &lt;string&gt;Sources/flickr=flickr&lt;/string&gt;
+  &lt;string&gt;Sources/behance=behance&lt;/string&gt;
+  &lt;string&gt;Sources/dribble=dribble&lt;/string&gt;
+  &lt;string&gt;Sources/pexels=pexels&lt;/string&gt;
+  &lt;string&gt;Sources/pinterest=pinterest&lt;/string&gt;
+  &lt;string&gt;Sources/pixabay=pixabay&lt;/string&gt;
+  &lt;string&gt;Sources/pixiv=pixiv&lt;/string&gt;
+  &lt;string&gt;Sources/polycount=polycount&lt;/string&gt;
+  &lt;string&gt;Effects/post processing=post processing&lt;/string&gt;
+  &lt;string&gt;Effects/cgi=cgi&lt;/string&gt;
+  &lt;string&gt;Effects/chromatic aberration=chromatic aberration&lt;/string&gt;
+  &lt;string&gt;Effects/anaglyph=anaglyph&lt;/string&gt;
+  &lt;string&gt;Effects/cropped=cropped&lt;/string&gt;
+  &lt;string&gt;Effects/glowing edges=glowing edges&lt;/string&gt;
+  &lt;string&gt;Effects/glow effect=glow effect&lt;/string&gt;
+  &lt;string&gt;Effects/bokeh=bokeh&lt;/string&gt;
+  &lt;string&gt;Effects/dramatic lighting=dramatic lighting&lt;/string&gt;
+  &lt;string&gt;Effects/soft lighting=soft lighting&lt;/string&gt;
+  &lt;string&gt;Effects/hard lighting=hard lighting&lt;/string&gt;
+  &lt;string&gt;Effects/glamor shot=glamor shot&lt;/string&gt;
+  &lt;string&gt;Effects/colourful=colourful&lt;/string&gt;
+  &lt;string&gt;Effects/complimentary-colours=complimentary-colours&lt;/string&gt;
+  &lt;string&gt;Effects/dark mood=dark mood&lt;/string&gt;
+  &lt;string&gt;Effects/multiverse=multiverse&lt;/string&gt;
+  &lt;string&gt;Effects/volumetric lighting=volumetric lighting&lt;/string&gt;
+  &lt;string&gt;Effects/lumen global illumination=lumen global illumination&lt;/string&gt;
+  &lt;string&gt;Effects/octane render=octane render&lt;/string&gt;
+  &lt;string&gt;Effects/atmospheric=atmospheric&lt;/string&gt;
+  &lt;string&gt;Effects/technicolour=technicolour&lt;/string&gt;
+  &lt;string&gt;Mediums/photo realistic=photo realistic&lt;/string&gt;
+  &lt;string&gt;Mediums/anime=anime manga&lt;/string&gt;
+  &lt;string&gt;Mediums/graphic novel=graphic novel&lt;/string&gt;
+  &lt;string&gt;Mediums/fountain pen=fountain pen&lt;/string&gt;
+  &lt;string&gt;Mediums/pastel art=pastel art&lt;/string&gt;
+  &lt;string&gt;Mediums/fine art=fine art&lt;/string&gt;
+  &lt;string&gt;Mediums/acrylic paint=acrylic paint&lt;/string&gt;
+  &lt;string&gt;Mediums/oil paint=oil paint&lt;/string&gt;
+  &lt;string&gt;Mediums/watercolour=watercolour&lt;/string&gt;
+  &lt;string&gt;Mediums/digital art=digital art&lt;/string&gt;
+  &lt;string&gt;Mediums/magazine=magazine&lt;/string&gt;
+  &lt;string&gt;Mediums/comic book=comic book&lt;/string&gt;
+  &lt;string&gt;Mediums/pokemon card=pokemon card&lt;/string&gt;
+  &lt;string&gt;Mediums/puzzle=puzzle&lt;/string&gt;
+  &lt;string&gt;Mediums/logo=logo&lt;/string&gt;
+  &lt;string&gt;Mediums/editorial photography=editorial photography&lt;/string&gt;
+  &lt;string&gt;Mediums/wildlife photography=wildlife photography&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="SortList" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Welcome,Test</Value>
+    </Setting>
+    <Setting Name="EnableSortList" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>
