@@ -7,11 +7,12 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
 	<UseWindowsForms>true</UseWindowsForms>
-	<ApplicationIcon>mitch journ-e.ico</ApplicationIcon>
 	<Title>MitchJourn-e</Title>
 	<Description>Windows UI for image generation using InvokeAI Stable diffusion.</Description>
 	<PackageIcon>034203.1632.png</PackageIcon>
 	<PackageProjectUrl>https://github.com/MitchJaehrlich/MitchJourn-e</PackageProjectUrl>
+	<NoWin32Manifest>true</NoWin32Manifest>
+	<ApplicationIcon>mitch journ-e.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
