@@ -178,6 +178,12 @@
   &lt;string&gt;Mediums/logo=logo&lt;/string&gt;
   &lt;string&gt;Mediums/editorial photography=editorial photography&lt;/string&gt;
   &lt;string&gt;Mediums/wildlife photography=wildlife photography&lt;/string&gt;
+  &lt;string&gt;Negative/Photo=cartoon anime art painting ugly&lt;/string&gt;
+  &lt;string&gt;Negative/Portrait=bad anatomy bad proportions blurry cloned face deformed disfigured duplicate gross proportions long neck mutation mutilated morbid out of frame poorly drawn face&lt;/string&gt;
+  &lt;string&gt;Negative/Hands=poorly drawn hands extra arms extra fingers extra limbs extra legs too many fingers fused fingers malformed limbs missing arms missmg legs mutated hands&lt;/string&gt;
+  &lt;string&gt;Negative/Safety=nsfw nude naked&lt;/string&gt;
+  &lt;string&gt;Negative/Landscape=portrait person people text signature watermark frame framed display&lt;/string&gt;
+  &lt;string&gt;Negative/High Quality=lowres text error cropped worst quality low quality normal quality jpeg artifacts signature watermark username blurry artist name deformed disfigured poorly drawn out of focus censorship amateur drawing bad art poor art messy drawing&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
     </Setting>
     <Setting Name="SortList" Type="System.String" Scope="User">
@@ -185,6 +191,15 @@
     </Setting>
     <Setting Name="EnableSortList" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SaveProgress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="SafetyChecker" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="DeleteOnExit" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

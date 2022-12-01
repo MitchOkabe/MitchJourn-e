@@ -412,8 +412,19 @@ namespace MitchJourn_e.Properties {
             "/comic book=comic book</string>\r\n  <string>Mediums/pokemon card=pokemon card</st" +
             "ring>\r\n  <string>Mediums/puzzle=puzzle</string>\r\n  <string>Mediums/logo=logo</st" +
             "ring>\r\n  <string>Mediums/editorial photography=editorial photography</string>\r\n " +
-            " <string>Mediums/wildlife photography=wildlife photography</string>\r\n</ArrayOfSt" +
-            "ring>")]
+            " <string>Mediums/wildlife photography=wildlife photography</string>\r\n  <string>N" +
+            "egative/Photo=cartoon anime art painting ugly</string>\r\n  <string>Negative/Portr" +
+            "ait=bad anatomy bad proportions blurry cloned face deformed disfigured duplicate" +
+            " gross proportions long neck mutation mutilated morbid out of frame poorly drawn" +
+            " face</string>\r\n  <string>Negative/Hands=poorly drawn hands extra arms extra fin" +
+            "gers extra limbs extra legs too many fingers fused fingers malformed limbs missi" +
+            "ng arms missmg legs mutated hands</string>\r\n  <string>Negative/Safety=nsfw nude " +
+            "naked</string>\r\n  <string>Negative/Landscape=portrait person people text signatu" +
+            "re watermark frame framed display</string>\r\n  <string>Negative/High Quality=lowr" +
+            "es text error cropped worst quality low quality normal quality jpeg artifacts si" +
+            "gnature watermark username blurry artist name deformed disfigured poorly drawn o" +
+            "ut of focus censorship amateur drawing bad art poor art messy drawing</string>\r\n" +
+            "</ArrayOfString>")]
         public global::System.Collections.Specialized.StringCollection PromptHelperPresets {
             get {
                 return ((global::System.Collections.Specialized.StringCollection)(this["PromptHelperPresets"]));
@@ -444,6 +455,42 @@ namespace MitchJourn_e.Properties {
             }
             set {
                 this["EnableSortList"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string SaveProgress {
+            get {
+                return ((string)(this["SaveProgress"]));
+            }
+            set {
+                this["SaveProgress"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public string SafetyChecker {
+            get {
+                return ((string)(this["SafetyChecker"]));
+            }
+            set {
+                this["SafetyChecker"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string DeleteOnExit {
+            get {
+                return ((string)(this["DeleteOnExit"]));
+            }
+            set {
+                this["DeleteOnExit"] = value;
             }
         }
     }

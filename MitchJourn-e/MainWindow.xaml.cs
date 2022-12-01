@@ -32,6 +32,10 @@ using Color = System.Windows.Media.Color;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using MitchJourn_e.Windows;
 using Clipboard = System.Windows.Clipboard;
+using MitchJourn_e.Classes;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace MitchJourn_e
 {
@@ -57,8 +61,9 @@ namespace MitchJourn_e
         public MainWindow()
         {
             InitializeComponent();
-            InitializePromptHelper2();
+            InitializePromptHelper();
             InitializeSettings();
+            InitializePromptBubbles();
             StartRendering();
 
             if (Debugger.IsAttached)
@@ -88,12 +93,14 @@ namespace MitchJourn_e
         /// <param name="incrementSeed">Use the next seed number for this image, chk_IncrementSeed must also be checked</param>
         private async void StartRendering(string promptText = "", bool incrementSeed = true)
         {
+            // start windows commandline process, or use the existing one
             Process process = new Process();
             bool useOldCMD = rendererProcess != null && !rendererProcess.HasExited;
             if (useOldCMD)
             {
                 process = rendererProcess;
             }
+
 
             Application.Current.Dispatcher.Invoke((Action)async delegate
             {
@@ -103,10 +110,10 @@ namespace MitchJourn_e
                 string promptSettings = "";
                 string imagePrompt = "";
                 string seamlessTile = "";
-
+                string showProgress = "";
                 string seed = txt_Seed.Text;
                 string uprez = "";
-                string useFullPrecision = "";
+                string highRezFix = "";
 
                 lbl_Status.Content = "Loading...";
 
@@ -152,7 +159,21 @@ namespace MitchJourn_e
                 {
                     seamlessTile = "--seamless";
                 }
-                
+
+                // Show progress
+                if (Settings.Default["SaveProgress"].ToString() == "1")
+                {
+                    showProgress = "--save_intermediates 1";
+                }
+
+                // highrez fix
+                if ((bool)chk_HighrezFix.IsChecked)
+                {
+                    highRezFix = "--hires_fix";
+                }
+
+
+
                 promptSettings = "" +
                         $"-W {Settings.Default["Width"]} " +
                         $"-H {Settings.Default["Height"]} " +
@@ -164,13 +185,9 @@ namespace MitchJourn_e
                         $"{uprez} "+
                         $"--sampler {Settings.Default["SamplerType"]} " +
                         $"--threshold {txt_Limiter.Text} --perlin {txt_Noise.Text} " +
-                        $"{seamlessTile}";
-
-                // Full Precision
-                if (Settings.Default["UseFullPrecision"].ToString() == "1")
-                {
-                    useFullPrecision = "-F";
-                }
+                        $"{seamlessTile} " +
+                        $"{showProgress} " +
+                        $"{highRezFix}";
 
                 // create the process properties
                 ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe");
@@ -188,15 +205,27 @@ namespace MitchJourn_e
                     rendererProcess = process;
                     textWriter = process.StandardInput;
                     string sampler = Settings.Default["SamplerType"].ToString();
-                    //ddim, k_dpm_2_a, k_dpm_2, k_euler_a, k_euler, k_heun, k_lms, plms
+                    string safetyChecker = "";
+                    string useFullPrecision = "";
 
-                    // move the cmd directory to the main stable diffusion path and open the python environment called ldm (environment used at python install)
+                    // move the cmd directory to the main stable diffusion path and open the python environment called invokeAI (environment used at python install)
                     string prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat invokeai & python scripts\\invoke.py &";
+
+                    // safely checker
+                    if (Settings.Default["SafetyChecker"].ToString() == "1")
+                    {
+                        safetyChecker = "--safety-checker true";
+                    }
+
+                    // Full Precision
+                    if (Settings.Default["UseFullPrecision"].ToString() == "1")
+                    {
+                        useFullPrecision = "--full_precision";
+                    }
+
                     // send the command to the CMD window to start the python script, enable the upsampler
-                    process.StandardInput.WriteLine($"{prerequisites} python dream.py --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
-                        $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path {Settings.Default["MainPath"]}\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth --sampler {sampler}");
-                    // send the command to the CMD window to set the image output directory (TODO: I don't think this is actually working, investigate escaped characters)
-                    //process.StandardInput.WriteLine($"cd {Settings.Default["MainPath"].ToString().Replace(@"\", @"\\")}\\outputs\\img-samples\\");
+                    process.StandardInput.WriteLine($"{prerequisites} python dream.py --png_compression 7 --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
+                        $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path {Settings.Default["MainPath"]}\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth --sampler {sampler} {safetyChecker}");
 
                     if (isFirstRun)
                     {
@@ -213,7 +242,7 @@ namespace MitchJourn_e
                     else
                     {
                         
-                        process.StandardInput.WriteLine($"{globalPrompt} {prompt} {promptHelper} [{globalNegativePrompt}] [{negativePrompt}] {promptSettings}");
+                        process.StandardInput.WriteLine($"{globalPrompt} {GatherPromptBubbles()} ({promptHelper}){txt_promptHelperPower.Text} [{globalNegativePrompt}] [({negativePrompt}){txt_negativePromptHelperPower.Text}] {promptSettings}");
                         
                     }
                 }
@@ -225,7 +254,7 @@ namespace MitchJourn_e
                     }
                     else
                     {
-                        process.StandardInput.WriteLine($"{globalPrompt} {prompt} {promptHelper} [{globalNegativePrompt}] [{negativePrompt}] {promptSettings}");
+                        process.StandardInput.WriteLine($"{globalPrompt} {GatherPromptBubbles()} ({promptHelper}){txt_promptHelperPower.Text} [{globalNegativePrompt}] [({negativePrompt}){txt_negativePromptHelperPower.Text}] {promptSettings}");
                     }
                 }
 
@@ -266,7 +295,7 @@ namespace MitchJourn_e
                 {
                     DirectoryInfo directoryInfo = new DirectoryInfo(imageDirectory);
 
-                    FileInfo[] Files = directoryInfo.GetFiles("*.png"); //Getting Text files
+                    FileInfo[] Files = directoryInfo.GetFiles("*.png"); // Get all png files
 
                     if (Files.Length > 0)
                     {
@@ -309,6 +338,7 @@ namespace MitchJourn_e
                                     // create a bitmap from the image file
                                     BitmapImage myBitmapImage = new BitmapImage();
                                     myBitmapImage.BeginInit();
+                                    myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                                     myBitmapImage.UriSource = new Uri(filePath);
                                     myBitmapImage.EndInit();
 
@@ -423,85 +453,90 @@ namespace MitchJourn_e
             }
         }
 
-        private void InitializePromptHelper2()
+        private void InitializePromptHelper()
         {
-            //Properties.Settings.Default.Reset();
-            /*
-                Artists/Greg=greg rutkowski
-                Artists/Thomas=thomas kinkade
-             */
             string[] presets = ((StringCollection)Settings.Default["PromptHelperPresets"]).Cast<string>().ToArray<string>();
+
+            menuItem_PromptHelper.Items.Clear();
+            stack_PromptHelperPresets.Children.Clear();
 
             foreach (string preset in presets)
             {
-                // add the presets to the prompt helper button
-                string[] directoriesAndValue = preset.Split('=');
-                string value = directoriesAndValue[1];
-                string allDirectories = directoriesAndValue[0];
-                string[] directories = allDirectories.Split('/');
-                string topDirectory = directories[0];
-                string menuHeader = directories[1];
-
-                MenuItem helperMenuItem = new MenuItem();
-
-                // check if it's a unique directory
-                bool isUniqueDirectory = true;
-                foreach (MenuItem menuItem in menuItem_PromptHelper.Items)
+                try
                 {
-                    if (menuItem.Header.ToString() == topDirectory)
+                    // add the presets to the prompt helper button
+                    string[] directoriesAndValue = preset.Split('=');
+                    string value = directoriesAndValue[1];
+                    string allDirectories = directoriesAndValue[0];
+                    string[] directories = allDirectories.Split('/');
+                    string topDirectory = directories[0];
+                    string menuHeader = directories[1];
+
+                    MenuItem helperMenuItem = new MenuItem();
+
+                    // check if it's a unique directory
+                    bool isUniqueDirectory = true;
+                    foreach (MenuItem menuItem in menuItem_PromptHelper.Items)
                     {
-                        isUniqueDirectory = false;
-                        helperMenuItem = menuItem;
-                        break;
+                        if (menuItem.Header.ToString() == topDirectory)
+                        {
+                            isUniqueDirectory = false;
+                            helperMenuItem = menuItem;
+                            break;
+                        }
                     }
+
+                    // add directory
+                    if (isUniqueDirectory)
+                    {
+                        helperMenuItem.Header = topDirectory;
+                        helperMenuItem.StaysOpenOnClick = true;
+                        menuItem_PromptHelper.Items.Add(helperMenuItem);
+                    }
+
+                    MenuItem MenuItemPrompt = new MenuItem();
+                    MenuItemPrompt.Header = menuHeader;
+                    MenuItemPrompt.StaysOpenOnClick = true;
+                    MenuItemPrompt.Tag = $"{topDirectory}/{value}";
+                    MenuItemPrompt.Click += PromptHelperMenuItem_Click2;
+                    helperMenuItem.Items.Add(MenuItemPrompt);
+
+                    // add the prompt helper editor text boxes and buttons
+                    StackPanel stackPanel = new StackPanel
+                    {
+                        Orientation = System.Windows.Controls.Orientation.Horizontal,
+                        Tag = helperMenuItem
+                    };
+                    TextBox textBox = new TextBox
+                    {
+                        Text = preset,
+                        FontSize = 16,
+                        Padding = new Thickness(2),
+                        Margin = new Thickness(4),
+                        Width = 420,
+                        Tag = menuHeader
+                    };
+                    textBox.TextChanged += PromptPresetTextChanged;
+                    Button btn_DeletePromptHelperItem = new Button
+                    {
+                        Content = "Delete",
+                        Padding = new Thickness(2),
+                        Margin = new Thickness(4),
+                        Tag = stackPanel
+                    };
+                    btn_DeletePromptHelperItem.Click += Btn_DeletePromptHelperItem_Click;
+                    stackPanel.Children.Add(textBox);
+                    stackPanel.Children.Add(btn_DeletePromptHelperItem);
+                    stack_PromptHelperPresets.Children.Add(stackPanel);
                 }
-
-                // add directory
-                if (isUniqueDirectory)
-                {
-                    helperMenuItem.Header = topDirectory;
-                    helperMenuItem.StaysOpenOnClick = true;
-                    menuItem_PromptHelper.Items.Add(helperMenuItem);
-                }
-
-                MenuItem MenuItemPrompt = new MenuItem();
-                MenuItemPrompt.Header = menuHeader;
-                MenuItemPrompt.StaysOpenOnClick = true;
-                MenuItemPrompt.Tag = value;
-                MenuItemPrompt.Click += PromptHelperMenuItem_Click2;
-                helperMenuItem.Items.Add(MenuItemPrompt);
-
-                // add the prompt helper editor text boxes and buttons
-                StackPanel stackPanel = new StackPanel
-                {
-                    Orientation = System.Windows.Controls.Orientation.Horizontal,
-                    Tag = helperMenuItem
-                };
-                TextBox textBox = new TextBox
-                {
-                    Text = preset,
-                    FontSize = 16,
-                    Padding = new Thickness(2),
-                    Margin = new Thickness(4),
-                    Width = 420,
-                    Tag = menuHeader
-                };
-                textBox.TextChanged += PromptPresetTextChanged;
-                Button btn_Delete = new Button
-                {
-                    Content = "Delete",
-                    Padding = new Thickness(2),
-                    Margin = new Thickness(4),
-                    Tag = stackPanel
-                };
-                btn_Delete.Click += Btn_Delete_Click;
-                stackPanel.Children.Add(textBox);
-                stackPanel.Children.Add(btn_Delete);
-                stack_PromptHelperPresets.Children.Add(stackPanel);
+                catch { }
             }
         }
 
-        private void Btn_Delete_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Delete prompt helper preset
+        /// </summary>
+        private void Btn_DeletePromptHelperItem_Click(object sender, RoutedEventArgs e)
         {
             StackPanel stack_PromptToDelete = (StackPanel)((Button)sender).Tag;
             MenuItem menuItem_TopDirectory = (MenuItem)stack_PromptToDelete.Tag;
@@ -531,7 +566,8 @@ namespace MitchJourn_e
                     }
                 }
             }
-            catch { return; }
+            catch { }
+            InitializePromptHelper();
         }
 
         /// <summary>
@@ -609,21 +645,41 @@ namespace MitchJourn_e
         {
             try
             {
-                if (txt_PromptHelper.Text != "")
+                TextBox[] textBoxes = { txt_PromptHelper, txt_NegativePrompt };
+                TextBox targetTextBox = textBoxes[0];
+                string[] promptInfo = ((MenuItem)sender).Tag.ToString().Split('/');
+                string promptCategory = promptInfo[0];
+                string promptValue = "";
+
+                for (int i = 1; i < promptInfo.Length; i++)
                 {
-                    char[] prompt = txt_PromptHelper.Text.ToCharArray();
+                    if (i > 1)
+                    {
+                        promptValue += "/";
+                    }
+                    promptValue += promptInfo[i];
+                }
+
+                if (promptCategory.Contains("Negative"))
+                {
+                    targetTextBox = textBoxes[1];
+                }
+
+                if (targetTextBox.Text != "")
+                {
+                    char[] prompt = targetTextBox.Text.ToCharArray();
                     if (prompt.Last() == ' ')
                     {
-                        txt_PromptHelper.Text += ((MenuItem)sender).Tag;
+                        targetTextBox.Text += promptValue;
                     }
                     else
                     {
-                        txt_PromptHelper.Text += $" {((MenuItem)sender).Tag}";
+                        targetTextBox.Text += $" {promptValue}";
                     }
                 }
                 else
                 {
-                    txt_PromptHelper.Text += ((MenuItem)sender).Tag;
+                    targetTextBox.Text += promptValue;
                 }
                 expander_settings.IsExpanded = true;
             }
@@ -667,6 +723,7 @@ namespace MitchJourn_e
             txt_Height.Text = image.height;
             txt_ImagePrompt.Text = image.imagePrompt;
             txt_ImagePromptWeight.Text = image.imagePromptWeight;
+            ConvertStringToPromptBubbles(image.prompt);
 
             StartRendering(image.prompt, false);
         }
@@ -722,11 +779,14 @@ namespace MitchJourn_e
                 {
                     if (((RenderedImage)image.Tag).filePath.Equals(renderedImage.filePath))
                     {
-                        stack_Images.Items.Remove(image);
+                        image.Visibility = Visibility.Collapsed;
+                        image.Tag = ((RenderedImage)image.Tag).filePath;
+                        image.Source = null;
+
                         break;
                     }
                 }
-
+                GC.Collect();
                 File.Delete(renderedImage.filePath);
             }
             catch { }
@@ -739,12 +799,14 @@ namespace MitchJourn_e
         {
             RenderedImage renderedImage = (RenderedImage)((MenuItem)sender).Tag;
 
+            //ConvertStringToPromptBubbles(renderedImage.prompt);
             txt_Prompt.Text = renderedImage.prompt;
             txt_Seed.Text = renderedImage.seed;
             txt_ImagePromptWeight.Text = renderedImage.imagePromptWeight;
             txt_ImagePrompt.Text = renderedImage.filePath;
             txt_Width.Text = renderedImage.width;
             txt_Height.Text = renderedImage.height;
+            ConvertStringToPromptBubbles(renderedImage.prompt);
 
             if (lbl_Status.Content.ToString() == "Created downrezed version.")
             {
@@ -763,7 +825,7 @@ namespace MitchJourn_e
         private void MenuItemGetFilePath_Click(object sender, RoutedEventArgs e)
         {
             string renderedImage = ((MenuItem)sender).Tag.ToString();
-            Clipboard.SetText(renderedImage);
+            Clipboard.SetDataObject(renderedImage);
         }
 
         /// <summary>
@@ -850,7 +912,12 @@ namespace MitchJourn_e
                     {
                         if (control is TextBox)
                         {
-                            presets.Add(((TextBox)control).Text);
+                            string text = ((TextBox)control).Text;
+
+                            if (text.Split('/').Length > 1 && text.Split('=').Length == 2)
+                            {
+                                presets.Add(text);
+                            }
                         }
                     }
                 }
@@ -859,8 +926,10 @@ namespace MitchJourn_e
                 Settings.Default["PromptHelperPresets"] = stringCollection;
                 Settings.Default.Save();
             }
-            catch { return; }
-
+            catch 
+            {
+                return; 
+            }
         }
 
         /// <summary>
@@ -1120,7 +1189,7 @@ namespace MitchJourn_e
                 Margin = new Thickness(4),
                 Tag = stackPanel
             };
-            btn_Delete.Click += Btn_Delete_Click;
+            btn_Delete.Click += Btn_DeletePromptHelperItem_Click;
             stackPanel.Children.Add(textBox);
             stackPanel.Children.Add(btn_Delete);
             stack_PromptHelperPresets.Children.Add(stackPanel);
@@ -1295,10 +1364,22 @@ namespace MitchJourn_e
             StopRendering();
             windowClosing = true;
 
+            if (Settings.Default["DeleteOnExit"].ToString() == "1")
+            {
+                if (MessageBox.Show("Are you sure you would like to delete all these generated images?", "Confirm Deletion",
+                       (MessageBoxButton)MessageBoxButtons.YesNo) == MessageBoxResult.Yes)
+                { 
+                    foreach (Image image in stack_Images.Items)
+                    {
+                        File.Delete(((RenderedImage)image.Tag).filePath);
+                    }
+                }
+            }
+
             if ((bool)chk_SortOutputImagesByPrompt.IsChecked)
             {
-                if (MessageBox.Show("Start image output sorting?", "Bye!",
-                       (MessageBoxButton)MessageBoxButtons.YesNo) == MessageBoxResult.Yes)
+                //if (MessageBox.Show("Start image output sorting?", "Confrim Sorting",
+                //       (MessageBoxButton)MessageBoxButtons.YesNo) == MessageBoxResult.Yes)
                 {
                     ImageSorter newWindow = new ImageSorter();
                 }
@@ -1310,10 +1391,223 @@ namespace MitchJourn_e
             Settings.Default["EnableSortList"] = (bool)chk_SortOutputImagesByPrompt.IsChecked;
             Settings.Default.Save();
         }
+        private void InitializePromptBubbles()
+        {
+            wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble("Enter your prompt here!"));
+        }
 
-        //private void btn_StartOutPainting_Click(object sender, RoutedEventArgs e)
-        //{
-        //    StartRendering();
-        //}
+        private string GatherPromptBubbles()
+        {
+            List<PromptBubble> promptBubbles = new List<PromptBubble>();
+            string prompt = "";
+
+            foreach (Object control in wrp_PromptBubbles.Children)
+            {
+                if (control is StackPanel)
+                {
+                    StackPanel promptBubbleStack = (StackPanel)control;
+                    
+                    if (promptBubbleStack.Tag is PromptBubble)
+                    {
+                        PromptBubble promptBubble = (PromptBubble)promptBubbleStack.Tag;
+                        prompt += $"({promptBubble.prompt}){1+0.1*promptBubble.power} ";
+                    }
+                }
+            }
+
+            string cleanedPrompt = CleanPrompt(prompt);
+            txt_Prompt.Text = cleanedPrompt;
+
+            return CleanPrompt(prompt);
+        }
+
+        public string ConvertPromptBubblesToString()
+        {
+            string output = "";
+
+            List<PromptBubble> promptBubbleStacks = new List<PromptBubble>();
+            foreach (Object control in wrp_PromptBubbles.Children)
+            {
+                try
+                {
+                    if (control is StackPanel)
+                    {
+                        StackPanel promptBubbleStack = (StackPanel)control;
+
+                        promptBubbleStacks.Add((PromptBubble)promptBubbleStack.Tag);
+                    }
+                }
+                catch { }
+            }
+            foreach (PromptBubble bubble in promptBubbleStacks)
+            {
+                try
+                {
+                    if (bubble.power > 0)
+                    {
+                        output += $"({bubble.prompt}){Math.Round(1 + bubble.power * .1, 2)} ";
+                    }
+                    else if (bubble.power < 0)
+                    {
+                        output += $"({bubble.prompt}){Math.Round((bubble.power * .1) + 1, 2)} ";
+                    }
+                    else
+                    {
+                        output += $"({bubble.prompt}) ";
+                    }
+                }
+                catch { }
+            }
+
+            return output;
+        }
+
+        private void ConvertStringToPromptBubbles(string input)
+        {
+            string datalog = "";
+            // Clear the existing prompt bubbles
+            List<StackPanel> promptBubbleStacks = new List<StackPanel>();
+            foreach (Object control in wrp_PromptBubbles.Children)
+            {
+                if (control is StackPanel)
+                {
+                    StackPanel promptBubbleStack = (StackPanel)control;
+
+                    if (promptBubbleStack.Tag is PromptBubble)
+                    {
+                        promptBubbleStacks.Add(promptBubbleStack);
+                    }
+                }
+            }
+            foreach (StackPanel stack in promptBubbleStacks)
+            {
+                wrp_PromptBubbles.Children.Remove(stack);
+            }
+
+            // create a container for all the new prompt bubbles
+            int promptBubbleIndex = 0;
+            List<StackPanel> promptBubbles = new List<StackPanel>();
+
+            datalog += "Processing starts" + Environment.NewLine;
+            string[] prompts = input.Split(new char[] { '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
+            datalog += "String segments: " + prompts.Length + Environment.NewLine;
+
+            for (int i = 0; i < prompts.Length; i++)
+            {
+                datalog += "Segment: " + i + Environment.NewLine;
+                string reformedPrompt = "";
+                PromptBubble promptBubble = new PromptBubble();
+
+                // if the bubble has + notation, add power to the previous prompt
+                // note: doesn't support - notation, as common prompts include this, without meaning decrease power
+                if (prompts[i].Contains("+"))
+                {
+                    char[] chars = prompts[i].ToCharArray();
+                    foreach (char c in chars)
+                    {
+                        if (c == '+')
+                        {
+                            PromptBubble lastPromptBubble = (PromptBubble)((StackPanel)promptBubbles.Last()).Tag;
+                            lastPromptBubble.power++;
+                            lastPromptBubble.Tag = lastPromptBubble;
+                            promptBubbles.RemoveAt(promptBubbles.Count - 1);
+                            promptBubbles.Add(lastPromptBubble.CreatePromptBubble(lastPromptBubble.prompt, lastPromptBubble.power));
+                        }
+                        else
+                        {
+                            reformedPrompt += c;
+                        }
+                    }
+                }
+
+                // if the bubble has numeric notation, add power to the previous prompt
+                if (reformedPrompt == "")
+                {
+                    reformedPrompt = prompts[i];
+                }
+                //if (reformedPrompt.Contains("1."))
+                if (promptBubbles.Count > 0)
+                {
+                    datalog += "Not first prompt bubble" + Environment.NewLine;
+                    string[] promptParts = reformedPrompt.Split(" ");
+                    reformedPrompt = "";
+                    double finalPower = 0;
+
+                    PromptBubble lastPromptBubble = (PromptBubble)((StackPanel)promptBubbles.Last()).Tag;
+
+                    int j = 0;
+                    foreach (string promptPart in promptParts)
+                    {
+                        bool isDouble = double.TryParse(promptPart, out double power);
+                        if (!isDouble && promptPart != "" && promptPart != " ")
+                        {
+                            datalog += $"Adding Prompt part: {promptPart} " + Environment.NewLine;
+                            reformedPrompt += promptPart + " ";
+                        }
+                        else if (isDouble && j == 0)
+                        {
+                            if (power > 1)
+                            {
+                                finalPower = Math.Round((power - 1) * 10, 1);
+                            }
+                            else if (power < 1)
+                            {
+                                finalPower = Math.Round((1-power) * -10, 1);
+                            }
+                            else if (power == 1)
+                            {
+                                finalPower = 0;
+                            }
+                            lastPromptBubble.power = (int)finalPower;
+                            lastPromptBubble.Tag = lastPromptBubble;
+                            promptBubbles.RemoveAt(promptBubbles.Count - 1);
+                            promptBubbles.Add(lastPromptBubble.CreatePromptBubble(lastPromptBubble.prompt,lastPromptBubble.power));
+                            datalog += $"Adding power: {finalPower}" + Environment.NewLine;
+                            j++;
+                            break;
+                        }
+                        j++;
+                    }                    
+                }
+                else
+                {
+                    datalog += "First prompt bubble! " + reformedPrompt + Environment.NewLine;
+                }
+
+                StackPanel promptBubbleStack = promptBubble.CreatePromptBubble(reformedPrompt);
+                if (promptBubbleStack.Tag is PromptBubble &&
+                    reformedPrompt != "")
+                {
+                    // create the new UI object for the bubble
+                    promptBubbles.Add(promptBubbleStack);
+                    promptBubbleIndex++;
+                }
+
+                datalog += "------end-------" + Environment.NewLine;
+            }
+
+            // Add the new bubbles to the UI
+            foreach (StackPanel promptBubble in promptBubbles)
+            {
+                wrp_PromptBubbles.Children.Add(promptBubble);
+            }
+
+            //MessageBox.Show(datalog);
+        }
+
+        private void btn_AddPromptBubble_Click(object sender, RoutedEventArgs e)
+        {
+            wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(""));
+        }
+
+        private void txt_Prompt_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            //ConvertStringToPromptBubbles(txt_Prompt.Text);
+        }
+
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            InitializePromptHelper();
+        }
     }
 }

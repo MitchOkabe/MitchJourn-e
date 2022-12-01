@@ -7,11 +7,24 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
 	<UseWindowsForms>true</UseWindowsForms>
+	<ApplicationIcon>mitch journ-e.ico</ApplicationIcon>
+	<Title>MitchJourn-e</Title>
+	<Description>Windows UI for image generation using InvokeAI Stable diffusion.</Description>
+	<PackageIcon>034203.1632.png</PackageIcon>
+	<PackageProjectUrl>https://github.com/MitchJaehrlich/MitchJourn-e</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="DALL·E 2022-07-29 08.13.04 - a reflection of a tropical tree in a cup of coffee.png" />
-    <None Remove="DALL·E 2022-11-02 07.09.48 - beautiful british columbia landscape photography f_1.2 150mm 200iso 4k hyperdetailed hd 4k 8k sharp focus highly detailed octane render 4k unreal engi.png" />
+    <Content Include="mitch journ-e.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\..\..\InvokeAI-main\outputs\img-samples\034203.1632.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -19,11 +32,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="DALL·E 2022-07-29 08.13.04 - a reflection of a tropical tree in a cup of coffee.png" />
-    <Resource Include="DALL·E 2022-11-02 07.09.48 - beautiful british columbia landscape photography f_1.2 150mm 200iso 4k hyperdetailed hd 4k 8k sharp focus highly detailed octane render 4k unreal engi.png" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
@@ -32,10 +45,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="bin\Release\" />
   </ItemGroup>
 
 </Project>

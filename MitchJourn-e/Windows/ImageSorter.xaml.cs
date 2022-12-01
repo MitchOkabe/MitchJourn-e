@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,14 +28,14 @@ namespace MitchJourn_e.Windows
         public ImageSorter()
         {
             InitializeComponent();
-            startBackgroundProcesses();
+            startBackgroundSorting();
             this.Show();
         }
 
         /// <summary>
         /// Run the the following in the background thread
         /// </summary>
-        private async void startBackgroundProcesses()
+        private async void startBackgroundSorting()
         {
             await Task.Run(new Action(() => StartSorting()));
         }
@@ -78,8 +79,8 @@ namespace MitchJourn_e.Windows
                             {
                                 if (metadata.Contains(sortItem.ToLower()))
                                 {
-                                    System.IO.Directory.CreateDirectory($"{imageDirectory}\\{sortItem}");
-                                    string outputDirectory = $"{imageDirectory}\\{sortItem}\\{file.Name}";
+                                    System.IO.Directory.CreateDirectory($"{imageDirectory}\\Sorted\\{sortItem}");
+                                    string outputDirectory = $"{imageDirectory}\\Sorted\\{sortItem}\\{file.Name}";
                                     try
                                     {
                                         File.Move(file.FullName, outputDirectory);

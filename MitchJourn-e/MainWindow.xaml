@@ -5,16 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MitchJourn_e"
         mc:Ignorable="d"
-        Title="MitchJourn-E" Height="906" Width="746" KeyDown="Window_KeyDown" Closing="Window_Closing" Background="#FF4C4C4C">
+        Title="MitchJourn-E" Height="1191" Width="783" KeyDown="Window_KeyDown" Closing="Window_Closing" Background="#FF4C4C4C">
     <StackPanel Margin="8">
-        <TabControl Background="#FFCECECE">
-            <TabItem Header="MitchJourn-E" >
-                <TabItem.Background>
-                    <LinearGradientBrush EndPoint="0,1">
-                        <GradientStop Color="#FFF0F0F0"/>
-                        <GradientStop Color="#FF797979" Offset="1"/>
-                    </LinearGradientBrush>
-                </TabItem.Background>
+        <TabControl Background="#FFCECECE" SelectionChanged="TabControl_SelectionChanged">
+            <TabItem x:Name="tab_main" Header="MitchJourn-E">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Prompt:" Padding="2" Margin="0" VerticalAlignment="Center"/>
@@ -38,7 +32,12 @@
                             <Button x:Name="btn920" Content="9:20" Margin="2" Click="btn920_Click" Padding="4"/>
                         </StackPanel>
                     </StackPanel>
-                    <TextBox x:Name="txt_Prompt" FontSize="16" Padding="2" Margin="4" TabIndex="0" SpellCheck.IsEnabled="True"/>
+                    <TextBox Visibility="Collapsed" x:Name="txt_Prompt" FontSize="16" Padding="2" Margin="4" TabIndex="0" SpellCheck.IsEnabled="True" TextChanged="txt_Prompt_TextChanged"/>
+                    <WrapPanel Orientation="Horizontal" x:Name="wrp_PromptBubbles">
+                        <Border CornerRadius="8" Background="#FFEFEFEF">
+                            <Button x:Name="btn_AddPromptBubble" Content=" + " Background="{x:Null}" BorderBrush="{x:Null}" Click="btn_AddPromptBubble_Click"/>
+                        </Border>
+                    </WrapPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="btn_Go" Width="69" Padding="2" Margin="6" Click="btn_Go_Click" TabIndex="1">
                             <Label Content="Go"/>
@@ -49,8 +48,13 @@
                         </Menu>
                         <Label x:Name="lbl_Status" Content="Enter a prompt and press go!" FontFamily="OCR A Extended" VerticalContentAlignment="Center"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Padding="2" Content="Creativity"/>
+                        <TextBox x:Name="txt_Creativity" Text="5" Margin="4,0,0,0" Width="32" Tag="Steps" TextChanged="txt_Creativity_TextChanged"/>
+                        <Slider x:Name="slider_Creativity" Margin="2" Maximum="10" LargeChange="1" SmallChange="0.1" TickFrequency="0.1" Value="5" Minimum="2.2" IsSnapToTickEnabled="True" ValueChanged="slider_Creativity_ValueChanged" Width="624"/>
+                    </StackPanel>
                     <Expander x:Name="expander_settings" Header="Settings">
-                        <Grid Height="340">
+                        <Grid Height="300">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <Label Padding="2" Content="Propt Weight"/>
@@ -62,30 +66,32 @@
                                     <TextBox x:Name="txt_Steps" Text="50" Margin="4,0,0,0" Width="32" Tag="Steps" TextChanged="SettingsTextChanged"/>
                                 </StackPanel>
                                 <Slider x:Name="slider_Steps" Margin="2" Maximum="200" LargeChange="10" SmallChange="1" TickFrequency="1" Value="50" Minimum="10" IsSnapToTickEnabled="True" ValueChanged="slider_Steps_ValueChanged"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <Label Padding="2" Content="Creativity"/>
-                                    <TextBox x:Name="txt_Creativity" Text="5" Margin="4,0,0,0" Width="32" Tag="Steps" TextChanged="txt_Creativity_TextChanged"/>
-                                </StackPanel>
-                                <Slider x:Name="slider_Creativity" Margin="2" Maximum="10" LargeChange="1" SmallChange="0.1" TickFrequency="0.1" Value="5" Minimum="2.2" IsSnapToTickEnabled="True" ValueChanged="slider_Creativity_ValueChanged"/>
                                 <Label Content="Prompt helper text" Padding="2"/>
                                 <StackPanel Orientation="Horizontal" >
                                     <TextBox x:Name="txt_PromptHelper" FontSize="10" Padding="2" TabIndex="0" SpellCheck.IsEnabled="True" Width="460" Height="22"/>
                                     <Button x:Name="btn_ClearPromptHelper" Content="Clear" Margin="2" Padding="2" Click="btn_ClearPromptHelper_Click"/>
+                                    <Label Content="Weight:"/>
+                                    <TextBox x:Name="txt_promptHelperPower" FontSize="10" Padding="2" Width="28" Height="22" Text="1" />
+                                    
                                 </StackPanel>
                                 <Label Content="Negative prompt" Padding="2"/>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBox x:Name="txt_NegativePrompt" FontSize="10" Padding="2" TabIndex="0" SpellCheck.IsEnabled="True" Width="460" Height="22"/>
                                     <Button x:Name="btn_ClearNegativePrompt" Content="Clear" Margin="2" Padding="2" Click="btn_ClearNegativePrompt_Click"/>
+                                    <Label Content="Weight:"/>
+                                    <TextBox x:Name="txt_negativePromptHelperPower" FontSize="10" Padding="2" Width="28" Height="22" Text="1"/>
                                 </StackPanel>
 
                                 <Label Content="Image prompt:" Padding="2"/>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBox x:Name="txt_ImagePrompt" FontSize="11" Padding="2" Width="460" Height="22"/>
                                     <Button x:Name="btn_ClearImagePrompt" Content="Clear" Margin="2" Padding="2" Click="btn_ClearImagePrompt_Click"/>
+                                    <Label Content="Weight:"/>
+                                    <TextBox x:Name="txt_ImagePromptWeight" Text=".25" FontSize="10" Padding="2" Width="28" Height="22" Tag="ImagePromptWeight" TextChanged="SettingsTextChanged" VerticalContentAlignment="Center"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="Image prompt weight:" Padding="2"/>
-                                    <TextBox x:Name="txt_ImagePromptWeight" FontSize="12" Text=".35" Padding="2" Margin="4,0,0,0" Tag="ImagePromptWeight" TextChanged="SettingsTextChanged"/>
+
                                 </StackPanel>
                                 <Slider x:Name="slider_imagePromptWeight" Margin="2" Maximum="1" LargeChange="0.05" SmallChange="0.01" TickFrequency="0.01" Value="0.25" Minimum="0.01" ValueChanged="slider_imagePromptWeight_ValueChanged" IsSnapToTickEnabled="True"/>
                                 <StackPanel Orientation="Horizontal">
@@ -95,6 +101,7 @@
                                     <Label Content="Latent Limiter (1-100)" Margin="4"/>
                                     <TextBox x:Name="txt_Limiter" Text="0" Width="24" Margin="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                                     <CheckBox x:Name="chk_seamlessTile" Content="Seamless Tile" VerticalAlignment="Center" Margin="4"/>
+                                    <CheckBox x:Name="chk_HighrezFix" Content="Fix high rez images" VerticalAlignment="Center" Margin="4"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
@@ -115,6 +122,8 @@
                         <TextBox x:Name="txt_Width" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Width" TextChanged="SettingsTextChanged"/>
                         <Label Content="Image height:"/>
                         <TextBox x:Name="txt_Height" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Height" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Enable safety checker (1 or 0) (must stop and start to apply)"/>
+                        <TextBox x:Name="txt_SafetyChecker" FontSize="16" Padding="2" Margin="6" Text="1" Tag="SafetyChecker" TextChanged="SettingsTextChanged"/>
                         <Label Content="Seed (use 'random' for a random seed)"/>
                         <TextBox x:Name="txt_Seed" FontSize="16" Padding="2" Margin="6" Text="1" Tag="Seed" TextChanged="SettingsTextChanged"/>
                         <Label Content="Automatically increment seed number for each go" Visibility="Collapsed"/>
@@ -151,18 +160,24 @@
                         <TextBox x:Name="txt_AspectRatio23" FontSize="16" Padding="2" Margin="6" Text="384:576" Tag="AspectRatio23" TextChanged="SettingsTextChanged"/>
                         <Label Content="Aspect Ratio Preset 9:20"/>
                         <TextBox x:Name="txt_AspectRatio920" FontSize="16" Padding="2" Margin="6" Text="256:576" Tag="AspectRatio920" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Save Progressto Output directory"/>
+                        <TextBox x:Name="txt_SaveProgress" FontSize="16" Padding="2" Margin="6" Text="256:576" Tag="SaveProgress" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Delete all generated images on exit (0 or 1)"/>
+                        <TextBox x:Name="txt_DeleteOnExit" FontSize="16" Padding="2" Margin="6" Text="0" Tag="DeleteOnExit" TextChanged="SettingsTextChanged"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="Prompt Helper">
-                <ScrollViewer>
-                    <StackPanel>
-                        <Label Content="Create prompt presets (format as 'Directory name/Item name=value to enter into the prompt')"/>
-                        <Label Content="Restart required to see changes"/>
-                        <StackPanel x:Name="stack_PromptHelperPresets"/>
-                        <Button x:Name="btn_AddPromptPreset" Content="Add preset" Padding="8" Margin="4" Click="btn_AddPromptPreset_Click"/>
-                    </StackPanel>
-                </ScrollViewer>
+                <StackPanel>
+                    <ScrollViewer MaxHeight="640">
+                        <StackPanel>
+                            <Label Content="Create prompt presets (format as 'Directory name/Item name=value to enter into the prompt')"/>
+                            
+                            <StackPanel x:Name="stack_PromptHelperPresets" />
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Button x:Name="btn_AddPromptPreset" Content="Add preset" Padding="8" Margin="4" Click="btn_AddPromptPreset_Click"/>
+                </StackPanel>
             </TabItem>
             <TabItem Header="Experiments">
                 <ScrollViewer>
