@@ -14,6 +14,4 @@ https://huggingface.co/runwayml/stable-diffusion-v1-5
 3. Rename the .ckpt file to "model.ckpt" and place it here:
 C:\InvokeAI-main\models\ldm\
 
-4. Now run the following commands from within the InvokeAI directory to copy the weights file to the right place:
-
-5. Now relaunch MitchJourn-E, and you can start generating images
+4. Now relaunch MitchJourn-E, and you can start generating images
