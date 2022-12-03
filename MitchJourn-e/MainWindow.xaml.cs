@@ -114,7 +114,7 @@ namespace MitchJourn_e
                 string seed = txt_Seed.Text;
                 string uprez = "";
                 string highRezFix = "";
-
+                
                 lbl_Status.Content = "Loading...";
 
                 if (promptText != "")
@@ -172,8 +172,6 @@ namespace MitchJourn_e
                     highRezFix = "--hires_fix";
                 }
 
-
-
                 promptSettings = "" +
                         $"-W {Settings.Default["Width"]} " +
                         $"-H {Settings.Default["Height"]} " +
@@ -209,13 +207,7 @@ namespace MitchJourn_e
                     string useFullPrecision = "";
 
                     // move the cmd directory to the main stable diffusion path and open the python environment called invokeAI (environment used at python install)
-                    string prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat invokeai & python scripts\\invoke.py &";
-
-                    // safely checker
-                    if (Settings.Default["SafetyChecker"].ToString() == "1")
-                    {
-                        safetyChecker = "--safety-checker";
-                    }
+                    string prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat invokeai &";
 
                     // Full Precision
                     if (Settings.Default["UseFullPrecision"].ToString() == "1")
@@ -223,9 +215,18 @@ namespace MitchJourn_e
                         useFullPrecision = "--full_precision";
                     }
 
+                    // safely checker
+                    if (Settings.Default["SafetyChecker"].ToString() == "1")
+                    {
+                        safetyChecker = "--nsfw_checker";
+                    }
+
                     // send the command to the CMD window to start the python script, enable the upsampler
-                    process.StandardInput.WriteLine($"{prerequisites} python scripts\\invoke.py --png_compression 7 --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
-                        $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path {Settings.Default["MainPath"]}\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth --sampler {sampler} {safetyChecker}");
+                    process.StandardInput.WriteLine($"{prerequisites} python scripts\\invoke.py --png_compression 7 --sampler {sampler} {safetyChecker}");
+
+                    // dropped support for custom gfpgan settings
+                    // --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
+                    //$" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path 'experiments\\pretrained_models\\GFPGANv1.4.pth'
 
                     if (isFirstRun)
                     {
@@ -1609,6 +1610,41 @@ namespace MitchJourn_e
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             InitializePromptHelper();
+        }
+
+        private void btn_ResetPrompt_Click(object sender, RoutedEventArgs e)
+        {
+            ResetPrompt();
+        }
+
+        private void ResetPrompt()
+        {
+            List<StackPanel> promptBubblesToDelete = new List<StackPanel>();
+            TextBox[] textBoxesToReset = { txt_PromptHelper, txt_NegativePrompt, txt_ImagePrompt };
+
+            // delete the prompt bubbles
+            foreach (UIElement element in wrp_PromptBubbles.Children)
+            {
+                if (element is StackPanel)
+                {
+                    promptBubblesToDelete.Add((StackPanel)element);
+                }
+            }
+
+            foreach (StackPanel promptBubble in promptBubblesToDelete)
+            {
+                wrp_PromptBubbles.Children.Remove(promptBubble);
+            }
+
+            foreach (TextBox textBoxToReset in textBoxesToReset)
+            {
+                textBoxToReset.Text = "";
+            }
+
+            slider_Creativity.Value = 5;
+            txt_promptHelperPower.Text = "1";
+            txt_negativePromptHelperPower.Text = "1";
+            txt_ImagePromptWeight.Text = "0.25";
         }
     }
 }

@@ -31,10 +31,11 @@
                             <Button x:Name="btn23" Content="2:3" Margin="2" Click="btn23_Click" Padding="4"/>
                             <Button x:Name="btn920" Content="9:20" Margin="2" Click="btn920_Click" Padding="4"/>
                         </StackPanel>
+                        <Button Content="Reset Prompt" x:Name="btn_ResetPrompt" Padding="2" Margin="2" Click="btn_ResetPrompt_Click"/>
                     </StackPanel>
                     <TextBox Visibility="Collapsed" x:Name="txt_Prompt" FontSize="16" Padding="2" Margin="4" TabIndex="0" SpellCheck.IsEnabled="True" TextChanged="txt_Prompt_TextChanged"/>
                     <WrapPanel Orientation="Horizontal" x:Name="wrp_PromptBubbles">
-                        <Border CornerRadius="8" Background="#FFEFEFEF">
+                        <Border Tag="do not delete me"  CornerRadius="8" Background="#FFEFEFEF">
                             <Button x:Name="btn_AddPromptBubble" Content=" + " Background="{x:Null}" BorderBrush="{x:Null}" Click="btn_AddPromptBubble_Click"/>
                         </Border>
                     </WrapPanel>
@@ -122,7 +123,7 @@
                         <TextBox x:Name="txt_Width" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Width" TextChanged="SettingsTextChanged"/>
                         <Label Content="Image height:"/>
                         <TextBox x:Name="txt_Height" FontSize="16" Padding="2" Margin="6" Text="454" Tag="Height" TextChanged="SettingsTextChanged"/>
-                        <Label Content="Enable safety checker (1 or 0) (must stop and start to apply)"/>
+                        <Label Content="Enable safety/nsfw checker (1 or 0) (must stop and start to apply)"/>
                         <TextBox x:Name="txt_SafetyChecker" FontSize="16" Padding="2" Margin="6" Text="1" Tag="SafetyChecker" TextChanged="SettingsTextChanged"/>
                         <Label Content="Seed (use 'random' for a random seed)"/>
                         <TextBox x:Name="txt_Seed" FontSize="16" Padding="2" Margin="6" Text="1" Tag="Seed" TextChanged="SettingsTextChanged"/>
