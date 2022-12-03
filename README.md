@@ -1,5 +1,7 @@
 # MitchJourn-e
 
+![image](https://user-images.githubusercontent.com/13142459/205463681-f2d714a8-82ec-43e6-a40b-eb3f11938dee.png)
+
 For more information, view the release page here: https://hous3.ca/image-generator-mitchjourn-e/
 
 Installation:
