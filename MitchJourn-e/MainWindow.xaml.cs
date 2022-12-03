@@ -214,7 +214,7 @@ namespace MitchJourn_e
                     // safely checker
                     if (Settings.Default["SafetyChecker"].ToString() == "1")
                     {
-                        safetyChecker = "--safety-checker true";
+                        safetyChecker = "--safety-checker";
                     }
 
                     // Full Precision
@@ -224,7 +224,7 @@ namespace MitchJourn_e
                     }
 
                     // send the command to the CMD window to start the python script, enable the upsampler
-                    process.StandardInput.WriteLine($"{prerequisites} python dream.py --png_compression 7 --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
+                    process.StandardInput.WriteLine($"{prerequisites} python scripts\\invoke.py --png_compression 7 --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
                         $" --gfpgan --gfpgan_dir GFPGAN --gfpgan_model_path {Settings.Default["MainPath"]}\\GFPGAN\\experiments\\pretrained_models\\GFPGANv1.3.pth --sampler {sampler} {safetyChecker}");
 
                     if (isFirstRun)
@@ -289,7 +289,7 @@ namespace MitchJourn_e
         {
             if (!windowClosing)
             {
-                string imageDirectory = $"{Settings.Default["MainPath"]}\\outputs\\img-samples\\";
+                string imageDirectory = $"{Settings.Default["OutputPath"]}";
 
                 if (Directory.Exists(imageDirectory))
                 {
@@ -347,7 +347,8 @@ namespace MitchJourn_e
                                     {
                                         Margin = new Thickness(8),
                                         Stretch = System.Windows.Media.Stretch.Uniform,
-                                        Source = myBitmapImage
+                                        Source = myBitmapImage,
+                                        HorizontalAlignment = System.Windows.HorizontalAlignment.Left
                                     };
                                     scroll_Images.MaxHeight = myBitmapImage.Height + 50;
 

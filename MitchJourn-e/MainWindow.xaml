@@ -107,7 +107,7 @@
                         </Grid>
                     </Expander>
                     <ScrollViewer x:Name="scroll_Images" Margin="4" MaxHeight="500" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"  CanContentScroll="False">
-                        <ItemsControl x:Name="stack_Images" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top"/>
+                        <ItemsControl x:Name="stack_Images" VerticalAlignment="Top" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"/>
                     </ScrollViewer>
                 </StackPanel>
             </TabItem>
@@ -133,7 +133,9 @@
                         <Label Content="Enable welcome prompt on startup (1 or 0)"/>
                         <TextBox x:Name="txt_EnableWelcomePrompt" FontSize="16" Padding="2" Margin="6" Text="1" Tag="EnableWelcomePrompt" TextChanged="SettingsTextChanged"/>
                         <Label Content="Main Stable Diffusion Folder Path"/>
-                        <TextBox x:Name="txt_MainPath" FontSize="16" Padding="2" Margin="6" Text="C:\stable-diffusion-main" Tag="MainPath" TextChanged="SettingsTextChanged"/>
+                        <TextBox x:Name="txt_MainPath" FontSize="16" Padding="2" Margin="6" Text="C:\InvokeAI-main" Tag="MainPath" TextChanged="SettingsTextChanged"/>
+                        <Label Content="Output directory"/>
+                        <TextBox x:Name="txt_OutputPath" FontSize="16" Padding="2" Margin="6" Text="C:\InvokeAI-main\outputs" Tag="OutputPath" TextChanged="SettingsTextChanged"/>
                         <Label Content="Text to Image Path"/>
                         <TextBox x:Name="txt_TextToImagePath" FontSize="16" Padding="2" Margin="6" Text="scripts\txt2img.py" Tag="TextToImagePath" TextChanged="SettingsTextChanged"/>
                         <Label Content="Image to Image Path"/>

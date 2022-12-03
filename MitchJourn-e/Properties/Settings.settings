@@ -201,5 +201,8 @@
     <Setting Name="DeleteOnExit" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="OutputPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\InvokeAI-main\outputs</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
