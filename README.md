@@ -8,8 +8,9 @@ Installation:
 1. Download and install InvokeAI to the root of the C drive. Follow this separate setup guide (easy) to install:
 https://invoke-ai.github.io/InvokeAI/installation/INSTALL_INVOKE/#installation
 
-  a) The root folder should look like this: C:\InvokeAI-main\
-  b) Direct download for Windows: https://github.com/invoke-ai/InvokeAI/releases/download/v2.2.3/invokeAI-src-installer-2.2.3-windows.zip
+      a) The root folder should look like this: C:\InvokeAI-main\
+      b) Direct download for Windows: https://github.com/invoke-ai/InvokeAI/releases/download/v2.2.3/invokeAI-src-installer-2.2.3-windows.zip
+
 
 2. Download a Checkpoint File (ckpt)
 Here is Stable Diffusion 1.5 (v1-5-pruned.ckpt) (recommended for best general results):
