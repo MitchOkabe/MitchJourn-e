@@ -65,6 +65,7 @@ namespace MitchJourn_e
             InitializeSettings();
             InitializePromptBubbles();
             StartRendering();
+            UpdateCreativity();
 
             if (Debugger.IsAttached)
                 Settings.Default.Reset();
@@ -255,7 +256,7 @@ namespace MitchJourn_e
                     }
                     else
                     {
-                        process.StandardInput.WriteLine($"{globalPrompt} {GatherPromptBubbles()} ({promptHelper}){txt_promptHelperPower.Text} [{globalNegativePrompt}] [({negativePrompt}){txt_negativePromptHelperPower.Text}] {promptSettings}");
+                        process.StandardInput.WriteLine($"{globalPrompt} {GatherPromptBubbles()} ({promptHelper}){txt_promptHelperPower.Text} [{globalNegativePrompt}] [({negativePrompt}):{txt_negativePromptHelperPower.Text}] {promptSettings}");
                     }
                 }
 
@@ -386,6 +387,13 @@ namespace MitchJourn_e
                                     menuItemRecreatePrompt.Tag = renderedImage;
                                     menuItemRecreatePrompt.Click += MenuItemRecreatePrompt_Click;
                                     rightClickMenu.Items.Add(menuItemRecreatePrompt);
+
+                                    // Use as Image-To-Image
+                                    MenuItem menuItemImageToImage = new MenuItem();
+                                    menuItemImageToImage.Header = "Use as Image-To-Image";
+                                    menuItemImageToImage.Tag = renderedImage;
+                                    menuItemImageToImage.Click += menuItemImageToImage_Click;
+                                    rightClickMenu.Items.Add(menuItemImageToImage);
 
                                     // ----
                                     rightClickMenu.Items.Add(new Separator());
@@ -728,6 +736,15 @@ namespace MitchJourn_e
             ConvertStringToPromptBubbles(image.prompt);
 
             StartRendering(image.prompt, false);
+        }
+
+        /// <summary>
+        /// Right click menu item for Use as Image-To-Image
+        /// </summary>
+        private void menuItemImageToImage_Click(object sender, RoutedEventArgs e)
+        {
+            RenderedImage image = (RenderedImage)((MenuItem)sender).Tag;
+            txt_ImagePrompt.Text = image.filePath;
         }
 
         /// <summary>
@@ -1201,7 +1218,7 @@ namespace MitchJourn_e
         {
             ProcessStartInfo openWebsite = new ProcessStartInfo
             {
-                FileName = "https://github.com/invoke-ai/InvokeAI/blob/main/docs/installation/INSTALL_WINDOWS.md",
+                FileName = "https://invoke-ai.github.io/InvokeAI/installation/INSTALL_SOURCE/",
                 UseShellExecute = true
             };
             Process.Start(openWebsite);
@@ -1293,10 +1310,7 @@ namespace MitchJourn_e
             txt_Creativity.Text = Math.Round(slider_Creativity.Value, 3).ToString();
         }
 
-        /// <summary>
-        /// Attempts to change settings to make the generation more creative or realistic (similar to midjourney)
-        /// </summary>
-        private void txt_Creativity_TextChanged(object sender, TextChangedEventArgs e)
+        private void UpdateCreativity()
         {
             globalPrompt = "";
             globalNegativePrompt = "";
@@ -1310,7 +1324,20 @@ namespace MitchJourn_e
                     double newScale = 0;
                     double newLimiter = 0;
                     double newNoise = 0;
-                    if (creativity > 7)
+
+                    if (creativity >= 5)
+                    {
+                        newScale = Math.Max(creativity * 1.5, 7);
+                        globalPrompt = "incredibly detailed";
+                        globalNegativePrompt = "(framed, ugly, tiling, blurry, bad anatomy, blurred, watermark, grainy, signature, cut off, draft)0.5";
+                    }
+                    else if (creativity >= 6)
+                    {
+                        newScale = Math.Max(creativity * 1.5, 7);
+                        globalPrompt = "(incredibly detailed)1.1";
+                        globalNegativePrompt = "(framed, ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, blurry, bad anatomy, blurred, watermark, grainy, signature, cut off, draft)0.5";
+                    }
+                    else if (creativity >= 7)
                     {
                         newScale = Math.Max(creativity * 1.5, 5);
                         newNoise = Math.Max(6 - (10 - creativity * 0.5), 0);
@@ -1341,7 +1368,7 @@ namespace MitchJourn_e
                         newScale = 3 * (3.1 - creativity) * 10;
                         newLimiter = creativity * 0.75;
                         newNoise = Math.Max((1 - creativity / 3) * 3, 0);
-                        globalPrompt = "(photography photo of a)";
+                        globalPrompt = "(incredible photo of a)";
                         globalNegativePrompt = "(cartoon anime art painting)+";
                         if (creativity <= 2.5)
                         {
@@ -1356,6 +1383,14 @@ namespace MitchJourn_e
                 }
             }
             catch { }
+        }
+
+        /// <summary>
+        /// Attempts to change settings to make the generation more creative or realistic (similar to midjourney)
+        /// </summary>
+        private void txt_Creativity_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateCreativity();
         }
 
         /// <summary>
