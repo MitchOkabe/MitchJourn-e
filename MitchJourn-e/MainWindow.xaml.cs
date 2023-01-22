@@ -51,7 +51,7 @@ namespace MitchJourn_e
         string currentProcessName = "";
         public int currentCMDProcessID = 0;
         public Process rendererProcess;
-        public StreamWriter textWriter;
+        //public StreamWriter textWriter;
         bool isFirstRun = true;
         bool firstUpscaleRequest = false;
         Random rand = new Random();
@@ -198,17 +198,18 @@ namespace MitchJourn_e
                 ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe");
                 processStartInfo.RedirectStandardInput = true;
                 processStartInfo.UseShellExecute = false;
+                processStartInfo.WindowStyle = ProcessWindowStyle.Minimized;
 
                 // check if there is already a cmd window running from this program
                 if (!useOldCMD)
                 {
                     // start a new cmd prompt
                     process = Process.Start(processStartInfo);
-
+                    
                     currentProcessName = process.MainWindowTitle;
                     currentCMDProcessID = process.Id;
                     rendererProcess = process;
-                    textWriter = process.StandardInput;
+                    //textWriter = process.StandardInput;
                     string sampler = Settings.Default["SamplerType"].ToString();
                     string safetyChecker = "";
                     string useFullPrecision = "";
@@ -227,7 +228,7 @@ namespace MitchJourn_e
                     {
                         safetyChecker = "--nsfw_checker";
                     }
-
+                    
                     // send the command to the CMD window to start the python script, enable the upsampler
                     process.StandardInput.WriteLine($"{prerequisites} python scripts\\invoke.py --png_compression 3 --sampler {sampler} {safetyChecker}");
 
