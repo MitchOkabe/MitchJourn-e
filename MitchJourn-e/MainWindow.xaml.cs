@@ -36,6 +36,7 @@ using MitchJourn_e.Classes;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using Wpf.Ui.Common;
 
 namespace MitchJourn_e
 {
@@ -57,6 +58,10 @@ namespace MitchJourn_e
         string globalPrompt = "";
         string globalNegativePrompt = "";
         bool windowClosing = false;
+        List<string> tempClipboardImagePaths = new List<string>();
+        BitmapSource clipboardImage;
+
+        public System.Windows.Window imageViewer = null;
 
         public MainWindow()
         {
@@ -66,6 +71,7 @@ namespace MitchJourn_e
             InitializePromptBubbles();
             StartRendering();
             UpdateCreativity();
+            ScanModels();
 
             if (Debugger.IsAttached)
                 Settings.Default.Reset();
@@ -223,7 +229,7 @@ namespace MitchJourn_e
                     }
 
                     // send the command to the CMD window to start the python script, enable the upsampler
-                    process.StandardInput.WriteLine($"{prerequisites} python scripts\\invoke.py --png_compression 7 --sampler {sampler} {safetyChecker}");
+                    process.StandardInput.WriteLine($"{prerequisites} python scripts\\invoke.py --png_compression 3 --sampler {sampler} {safetyChecker}");
 
                     // dropped support for custom gfpgan settings
                     // --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
@@ -344,6 +350,11 @@ namespace MitchJourn_e
                                     myBitmapImage.UriSource = new Uri(filePath);
                                     myBitmapImage.EndInit();
 
+                                    if (imageViewer != null)
+                                    {
+                                        ((ImageViewer)imageViewer).DisplayImage(myBitmapImage);
+                                    }
+
                                     // Create the image using the bitmap
                                     Image output = new Image
                                     {
@@ -455,11 +466,111 @@ namespace MitchJourn_e
                                         StartRendering();
                                     }
                                 }
+                                // Clipboard feature
+                                if ((bool)chk_ClipboardPrompt.IsChecked)
+                                {
+                                    BitmapSource currentClipboardImage = null;
+
+                                    if (Clipboard.ContainsImage())
+                                    {
+                                        currentClipboardImage = Clipboard.GetImage();
+
+                                        if (currentClipboardImage.PixelWidth > 64 && currentClipboardImage.PixelHeight > 64)
+                                        { 
+                                            clipboardImage = currentClipboardImage;
+
+                                            //System.Drawing.Color CurrentPixel1;
+                                            //System.Drawing.Color CurrentPixel2;
+                                            //System.Drawing.Color OldPixel1;
+                                            //System.Drawing.Color OldPixel2;
+
+                                            //Bitmap bitmap1;
+                                            //Bitmap bitmap2;
+
+                                            if (clipboardImage != null)
+                                            {
+                                            //    using (var outStream = new MemoryStream())
+                                            //    {
+                                            //        BitmapEncoder enc = new BmpBitmapEncoder();
+                                            //        enc.Frames.Add(BitmapFrame.Create(currentClipboardImage));
+                                            //        enc.Save(outStream);
+                                            //        bitmap1 = new Bitmap(outStream);
+                                            //    }
+
+                                            //    int width = int.Parse(currentClipboardImage.Width.ToString()) - 1;
+
+                                            //    // Get the color of a pixel within myBitmap.
+                                            //    CurrentPixel1 = bitmap1.GetPixel(1, 1);
+                                            //    CurrentPixel2 = bitmap1.GetPixel(width, 1);
+
+                                            //    using (var outStream = new MemoryStream())
+                                            //    {
+                                            //        BitmapEncoder enc = new BmpBitmapEncoder();
+                                            //        enc.Frames.Add(BitmapFrame.Create(clipboardImage));
+                                            //        enc.Save(outStream);
+                                            //        bitmap2 = new Bitmap(outStream);
+                                            //    }
+
+                                            //    width = int.Parse(clipboardImage.Width.ToString()) - 1;
+
+                                            //    OldPixel1 = bitmap2.GetPixel(1, 1);
+                                            //    OldPixel2 = bitmap2.GetPixel(width, 1);
+
+                                            //    if (OldPixel1 == CurrentPixel1 && OldPixel2 == CurrentPixel2)
+                                            //    {
+                                            //        return;
+                                            //    }                                            
+                                            }
+                                            else
+                                            {
+                                                clipboardImage = Clipboard.GetImage();
+                                            }
+
+                                            if (clipboardImage != null)
+                                            {
+                                                // Create a temporary file to store the clipboard image data
+                                                // then put the path into the image prompt field.
+                                                // Store a reference to the temporary paths so they can be cleaed up on close.
+                                                string tempClipboardImagePath = Path.GetTempFileName();
+                                                using (var fileStream = new FileStream(tempClipboardImagePath, FileMode.Create))
+                                                {
+                                                    BitmapEncoder encoder = new PngBitmapEncoder();
+                                                    encoder.Frames.Add((BitmapFrame.Create(clipboardImage as BitmapSource)));
+                                                    encoder.Save(fileStream);
+                                                }
+
+                                                tempClipboardImagePaths.Add(tempClipboardImagePath);
+
+                                                //if ((bool)chk_SequencialPrompting.IsChecked)
+                                                {
+                                                    //File tempClipboardImage = new File(tempClipboardImagePath);
+                                                    //FileAttributes tempClipboardImageAttributes = File.GetAttributes(tempClipboardImage);
+
+                                                    //tempClipboardImageAttributes.
+
+                                                    //File lastClipboardImage = new File(TempClipboardImagePath);
+                                                    //File.GetAttributes(TempClipboardImagePath);
+
+                                                    //if ()
+                                                    {
+
+                                                    }
+                                                }
+                                                //else
+                                                {
+                                                    txt_ImagePrompt.Text = tempClipboardImagePath;
+                                                }
+                                            }
+                                            
+                                        }
+                                    }
+                                }
                             }
                             catch { return; }
                         });
                     }
                 }
+
             }
         }
 
@@ -734,6 +845,8 @@ namespace MitchJourn_e
             txt_ImagePrompt.Text = image.imagePrompt;
             txt_ImagePromptWeight.Text = image.imagePromptWeight;
             ConvertStringToPromptBubbles(image.prompt);
+            chk_ContinuouslyPrompt.IsChecked = false;
+            chk_IncrementSeed.IsChecked = false;
 
             StartRendering(image.prompt, false);
         }
@@ -1401,6 +1514,11 @@ namespace MitchJourn_e
             StopRendering();
             windowClosing = true;
 
+            foreach (string tempClipboardImagePaths in tempClipboardImagePaths)
+            {
+                File.Delete(tempClipboardImagePaths);
+            }
+
             if (Settings.Default["DeleteOnExit"].ToString() == "1")
             {
                 if (MessageBox.Show("Are you sure you would like to delete all these generated images?", "Confirm Deletion",
@@ -1490,7 +1608,7 @@ namespace MitchJourn_e
                     }
                     else
                     {
-                        output += $"({bubble.prompt}) ";
+                        output += $"({bubble.prompt})1 ";
                     }
                 }
                 catch { }
@@ -1634,7 +1752,7 @@ namespace MitchJourn_e
 
         private void btn_AddPromptBubble_Click(object sender, RoutedEventArgs e)
         {
-            wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(""));
+            wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble());
         }
 
         private void txt_Prompt_TextChanged(object sender, TextChangedEventArgs e)
@@ -1680,6 +1798,61 @@ namespace MitchJourn_e
             txt_promptHelperPower.Text = "1";
             txt_negativePromptHelperPower.Text = "1";
             txt_ImagePromptWeight.Text = "0.25";
+        }
+        private void ScanModels()
+        {
+            string modelPath = $"{Settings.Default["MainPath"]}\\models\\ldm\\";
+
+            if (Directory.Exists(modelPath))
+            {
+                string[] models = Directory.GetFiles(modelPath);
+
+                foreach (string model in models)
+                {
+                    string modelFileName = Path.GetFileName(model);
+                    ComboBoxItem cmbModel = new ComboBoxItem
+                    {
+                        Content = modelFileName,
+                        Tag = model
+                    };
+                    cmb_Model.Items.Add(cmbModel);
+
+                    string currentModelFileName = Path.GetFileName($"{Settings.Default["MainPath"]}\\{Settings.Default["ModelPath"]}");
+
+                    if (modelFileName == currentModelFileName)
+                    {
+                        cmb_Model.SelectedItem = cmbModel;
+                    }
+                }
+            }
+        }
+
+        private void cmb_Model_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string modelPath = $"{Settings.Default["MainPath"]}\\models\\ldm\\{((ComboBoxItem)(cmb_Model.SelectedItem)).Content}";
+            txt_ModelPath.Text = modelPath;
+            Settings.Default["ModelPath"] = modelPath;
+            Settings.Default.Save();
+
+            string configPath = $"{Settings.Default["MainPath"]}\\configs\\models.yaml";
+            string configText = "stable-diffusion-1.5:\r\n" +
+                "  description: The newest Stable Diffusion version 1.5 weight file (4.27 GB)\r\n" +
+                $"  weights: ./models/ldm/{Path.GetFileName(Settings.Default["ModelPath"].ToString())}\r\n" +
+                "  config: ./configs/stable-diffusion/v1-inference.yaml\r\n" +
+                "  width: 512\r\n" +
+                "  height: 512\r\n" +
+                "  vae: ./models/ldm/stable-diffusion-v1/vae-ft-mse-840000-ema-pruned.ckpt\r\n" +
+                "  default: true";
+
+            File.WriteAllText(configPath, configText);
+            StopRendering();
+            StartRendering();
+        }
+
+        private void btn_ImageViewer_Click(object sender, RoutedEventArgs e)
+        {
+            ImageViewer imageViewer = new ImageViewer();
+            imageViewer.Show();
         }
     }
 }

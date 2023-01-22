@@ -1,13 +1,20 @@
-﻿using System;
+﻿using GongSolutions.Wpf.DragDrop;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+using Wpf.Ui.Controls;
 using Brushes = System.Windows.Media.Brushes;
+using Button = Wpf.Ui.Controls.Button;
+using TextBox = Wpf.Ui.Controls.TextBox;
+using DragDrop = GongSolutions.Wpf.DragDrop.DragDrop;
 
 namespace MitchJourn_e.Classes
 {
@@ -30,86 +37,100 @@ namespace MitchJourn_e.Classes
             StackPanel outputStackPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(4),
                 Tag = this
             };
             RootControl = outputStackPanel;
-            
-            Border borderPrompt = new Border
+
+            Card card = new Card()
             {
-                CornerRadius = new CornerRadius(8),
-                Background = primaryColour
+                Padding = new Thickness(4),
+                Background = Brushes.White
             };
-            outputStackPanel.Children.Add(borderPrompt);
+            DragDrop.SetIsDragSource(card, true);
+            outputStackPanel.Children.Add(card);
+            StackPanel innerStack = new StackPanel { Orientation = Orientation.Horizontal };
+            card.Content = innerStack;
 
             TextBox textPrompt = new TextBox
             {
                 Text = prompt,
-                MinWidth = 42,
-                Margin = new Thickness(8),
-                FontSize = 16,
-                Background = transparent,
-                BorderBrush = null,
                 AutoWordSelection = true,
                 FocusVisualStyle = null,
-                BorderThickness = new Thickness(0)
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                MinHeight = 42,
+                MinWidth = 42,
+                Padding = new Thickness(4),
+                Style = null
             };
             textPrompt.TextChanged += TextPrompt_TextChanged;
             textPrompt.SpellCheck.IsEnabled = true;
             textPrompt.GotKeyboardFocus += TextPrompt_GotKeyboardFocus;
-            borderPrompt.Child = textPrompt;
+            textPrompt.KeyDown += TextPrompt_KeyDown;
+            innerStack.Children.Add(textPrompt);
 
             Label labelPower = new Label
             {
                 Content = power,
-                Margin = new Thickness(-19, -6, 0, 0),
+                Margin = new Thickness(-16, 0, 0, 0),
                 IsHitTestVisible = false
             };
-            outputStackPanel.Children.Add(labelPower);
+            innerStack.Children.Add(labelPower);
 
             StackPanel stackPowerButtons = new StackPanel();
-            outputStackPanel.Children.Add(stackPowerButtons);
-
-            Border borderPowerPlus = new Border
-            {
-                CornerRadius = new CornerRadius(8),
-                Background = primaryColour,
-                Margin = new Thickness(2, 0, 2, 0)
-            };
-            stackPowerButtons.Children.Add(borderPowerPlus);
+            innerStack.Children.Add(stackPowerButtons);
 
             Button buttonPowerPlus = new Button
             {
+                Padding = new Thickness(2, 1, 2, 1),
+                Tag = labelPower,
                 Content = "+",
-                Background = null,
-                BorderBrush = null,
-                Tag = labelPower
+                IsTabStop = false
             };
             buttonPowerPlus.Click += AdjustPower_Click;
-            borderPowerPlus.Child = buttonPowerPlus;
-
-            Border borderPowerMinus = new Border
-            {
-                CornerRadius = new CornerRadius(8),
-                Background = primaryColour,
-                Margin = new Thickness(2, 0, 2, 0)
-            };
-            stackPowerButtons.Children.Add(borderPowerMinus);
+            stackPowerButtons.Children.Add(buttonPowerPlus);
 
             Button buttonPowerMinus = new Button
             {
+                Padding = new Thickness(4, 1, 4, 1),
+                Tag = labelPower,
                 Content = "-",
-                Background = null,
-                BorderBrush = null,
-                Tag = labelPower
+                IsTabStop = false
             };
             buttonPowerMinus.Click += AdjustPower_Click;
-            borderPowerMinus.Child = buttonPowerMinus;
+            stackPowerButtons.Children.Add(buttonPowerMinus);
 
             this.prompt = prompt;
             this.power = power;
 
             return outputStackPanel;
+        }
+
+        private void TextPrompt_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Return)
+            {
+                TextBox textBox = ((TextBox)sender);
+                string fullPrompt = textBox.Text;
+                string firstPrompt = "";
+                string secondPrompt = "";
+
+                for (int i = 0; i < fullPrompt.Length; i++)
+                {
+                    if (i < textBox.SelectionStart)
+                    {
+                        firstPrompt += fullPrompt[i];
+                    }
+                    else
+                    {
+                        secondPrompt += fullPrompt[i];
+                    }
+                }
+                ((TextBox)sender).Text = firstPrompt;
+                mainWindow.wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(secondPrompt));
+            }
         }
 
         private void TextPrompt_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
@@ -121,7 +142,7 @@ namespace MitchJourn_e.Classes
             }
         }
 
-            private void TextPrompt_TextChanged(object sender, TextChangedEventArgs e)
+        private void TextPrompt_TextChanged(object sender, TextChangedEventArgs e)
         {
             prompt = ((TextBox)sender).Text;
 
