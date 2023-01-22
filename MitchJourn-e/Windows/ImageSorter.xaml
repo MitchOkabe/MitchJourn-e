@@ -5,13 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MitchJourn_e.Windows"
         mc:Ignorable="d"
-        Title="Sorting images..." Height="226" Width="363"
-        ResizeMode="NoResize">
+        Title="Sorting images..." Height="226" Width="363">
     <Border Background="#E5FFFFFF">
         <StackPanel Margin="4">
-            <Label Content="Processing..." />
+            <Label Visibility="Collapsed" Content="Processing..." />
             <ProgressBar Height="20" IsIndeterminate="True" Margin="32"/>
-            <Button Content="Cancel" Width="42" Margin="32" Click="Button_Click"/>
+            <Button Content="Cancel" Width="80" Margin="32" Click="Button_Click"/>
         </StackPanel>
     </Border>
 </Window>

@@ -344,87 +344,164 @@ namespace MitchJourn_e.Properties {
             "tring>\r\n  <string>Styles/Photo=f/1.4 50mm 200iso 4k</string>\r\n  <string>Styles/i" +
             "Phone photo=iPhone photo</string>\r\n  <string>Styles/Portrait Photography1=facial" +
             " asymmetry, striking features, tack sharp, fine-art photography, 180mm f/1.8 200" +
-            "iso</string>\r\n  <string>Styles/Landscape=octane render 4k unreal engine 200iso d" +
-            "ynamic range hdr wonderous awesome greg rutkowski sung choi thomas kinkade vince" +
-            "nt van gogh</string>\r\n  <string>Styles/High Quality=hyperdetailed hd 4k 8k sharp" +
-            " focus highly detailed</string>\r\n  <string>Styles/Elegant Portrait=portrait phot" +
-            "o headshot by mucha, sharp focus, elegant, render, octane, detailed, award winni" +
-            "ng photography, masterpiece, rim lit</string>\r\n  <string>Styles/Artistic Portrai" +
-            "t=a vibrant professional studio portrait photography casual, delightful, intrica" +
-            "te, piercing eyes, nouveau, curated collection, annie leibovitz, nikon, award wi" +
-            "nning, breathtaking, groundbreaking, superb, outstanding, lensculture portrait a" +
-            "wards, photoshopped, dramatic lighting, 8k</string>\r\n  <string>Styles/Rendered P" +
-            "ortrait=soft, octane render, unreal engine, photograph, realistic skin texture, " +
-            "photorealistic, hyper realism, highly detailed, 85mm portrait photography, award" +
-            " winning, hard rim lighting photography</string>\r\n  <string>Styles/Stary Portrai" +
-            "t=a portrait with a luminous clothing, eyes shut, mouth closed, wind, sky, cloud" +
-            "s, the moon, moonlight, stars, universe, fireflies, butterflies, lights, lens fl" +
-            "ares effects, swirly bokeh, brush effect, In style of Yoji Shinkawa, Jackson Pol" +
-            "lock, wojtek fus, by Makoto Shinkai, concept art, celestial, amazing, astonishin" +
-            "g, wonderful, beautiful, highly detailed, centered</string>\r\n  <string>Styles/Ph" +
-            "otobashing=photobashing</string>\r\n  <string>Styles/Algorithmic Art=algorithmic a" +
-            "rt</string>\r\n  <string>Styles/Stars and Galaxies=composed of billions of stars, " +
-            "digital art</string>\r\n  <string>Styles/Cartoon dramatic style=digital art, 2.5D " +
-            "style</string>\r\n  <string>Styles/Made of smoke=made of very detailed curling wis" +
-            "py glowing multicolored smoke, digital art, volumetric, 3D render, Octane render" +
-            "</string>\r\n  <string>Styles/Detailed Particles=detailed particle, digital art</s" +
-            "tring>\r\n  <string>Styles/Mixed Media=mixed media</string>\r\n  <string>Styles/Magi" +
-            "cal world=magical world</string>\r\n  <string>Styles/concept art=concept art splas" +
-            "h art</string>\r\n  <string>Cinematography/Cinematic lighting=cinematic lighting</" +
-            "string>\r\n  <string>Cinematography/Low angle=photograph, taken from a low angle</" +
-            "string>\r\n  <string>Cinematography/Over the shoulder=photograph, over-the-shoulde" +
-            "r</string>\r\n  <string>Cinematography/Drone footage=photograph taken from a drone" +
-            "</string>\r\n  <string>Cinematography/Close up=close up</string>\r\n  <string>Cinema" +
-            "tography/Wide angle=wide angle</string>\r\n  <string>Cinematography/Movie ccene=an" +
-            "amorphic lens film scene movie still f/2 800iso 35mm light dust haze</string>\r\n " +
-            " <string>Cinematography/Golden hour=golden hour</string>\r\n  <string>Cinematograp" +
-            "hy/beautiful lighting=beautiful lighting</string>\r\n  <string>Sources/artstation=" +
-            "artstation</string>\r\n  <string>Sources/instagram=instagram</string>\r\n  <string>S" +
-            "ources/deviantart=deviantart</string>\r\n  <string>Sources/reddit=reddit</string>\r" +
-            "\n  <string>Sources/shutterstock=shutterstock</string>\r\n  <string>Sources/tumblr=" +
-            "tumblr</string>\r\n  <string>Sources/cgsociety=cgsociety</string>\r\n  <string>Sourc" +
-            "es/flickr=flickr</string>\r\n  <string>Sources/behance=behance</string>\r\n  <string" +
-            ">Sources/dribble=dribble</string>\r\n  <string>Sources/pexels=pexels</string>\r\n  <" +
-            "string>Sources/pinterest=pinterest</string>\r\n  <string>Sources/pixabay=pixabay</" +
-            "string>\r\n  <string>Sources/pixiv=pixiv</string>\r\n  <string>Sources/polycount=pol" +
-            "ycount</string>\r\n  <string>Effects/post processing=post processing</string>\r\n  <" +
-            "string>Effects/cgi=cgi</string>\r\n  <string>Effects/chromatic aberration=chromati" +
-            "c aberration</string>\r\n  <string>Effects/anaglyph=anaglyph</string>\r\n  <string>E" +
-            "ffects/cropped=cropped</string>\r\n  <string>Effects/glowing edges=glowing edges</" +
-            "string>\r\n  <string>Effects/glow effect=glow effect</string>\r\n  <string>Effects/b" +
-            "okeh=bokeh</string>\r\n  <string>Effects/dramatic lighting=dramatic lighting</stri" +
-            "ng>\r\n  <string>Effects/soft lighting=soft lighting</string>\r\n  <string>Effects/h" +
-            "ard lighting=hard lighting</string>\r\n  <string>Effects/glamor shot=glamor shot</" +
-            "string>\r\n  <string>Effects/colourful=colourful</string>\r\n  <string>Effects/compl" +
-            "imentary-colours=complimentary-colours</string>\r\n  <string>Effects/dark mood=dar" +
-            "k mood</string>\r\n  <string>Effects/multiverse=multiverse</string>\r\n  <string>Eff" +
-            "ects/volumetric lighting=volumetric lighting</string>\r\n  <string>Effects/lumen g" +
-            "lobal illumination=lumen global illumination</string>\r\n  <string>Effects/octane " +
-            "render=octane render</string>\r\n  <string>Effects/atmospheric=atmospheric</string" +
-            ">\r\n  <string>Effects/technicolour=technicolour</string>\r\n  <string>Mediums/photo" +
-            " realistic=photo realistic</string>\r\n  <string>Mediums/anime=anime manga</string" +
-            ">\r\n  <string>Mediums/graphic novel=graphic novel</string>\r\n  <string>Mediums/fou" +
-            "ntain pen=fountain pen</string>\r\n  <string>Mediums/pastel art=pastel art</string" +
-            ">\r\n  <string>Mediums/fine art=fine art</string>\r\n  <string>Mediums/acrylic paint" +
-            "=acrylic paint</string>\r\n  <string>Mediums/oil paint=oil paint</string>\r\n  <stri" +
-            "ng>Mediums/watercolour=watercolour</string>\r\n  <string>Mediums/digital art=digit" +
-            "al art</string>\r\n  <string>Mediums/magazine=magazine</string>\r\n  <string>Mediums" +
-            "/comic book=comic book</string>\r\n  <string>Mediums/pokemon card=pokemon card</st" +
-            "ring>\r\n  <string>Mediums/puzzle=puzzle</string>\r\n  <string>Mediums/logo=logo</st" +
-            "ring>\r\n  <string>Mediums/editorial photography=editorial photography</string>\r\n " +
-            " <string>Mediums/wildlife photography=wildlife photography</string>\r\n  <string>N" +
-            "egative/Photo=cartoon anime art painting ugly</string>\r\n  <string>Negative/Portr" +
-            "ait=bad anatomy bad proportions blurry cloned face deformed disfigured duplicate" +
-            " gross proportions long neck mutation mutilated morbid out of frame poorly drawn" +
-            " face</string>\r\n  <string>Negative/Hands=poorly drawn hands extra arms extra fin" +
-            "gers extra limbs extra legs too many fingers fused fingers malformed limbs missi" +
-            "ng arms missmg legs mutated hands</string>\r\n  <string>Negative/Safety=nsfw nude " +
-            "naked</string>\r\n  <string>Negative/Landscape=portrait person people text signatu" +
-            "re watermark frame framed display</string>\r\n  <string>Negative/High Quality=lowr" +
-            "es text error cropped worst quality low quality normal quality jpeg artifacts si" +
-            "gnature watermark username blurry artist name deformed disfigured poorly drawn o" +
-            "ut of focus censorship amateur drawing bad art poor art messy drawing</string>\r\n" +
-            "</ArrayOfString>")]
+            "iso</string>\r\n  <string>Styles/Stability Portrait=ultrarealistic uhd faces, Koda" +
+            "k Ultramax 800, pexels, 85mm, casual pose, 35mm film roll photo, hard light, det" +
+            "ailed skin texture, masterpiece, sharp focus, pretty, lovely, adorale, attractiv" +
+            "e, hasselblad, candid street podrait</string>\r\n  <string>Styles/Landscape=octane" +
+            " render 4k unreal engine cryengine 200iso dynamic range hdr wonderous awesome gr" +
+            "eg rutkowski sung choi thomas kinkade vincent van gogh</string>\r\n  <string>Style" +
+            "s/Stability Landscape1=unsplash contest winner, breath-taking beautiful, warm sh" +
+            "ades of blue, video still</string>\r\n  <string>Styles/High Quality=hyperdetailed " +
+            "hd 4k 8k sharp focus highly detailed uhd</string>\r\n  <string>Styles/Elegant Port" +
+            "rait=portrait photo headshot by mucha, sharp focus, elegant, render, octane, det" +
+            "ailed, award winning photography, masterpiece, rim lit</string>\r\n  <string>Style" +
+            "s/Artistic Portrait=a vibrant professional studio portrait photography casual, d" +
+            "elightful, intricate, piercing eyes, nouveau, curated collection, annie leibovit" +
+            "z, nikon, award winning, breathtaking, groundbreaking, superb, outstanding, lens" +
+            "culture portrait awards, photoshopped, dramatic lighting, 8k</string>\r\n  <string" +
+            ">Styles/Rendered Portrait=soft, octane render, unreal engine, photograph, realis" +
+            "tic skin texture, photorealistic, hyper realism, highly detailed, 85mm portrait " +
+            "photography, award winning, hard rim lighting photography</string>\r\n  <string>St" +
+            "yles/Stary Portrait=a portrait with a luminous clothing, eyes shut, mouth closed" +
+            ", wind, sky, clouds, the moon, moonlight, stars, universe, fireflies, butterflie" +
+            "s, lights, lens flares effects, swirly bokeh, brush effect, In style of Yoji Shi" +
+            "nkawa, Jackson Pollock, wojtek fus, by Makoto Shinkai, concept art, celestial, a" +
+            "mazing, astonishing, wonderful, beautiful, highly detailed, centered</string>\r\n " +
+            " <string>Styles/Photobashing=photobashing</string>\r\n  <string>Styles/Algorithmic" +
+            " Art=algorithmic art</string>\r\n  <string>Styles/Stars and Galaxies=composed of b" +
+            "illions of stars, digital art</string>\r\n  <string>Styles/Cartoon dramatic style=" +
+            "digital art, 2.5D style</string>\r\n  <string>Styles/Made of smoke=made of very de" +
+            "tailed curling wispy glowing multicolored smoke, digital art, volumetric, 3D ren" +
+            "der, Octane render</string>\r\n  <string>Styles/Detailed Particles=detailed partic" +
+            "le, digital art</string>\r\n  <string>Styles/Mixed Media=mixed media</string>\r\n  <" +
+            "string>Styles/Magical world=magical world</string>\r\n  <string>Styles/concept art" +
+            "=concept art splash art</string>\r\n  <string>Styles/Stability Architecture=A Hype" +
+            "rrealistic photograph of German architectural building, lens flares, cinematic, " +
+            "hdri, matte painting, concept art, celestial, soft render, highly detailed, cgso" +
+            "ciety, octane render, architectural HD, HQ, 4k, 8k</string>\r\n  <string>Cinematog" +
+            "raphy/Cinematic lighting=cinematic lighting</string>\r\n  <string>Cinematography/L" +
+            "ow angle=photograph, taken from a low angle</string>\r\n  <string>Cinematography/O" +
+            "ver the shoulder=photograph, over-the-shoulder</string>\r\n  <string>Cinematograph" +
+            "y/Drone footage=photograph taken from a drone</string>\r\n  <string>Cinematography" +
+            "/Close up=close up</string>\r\n  <string>Cinematography/Wide angle=wide angle</str" +
+            "ing>\r\n  <string>Cinematography/Movie ccene=anamorphic lens film scene movie stil" +
+            "l f/2 800iso 35mm light dust haze</string>\r\n  <string>Cinematography/Golden hour" +
+            "=golden hour</string>\r\n  <string>Cinematography/beautiful lighting=beautiful lig" +
+            "hting</string>\r\n  <string>Sources/artstation=artstation</string>\r\n  <string>Sour" +
+            "ces/instagram=instagram</string>\r\n  <string>Sources/deviantart=deviantart</strin" +
+            "g>\r\n  <string>Sources/reddit=reddit</string>\r\n  <string>Sources/shutterstock=shu" +
+            "tterstock</string>\r\n  <string>Sources/tumblr=tumblr</string>\r\n  <string>Sources/" +
+            "cgsociety=cgsociety</string>\r\n  <string>Sources/flickr=flickr</string>\r\n  <strin" +
+            "g>Sources/behance=behance</string>\r\n  <string>Sources/dribble=dribble</string>\r\n" +
+            "  <string>Sources/pexels=pexels</string>\r\n  <string>Sources/pinterest=pinterest<" +
+            "/string>\r\n  <string>Sources/pixabay=pixabay</string>\r\n  <string>Sources/pixiv=pi" +
+            "xiv</string>\r\n  <string>Sources/polycount=polycount</string>\r\n  <string>Effects/" +
+            "post processing=post processing</string>\r\n  <string>Effects/cgi=cgi</string>\r\n  " +
+            "<string>Effects/chromatic aberration=chromatic aberration</string>\r\n  <string>Ef" +
+            "fects/anaglyph=anaglyph</string>\r\n  <string>Effects/cropped=cropped</string>\r\n  " +
+            "<string>Effects/glowing edges=glowing edges</string>\r\n  <string>Effects/glow eff" +
+            "ect=glow effect</string>\r\n  <string>Effects/bokeh=bokeh</string>\r\n  <string>Effe" +
+            "cts/dramatic lighting=dramatic lighting</string>\r\n  <string>Effects/soft lightin" +
+            "g=soft lighting</string>\r\n  <string>Effects/hard lighting=hard lighting</string>" +
+            "\r\n  <string>Effects/glamor shot=glamor shot</string>\r\n  <string>Effects/colourfu" +
+            "l=colourful</string>\r\n  <string>Effects/complimentary-colours=complimentary-colo" +
+            "urs</string>\r\n  <string>Effects/dark mood=dark mood</string>\r\n  <string>Effects/" +
+            "multiverse=multiverse</string>\r\n  <string>Effects/volumetric lighting=volumetric" +
+            " lighting</string>\r\n  <string>Effects/lumen global illumination=lumen global ill" +
+            "umination</string>\r\n  <string>Effects/octane render=octane render</string>\r\n  <s" +
+            "tring>Effects/atmospheric=atmospheric</string>\r\n  <string>Effects/technicolour=t" +
+            "echnicolour</string>\r\n  <string>Mediums/photo realistic=photo realistic</string>" +
+            "\r\n  <string>Mediums/anime=anime manga</string>\r\n  <string>Mediums/graphic novel=" +
+            "graphic novel</string>\r\n  <string>Mediums/fountain pen=fountain pen</string>\r\n  " +
+            "<string>Mediums/pastel art=pastel art</string>\r\n  <string>Mediums/fine art=fine " +
+            "art</string>\r\n  <string>Mediums/acrylic paint=acrylic paint</string>\r\n  <string>" +
+            "Mediums/oil paint=oil paint</string>\r\n  <string>Mediums/watercolour=watercolour<" +
+            "/string>\r\n  <string>Mediums/digital art=digital art</string>\r\n  <string>Mediums/" +
+            "magazine=magazine</string>\r\n  <string>Mediums/comic book=comic book</string>\r\n  " +
+            "<string>Mediums/pokemon card=pokemon card</string>\r\n  <string>Mediums/puzzle=puz" +
+            "zle</string>\r\n  <string>Mediums/logo=logo</string>\r\n  <string>Mediums/editorial " +
+            "photography=editorial photography</string>\r\n  <string>Mediums/wildlife photograp" +
+            "hy=wildlife photography</string>\r\n  <string>Negative/Photo=cartoon anime art pai" +
+            "nting ugly</string>\r\n  <string>Negative/Portrait=bad anatomy bad proportions blu" +
+            "rry cloned face deformed disfigured duplicate gross proportions long neck mutati" +
+            "on mutilated morbid out of frame poorly drawn face</string>\r\n  <string>Negative/" +
+            "Hands=poorly drawn hands extra arms extra fingers extra limbs extra legs too man" +
+            "y fingers fused fingers malformed limbs missing arms missmg legs mutated hands</" +
+            "string>\r\n  <string>Negative/Safety=nsfw nude naked</string>\r\n  <string>Negative/" +
+            "Landscape=portrait person people text signature watermark frame framed display</" +
+            "string>\r\n  <string>Negative/High Quality=lowres text error cropped worst quality" +
+            " low quality normal quality jpeg artifacts signature watermark username blurry a" +
+            "rtist name deformed disfigured poorly drawn out of focus censorship amateur draw" +
+            "ing bad art poor art messy drawing</string>\r\n  <string>Negative/Stability Portra" +
+            "it=fox in a lab coat, extra limb, from scene from twin peaks, brutalist futurist" +
+            "ic interior, retro futurism, dramatic nautical scene , ornate hospital room, cru" +
+            "mbling masonry, pale blue armor, mechanical paw, laser guns, pulp sci fi, two de" +
+            "er wearing suits</string>\r\n  <string>Negative/Stability Portrait2=colourful 3d c" +
+            "rystals and gems, vintage 1950s stamp, full color manga cover, kewpie, two girls" +
+            ", anime, fairytale illustration, chinese ribbon dance, children illustration, fl" +
+            "ower dress, illustration, silk shoes, classic children\'s illustrations, adorable" +
+            " and whimsical</string>\r\n  <string>Negative/Stability Portrait3=blender, cropped" +
+            ", lowres, poorly drawn face, out of frame, poorly drawn hands, double, blurred, " +
+            "disfigured, deformed, repetitive, black and white</string>\r\n  <string>Negative/S" +
+            "tability Landscape=wearing victorian brass goggles, alien, alien isolation, ink " +
+            "on paper, flash sheet, robot barkeep, black micron pen illustration, black banda" +
+            "ge on arms, mcbess, grid of eye shapes, moscow metro, b&amp;w, childish, steelpu" +
+            "nk, holding a cigar, dark show room, dieselpunk, necromancer, mouse face</string" +
+            ">\r\n  <string>Negative/Stability Digital Art=autumn rain turkel, two finnish lapp" +
+            "hundsv 2d lasercut earrings tribal dance, risograph, white orchids, egyptian sum" +
+            "erian features, large temples, childish</string>\r\n  <string>Negative/Stability D" +
+            "igital Art2=tintype photograph, moth inspired dress, red on black, lace dress, d" +
+            "eformed, 1970 film photography, very sexy woman with black hair, fashion model p" +
+            "ortrait, alien faces, animal photography, disfigured</string>\r\n  <string>Negativ" +
+            "e/Stability Sci-Fi Art=trees in foreground, ink pen sketch, on a velvet tableclo" +
+            "th, black ink on textured paper, long black straight hair, pencil skit pink lips" +
+            ", sophisticated hands, noir, mystic winter landscape, linocut print, sailboats, " +
+            "watercolor strokes, grass landscape, pink rose, vintage 1950s stamp</string>\r\n  " +
+            "<string>Negative/Stability Sci-Fi Render=1980s flower power hippy, impressionist" +
+            " watercolor, sitting at the beach, hot pink, german expressionist woodcut, weari" +
+            "ng in stocking, pen drawing, young woman, on a branch, watercolour on paper, gre" +
+            "en and pink, wearing shades, in a garden, drinking their hearts out, old</string" +
+            ">\r\n  <string>Negative/Stability Comic=lofi bioshock steampunk portrait, 4k digit" +
+            "al painting, tapir, female portrait with flowers, metamorphosis complex 3d rende" +
+            "r, white petal, skyrim screenshot, fine art fashion photography, side portrait o" +
+            "fa girl, lotus flower, lost place photo, black and white, text, title</string>\r\n" +
+            "  <string>Negative/Stability Comic2=I elderly greek goddess, 1900s photograph, l" +
+            "ong glowing ethereal hair, gorgeous face, brown hair!, calotype, sheep wool, ham" +
+            "mershoi, eyelashes, dreamy and ethereal, single pine, nsfw, white lilies, flower" +
+            "s on hair</string>\r\n  <string>Negative/Stability Fantacy=troops searching the ar" +
+            "ea, from police academy 2 (1985), gunma prefecture, concrete housing, nsfw, blur" +
+            ", wood block print, in africa, kodak tri - x 3 5 mm, black lace, american flag, " +
+            "football players, tokyojapan, ferrari 458, woodblock print</string>\r\n  <string>N" +
+            "egative/Stability Cyberpunk=purple and red flowers, wood block print, idyllic an" +
+            "d fruitful land, standing on a ladder, postman pat, gnome druid, botanic waterco" +
+            "lors, aged paper, standing with a parasol, she has a crown of dried flowers, wea" +
+            "ring an apron, pink door, nature journal, theodor kittelsen, harvest fall vibran" +
+            "cy, crop</string>\r\n  <string>Negative/Stability Cars=blue sky and white clouds, " +
+            "gourds, 1880 photograph, troops searching the area, b&amp;w, rolling green hills" +
+            ", aboriginal engraving, arge black hat, spiral lines, several cottages, with anc" +
+            "hor man and woman, ink drawing, brown hair, wide greenways, black ink on white p" +
+            "aper</string>\r\n  <string>Negative/Stability Texture=fox in a lab coat, extra lim" +
+            "b, from scene from twin peaks, brutalist futuristic interior, retro futurism, dr" +
+            "amatic nautical scene, ornate hospital room, crumbling masonry, pale blue armor," +
+            " mechanical paw, laser guns, pulp sci fi, two deer wearing suits</string>\r\n  <st" +
+            "ring>Negative/Stability Food=warframe hound art, black ink on white paper, art n" +
+            "ouveau ink illustration, huge feathery wings, holding a tattered magical book, a" +
+            "nubis, lots of furniture, clockwork steampunk, low quality, childish, mecha suit" +
+            ", blue moonlight, many mechflowers, fancy clouds, crazy hacker girl, blue flames" +
+            ", solarpunk, undersea temple, in a lavender field in france : -5</string>\r\n  <st" +
+            "ring>Negative/Stability Food2=fantasy dungeon, beautiful woman pot-trait, on sti" +
+            "lts, tribal dance, 3d high definition, cell shaded cartoon, dozens of jeweled ne" +
+            "cklaces, disco lights, in full military garb, long neck, rainbow aura crystals, " +
+            "full moon lighting, patterned visionary art, laser guns, mystic winter landscape" +
+            ", feathered arrows, mirror selfie</string>\r\n  <string>Negative/Stability Charact" +
+            "er=dramatic space battle, engraving from 1700s, spinosaurus, illegible rosicruci" +
+            "an symbols, medieval woodcut, elegant evening gowns!, battle of 1453, black ink " +
+            "on white paper, ornamental arrows, croatian coastline, lush vegetation, arabian " +
+            "beauty, 1990s 1992 sega genesis box att : -5</string>\r\n  <string>Negative/Stabil" +
+            "ity Character2=pen and ink doodles, blowing hair, in the foreground a small town" +
+            ", white frame, soft blues and greens, capybara, long flowing hair, polish poster" +
+            " an, books and flowers, fairytale illustration, cute and funny, white stockings," +
+            " cropped, out of frame : -5</string>\r\n</ArrayOfString>")]
         public global::System.Collections.Specialized.StringCollection PromptHelperPresets {
             get {
                 return ((global::System.Collections.Specialized.StringCollection)(this["PromptHelperPresets"]));
