@@ -75,6 +75,7 @@ namespace MitchJourn_e
 
             if (Debugger.IsAttached)
                 Settings.Default.Reset();
+            isFirstRun = false;
         }
 
         /// <summary>
@@ -121,7 +122,7 @@ namespace MitchJourn_e
                 string seed = txt_Seed.Text;
                 string uprez = "";
                 string highRezFix = "";
-                
+
                 lbl_Status.Content = "Loading...";
 
                 if (promptText != "")
@@ -187,7 +188,7 @@ namespace MitchJourn_e
                         $"-s {Settings.Default["Steps"]} " +
                         $"-n {Settings.Default["Iter"]} " +
                         $"{imagePrompt} " +
-                        $"{uprez} "+
+                        $"{uprez} " +
                         $"--sampler {Settings.Default["SamplerType"]} " +
                         $"--threshold {txt_Limiter.Text} --perlin {txt_Noise.Text} " +
                         $"{seamlessTile} " +
@@ -205,7 +206,7 @@ namespace MitchJourn_e
                 {
                     // start a new cmd prompt
                     process = Process.Start(processStartInfo);
-                    
+
                     currentProcessName = process.MainWindowTitle;
                     currentCMDProcessID = process.Id;
                     rendererProcess = process;
@@ -228,7 +229,7 @@ namespace MitchJourn_e
                     {
                         safetyChecker = "--nsfw_checker";
                     }
-                    
+
                     // send the command to the CMD window to start the python script, enable the upsampler
                     process.StandardInput.WriteLine($"{prerequisites} python scripts\\invoke.py --png_compression 3 --sampler {sampler} {safetyChecker}");
 
@@ -246,13 +247,13 @@ namespace MitchJourn_e
                         {
                             lbl_Status.Content = "Enter a prompt and press go!";
                         }
-                        isFirstRun = false;
+                        //isFirstRun = false;
                     }
                     else
                     {
-                        
+
                         process.StandardInput.WriteLine($"{globalPrompt} {GatherPromptBubbles()} ({promptHelper}){txt_promptHelperPower.Text} [{globalNegativePrompt}] [({negativePrompt}){txt_negativePromptHelperPower.Text}] {promptSettings}");
-                        
+
                     }
                 }
                 else // if the CMD window is already opened, send the prompt
@@ -1830,24 +1831,27 @@ namespace MitchJourn_e
 
         private void cmb_Model_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string modelPath = $"{Settings.Default["MainPath"]}\\models\\ldm\\{((ComboBoxItem)(cmb_Model.SelectedItem)).Content}";
-            txt_ModelPath.Text = modelPath;
-            Settings.Default["ModelPath"] = modelPath;
-            Settings.Default.Save();
+            if (!isFirstRun)
+            {
+                string modelPath = $"{Settings.Default["MainPath"]}\\models\\ldm\\{((ComboBoxItem)(cmb_Model.SelectedItem)).Content}";
+                txt_ModelPath.Text = modelPath;
+                Settings.Default["ModelPath"] = modelPath;
+                Settings.Default.Save();
 
-            string configPath = $"{Settings.Default["MainPath"]}\\configs\\models.yaml";
-            string configText = "stable-diffusion-1.5:\r\n" +
-                "  description: The newest Stable Diffusion version 1.5 weight file (4.27 GB)\r\n" +
-                $"  weights: ./models/ldm/{Path.GetFileName(Settings.Default["ModelPath"].ToString())}\r\n" +
-                "  config: ./configs/stable-diffusion/v1-inference.yaml\r\n" +
-                "  width: 512\r\n" +
-                "  height: 512\r\n" +
-                "  vae: ./models/ldm/stable-diffusion-v1/vae-ft-mse-840000-ema-pruned.ckpt\r\n" +
-                "  default: true";
+                string configPath = $"{Settings.Default["MainPath"]}\\configs\\models.yaml";
+                string configText = "stable-diffusion-1.5:\r\n" +
+                    "  description: The newest Stable Diffusion version 1.5 weight file (4.27 GB)\r\n" +
+                    $"  weights: ./models/ldm/{Path.GetFileName(Settings.Default["ModelPath"].ToString())}\r\n" +
+                    "  config: ./configs/stable-diffusion/v1-inference.yaml\r\n" +
+                    "  width: 512\r\n" +
+                    "  height: 512\r\n" +
+                    "  vae: ./models/ldm/stable-diffusion-v1/vae-ft-mse-840000-ema-pruned.ckpt\r\n" +
+                    "  default: true";
 
-            File.WriteAllText(configPath, configText);
-            StopRendering();
-            StartRendering();
+                File.WriteAllText(configPath, configText);
+                StopRendering();
+                StartRendering();
+            }
         }
 
         private void btn_ImageViewer_Click(object sender, RoutedEventArgs e)
