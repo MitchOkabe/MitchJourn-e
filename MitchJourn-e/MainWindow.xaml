@@ -128,8 +128,10 @@
                                     <TextBox x:Name="txt_Noise" Text="0" Width="48" Margin="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="Black" VerticalAlignment="Center"/>
                                     <Label Content="Latent Limiter (1-100)" Margin="4" Foreground="Black" VerticalAlignment="Center"/>
                                     <TextBox x:Name="txt_Limiter" Text="0" Width="48" Margin="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="Black" VerticalAlignment="Center"/>
+                                    <Label Content="Upscale Factor:" Margin="4" Foreground="Black" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="txt_UpscaleFactor" Text="1.5" Width="48" Margin="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="Black" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="chk_seamlessTile" Content="Seamless Tile" VerticalAlignment="Center" Margin="4" Foreground="Black" Background="White"/>
-                                    <CheckBox x:Name="chk_HighrezFix" Content="Fix high rez images" VerticalAlignment="Center" Margin="4" Foreground="Black" Background="White"/>
+                                    <CheckBox x:Name="chk_HighrezFix" Visibility="Collapsed" Content="Fix high rez images" VerticalAlignment="Center" Margin="4" Foreground="Black" Background="White"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>

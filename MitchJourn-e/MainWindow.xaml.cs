@@ -122,6 +122,8 @@ namespace MitchJourn_e
                 string seed = txt_Seed.Text;
                 string uprez = "";
                 string highRezFix = "";
+                double imageWidth = SafeInt(txt_Width.Text);
+                double imageHeight = SafeInt(txt_Height.Text);
 
                 lbl_Status.Content = "Loading...";
 
@@ -149,7 +151,10 @@ namespace MitchJourn_e
                 // Upscale
                 if ((bool)chk_HighRes.IsChecked)
                 {
-                    uprez = $"-U {Settings.Default["gfpganUprezScale"]} -G {Settings.Default["gfpganScale"]}"; //--save_orig
+                    //uprez = $"-U {Settings.Default["gfpganUprezScale"]} -G {Settings.Default["gfpganScale"]}"; //--save_orig
+                    highRezFix = "--hires_fix";
+                    imageWidth *= SafeDouble(txt_UpscaleFactor.Text);
+                    imageHeight *= SafeDouble(txt_UpscaleFactor.Text);
                 }
 
                 // Image Prompt
@@ -174,15 +179,15 @@ namespace MitchJourn_e
                     showProgress = "--save_intermediates 1";
                 }
 
-                // highrez fix
-                if ((bool)chk_HighrezFix.IsChecked)
-                {
-                    highRezFix = "--hires_fix";
-                }
+                //// highrez fix
+                //if ((bool)chk_HighrezFix.IsChecked)
+                //{
+                //    highRezFix = "--hires_fix";
+                //}
 
                 promptSettings = "" +
-                        $"-W {Settings.Default["Width"]} " +
-                        $"-H {Settings.Default["Height"]} " +
+                        $"-W {imageWidth} " +
+                        $"-H {imageHeight} " +
                         $"-C {Settings.Default["Scale"]} " +
                         $"-S {seed} " +
                         $"-s {Settings.Default["Steps"]} " +
@@ -324,26 +329,26 @@ namespace MitchJourn_e
                                         return;
                                     }
 
-                                    // bool upscaleRequested is true if the chk_HighRes is checked
-                                    bool.TryParse(chk_HighRes.IsChecked.ToString(), out bool upscaleRequested);
+                                    //// bool upscaleRequested is true if the chk_HighRes is checked
+                                    //bool.TryParse(chk_HighRes.IsChecked.ToString(), out bool upscaleRequested);
 
-                                    // if upscale has been requested and an image shows up in the folder
-                                    // and that image is too small to be an upscale, don't display it
-                                    if (upscaleRequested || firstUpscaleRequest)
-                                    {
-                                        long fileSizeKB = 0;
+                                    //// if upscale has been requested and an image shows up in the folder
+                                    //// and that image is too small to be an upscale, don't display it
+                                    //if (upscaleRequested || firstUpscaleRequest)
+                                    //{
+                                    //    long fileSizeKB = 0;
 
-                                        if (File.Exists(filePath))
-                                        {
-                                            fileSizeKB = new FileInfo(filePath).Length / 1024;
-                                        }
+                                    //    if (File.Exists(filePath))
+                                    //    {
+                                    //        fileSizeKB = new FileInfo(filePath).Length / 1024;
+                                    //    }
 
-                                        if (fileSizeKB < 725)
-                                        {
-                                            return;
-                                        }
-                                        firstUpscaleRequest = false;
-                                    }
+                                    //    if (fileSizeKB < 725)
+                                    //    {
+                                    //        return;
+                                    //    }
+                                    //    firstUpscaleRequest = false;
+                                    //}
 
                                     // create a bitmap from the image file
                                     BitmapImage myBitmapImage = new BitmapImage();
@@ -838,6 +843,7 @@ namespace MitchJourn_e
         {
             RenderedImage image = (RenderedImage)((MenuItem)sender).Tag;
 
+            chk_ClipboardPrompt.IsChecked = false;
             txt_Prompt.Text = image.prompt;
             txt_Scale.Text = image.promptWeight;
             txt_Seed.Text = image.seed;
@@ -859,6 +865,7 @@ namespace MitchJourn_e
         private void menuItemImageToImage_Click(object sender, RoutedEventArgs e)
         {
             RenderedImage image = (RenderedImage)((MenuItem)sender).Tag;
+            chk_ClipboardPrompt.IsChecked = false;
             txt_ImagePrompt.Text = image.filePath;
         }
 
@@ -933,7 +940,7 @@ namespace MitchJourn_e
         {
             RenderedImage renderedImage = (RenderedImage)((MenuItem)sender).Tag;
 
-            //ConvertStringToPromptBubbles(renderedImage.prompt);
+            chk_ClipboardPrompt.IsChecked = false;
             txt_Prompt.Text = renderedImage.prompt;
             txt_Seed.Text = renderedImage.seed;
             txt_ImagePromptWeight.Text = renderedImage.imagePromptWeight;
@@ -941,6 +948,7 @@ namespace MitchJourn_e
             txt_Width.Text = renderedImage.width;
             txt_Height.Text = renderedImage.height;
             ConvertStringToPromptBubbles(renderedImage.prompt);
+            
 
             if (lbl_Status.Content.ToString() == "Created downrezed version.")
             {
@@ -1858,6 +1866,34 @@ namespace MitchJourn_e
         {
             ImageViewer imageViewer = new ImageViewer();
             imageViewer.Show();
+        }
+
+        /// <summary>
+        /// Return a 0 if null
+        /// </summary>
+        /// <returns>An Int</returns>
+        private static int SafeInt(object maybeInt)
+        {
+            int output = 0;
+            if (maybeInt != null)
+            {
+                int.TryParse(maybeInt.ToString(), out output);
+            }
+            return output;
+        }
+
+        /// <summary>
+        /// Return a 0 if null
+        /// </summary>
+        /// <returns>A double</returns>
+        private static double SafeDouble(object maybeDouble)
+        {
+            double output = 0;
+            if (maybeDouble != null)
+            {
+                double.TryParse(maybeDouble.ToString(), out output);
+            }
+            return output;
         }
     }
 }
