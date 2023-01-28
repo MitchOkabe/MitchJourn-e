@@ -58,7 +58,7 @@
                         <StackPanel Orientation="Horizontal" Margin="4">
                             <Label Padding="2" Content="Creativity" Foreground="Black" VerticalAlignment="Center"/>
                             <TextBox x:Name="txt_Creativity" Text="5.0" Margin="4,0,0,0" Width="42" Tag="Steps" TextChanged="txt_Creativity_TextChanged" Foreground="Black" VerticalAlignment="Center"/>
-                            <Slider x:Name="slider_Creativity" Margin="2" Maximum="10" LargeChange="1" SmallChange="0.1" TickFrequency="0.1" Value="5" Minimum="2.2" VerticalAlignment="Center" IsSnapToTickEnabled="True" ValueChanged="slider_Creativity_ValueChanged" Width="624" Foreground="{x:Null}" Background="White"/>
+                            <Slider x:Name="slider_Creativity" Margin="2" Maximum="10" LargeChange="2" SmallChange="1" TickFrequency="1" Value="5" Minimum="0" VerticalAlignment="Center" IsSnapToTickEnabled="True" ValueChanged="slider_Creativity_ValueChanged" Width="624" Foreground="{x:Null}" Background="White"/>
                         </StackPanel>
                     </Border>
                     <Expander x:Name="expander_settings" Header="Settings" Foreground="Black" Background="WhiteSmoke" Margin="6">
@@ -68,7 +68,7 @@
                                     <Label Padding="2" Content="Propt Weight" Foreground="Black" VerticalAlignment="Center"/>
                                     <TextBox x:Name="txt_Scale" Text="7.5" Margin="4,0,0,0" Width="42" Tag="Scale" TextChanged="SettingsTextChanged" Foreground="Black" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <Slider x:Name="slider_PromptWeight" Margin="2" Maximum="20" LargeChange="0.5" SmallChange="0.1" TickFrequency="0.1" Value="7.5" Minimum="1" IsSnapToTickEnabled="True" ValueChanged="Slider_ValueChanged" VerticalAlignment="Center"/>
+                                <Slider x:Name="slider_PromptWeight" Margin="2" Maximum="20" LargeChange="0.5" SmallChange="0.1" TickFrequency="0.1" Value="7.5" Minimum="1.1" IsSnapToTickEnabled="True" ValueChanged="Slider_ValueChanged" VerticalAlignment="Center"/>
                                 <StackPanel Orientation="Horizontal">
                                     <Label Padding="2" Content="Generation Steps" Foreground="Black" VerticalAlignment="Center"/>
                                     <TextBox x:Name="txt_Steps" Text="50" Margin="4,0,0,0" Width="42" Tag="Steps" TextChanged="SettingsTextChanged" Foreground="Black" VerticalAlignment="Center"/>

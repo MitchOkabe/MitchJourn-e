@@ -24,13 +24,13 @@
       <Value Profile="(Default)">7.5</Value>
     </Setting>
     <Setting Name="MainPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\InvokeAI-main</Value>
+      <Value Profile="(Default)">C:\invokeai\</Value>
     </Setting>
     <Setting Name="TextToImagePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">scripts\txt2img.py</Value>
+      <Value Profile="(Default)">.venv\scripts\txt2img.py</Value>
     </Setting>
     <Setting Name="ImageToImagePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">scripts\img2img.py</Value>
+      <Value Profile="(Default)">.venv\scripts\img2img.py</Value>
     </Setting>
     <Setting Name="ConfigPath" Type="System.String" Scope="User">
       <Value Profile="(Default)">configs\stable-diffusion\v1-inference.yaml</Value>

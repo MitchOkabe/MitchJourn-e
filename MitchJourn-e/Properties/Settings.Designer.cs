@@ -12,7 +12,7 @@ namespace MitchJourn_e.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.3.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.5.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -109,7 +109,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\InvokeAI-main")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\invokeai\\")]
         public string MainPath {
             get {
                 return ((string)(this["MainPath"]));
@@ -121,7 +121,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("scripts\\txt2img.py")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".venv\\scripts\\txt2img.py")]
         public string TextToImagePath {
             get {
                 return ((string)(this["TextToImagePath"]));
@@ -133,7 +133,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("scripts\\img2img.py")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".venv\\scripts\\img2img.py")]
         public string ImageToImagePath {
             get {
                 return ((string)(this["ImageToImagePath"]));

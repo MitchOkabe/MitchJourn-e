@@ -221,7 +221,7 @@ namespace MitchJourn_e
                     string useFullPrecision = "";
 
                     // move the cmd directory to the main stable diffusion path and open the python environment called invokeAI (environment used at python install)
-                    string prerequisites = $"cd {Settings.Default["MainPath"]} & call %userprofile%\\anaconda3\\Scripts\\activate.bat invokeai &";
+                    string prerequisites = $"cd {Settings.Default["MainPath"]} & call .venv\\Scripts\\activate.bat &";
 
                     // Full Precision
                     if (Settings.Default["UseFullPrecision"].ToString() == "1")
@@ -236,7 +236,7 @@ namespace MitchJourn_e
                     }
 
                     // send the command to the CMD window to start the python script, enable the upsampler
-                    process.StandardInput.WriteLine($"{prerequisites} python scripts\\invoke.py --png_compression 3 --sampler {sampler} {safetyChecker}");
+                    process.StandardInput.WriteLine($"{prerequisites} python .venv\\scripts\\invoke.py --png_compression 3 --sampler {sampler} {safetyChecker}");
 
                     // dropped support for custom gfpgan settings
                     // --gfpgan_bg_tile {Settings.Default["gfpganBgTileSize"]} --gfpgan_upscale {Settings.Default["gfpganUprezScale"]} --gfpgan_bg_upsampler realesrgan {useFullPrecision}" +
@@ -1442,67 +1442,133 @@ namespace MitchJourn_e
                 if (txt_Creativity != null && txt_Scale != null & txt_Limiter != null)
                 {
                     double creativity = double.Parse(txt_Creativity.Text);
-                    double scale = double.Parse(txt_Scale.Text);
-                    double limiter = double.Parse(txt_Limiter.Text);
-                    double newScale = 0;
-                    double newLimiter = 0;
-                    double newNoise = 0;
+                    //double scale = double.Parse(txt_Scale.Text);
+                    //double limiter = double.Parse(txt_Limiter.Text);
+                    double scale = 0;
+                    double limiter = 0;
+                    double noise = 0;
 
-                    if (creativity >= 5)
+                    if (creativity < 1) // 0-1
                     {
-                        newScale = Math.Max(creativity * 1.5, 7);
-                        globalPrompt = "incredibly detailed";
-                        globalNegativePrompt = "(framed, ugly, tiling, blurry, bad anatomy, blurred, watermark, grainy, signature, cut off, draft)0.5";
+                        globalPrompt += "(f/1.4 50mm 200iso 4k)+++";
+                        globalNegativePrompt += "(cartoon anime art painting)+++";
+                        limiter = 2;
+                        scale = 15;
                     }
-                    else if (creativity >= 6)
+                    else if (creativity < 2) // 1-2
                     {
-                        newScale = Math.Max(creativity * 1.5, 7);
-                        globalPrompt = "(incredibly detailed)1.1";
-                        globalNegativePrompt = "(framed, ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, blurry, bad anatomy, blurred, watermark, grainy, signature, cut off, draft)0.5";
+                        globalPrompt += "(f/1.4 50mm 200iso 4k)++";
+                        globalNegativePrompt += "(cartoon anime art painting)++";
+                        scale = 12;
                     }
-                    else if (creativity >= 7)
+                    else if (creativity < 3) // 2-3
                     {
-                        newScale = Math.Max(creativity * 1.5, 5);
-                        newNoise = Math.Max(6 - (10 - creativity * 0.5), 0);
-                        globalPrompt = "(masterpiece intricate amazing awesome splash-art award-winning hyperdetailed trending work-of-art incredible perfect artistic creative)";
-                        if (creativity >= 8)
-                        {
-                            globalPrompt += "+";
-                            newScale -= 4;
-                        }
-                        else if (creativity >= 9)
-                        {
-                            globalPrompt += "++";
-                            newScale -= 5;
-                        }
-                        else if (creativity >= 10)
-                        {
-                            globalPrompt += "+++";
-                            globalNegativePrompt += "(photograph ugly out of focus blurry grainy noisy text writing watermark logo oversaturation over saturation over shadow)+";
-                            newScale -= 6;
-                        }
+                        // high cfg
+                        globalPrompt += "(f/1.4 50mm a photo of)+";
+                        globalNegativePrompt += "(cartoon anime art painting)+";
+                        scale = 10;
                     }
-                    else if (creativity >= 3)
+                    else if (creativity < 4) // 3-4
                     {
-                        newScale = Math.Max(creativity * 1.5, 5);
+                        globalPrompt += "(a photo of)+";
+                        globalNegativePrompt += "(cartoon anime painting)";
+                        scale = 9;
                     }
-                    else
+                    else if (creativity < 5) // 4-5
                     {
-                        newScale = 3 * (3.1 - creativity) * 10;
-                        newLimiter = creativity * 0.75;
-                        newNoise = Math.Max((1 - creativity / 3) * 3, 0);
-                        globalPrompt = "(incredible photo of a)";
-                        globalNegativePrompt = "(cartoon anime art painting)+";
-                        if (creativity <= 2.5)
-                        {
-                            globalPrompt += "++";
-                            globalNegativePrompt += "++";
-                        }
+                        globalPrompt += "(a photo of)";
+                        globalNegativePrompt += "(cartoon anime)";
+                        scale = 8;
+                    }
+                    else if (creativity < 6) // 5-6
+                    {
+                        globalPrompt += "";
+                        globalNegativePrompt += "";
+                        scale = 7.5;
+                    }
+                    else if (creativity < 7) // 6-7
+                    {
+                        globalPrompt += "(hyperdetailed masterpiece art)";
+                        globalNegativePrompt += "photo";
+                        scale = 7;
+                    }
+                    else if (creativity < 8) // 7-8
+                    {
+                        globalPrompt += "(masterpiece amazing hyperdetailed award-winning art artistic creative)+";
+                        globalNegativePrompt += "photo";
+                        scale = 5;
+                    }
+                    else if (creativity < 9) // 8-9
+                    {
+                        globalPrompt += "(masterpiece intricate amazing awesome splash-art award-winning hyperdetailed trending work-of-art incredible perfect creative)++";
+                        globalNegativePrompt += "photo";
+                        scale = 2.5;
+                    }
+                    else if (creativity < 10.1) // 9-10
+                    {
+                        globalPrompt += "(magical wonderous masterpiece intricate amazing awesome splash-art award-winning hyperdetailed trending work-of-art incredible perfect creative)+++";
+                        globalNegativePrompt += "(photograph photo ugly out of focus blurry grainy noisy text writing watermark logo oversaturation over saturation over shadow)+";
+                        scale = 1.5;
                     }
 
-                    txt_Scale.Text = newScale.ToString();
-                    txt_Limiter.Text = newLimiter.ToString();
-                    txt_Noise.Text = newNoise.ToString();
+
+                    //if (creativity >= 7)
+                    //{
+                    //    newScale = creativity * 0.15;
+                    //    newNoise = Math.Max(6 - (10 - creativity * 0.5), 0);
+                    //    globalPrompt = "(masterpiece intricate amazing awesome splash-art award-winning hyperdetailed trending work-of-art incredible perfect artistic creative)";
+
+
+                    //    if (creativity >= 10)
+                    //    {
+                    //        globalPrompt += "+++";
+                    //        globalNegativePrompt += "(photograph ugly out of focus blurry grainy noisy text writing watermark logo oversaturation over saturation over shadow)+";
+                    //        //newScale -= 6;
+                    //    }
+                    //    else if (creativity >= 9)
+                    //    {
+                    //        globalPrompt += "++";
+                    //        //newScale -= 5;
+                    //    }
+                    //    else if (creativity >= 8)
+                    //    {
+                    //        globalPrompt += "+";
+                    //        //newScale -= 4;
+                    //    }
+                    //}
+                    //else if (creativity >= 5)
+                    //{
+                    //    newScale = creativity * 0.8;
+                    //    globalPrompt = "incredibly detailed";
+                    //    globalNegativePrompt = "(framed, ugly, tiling, blurry, bad anatomy, blurred, watermark, grainy, signature, cut off, draft)0.5";
+                    //}
+                    //else if (creativity >= 6)
+                    //{
+                    //    newScale = creativity * 0.5;
+                    //    globalPrompt = "(incredibly detailed)1.1";
+                    //    globalNegativePrompt = "(framed, ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, blurry, bad anatomy, blurred, watermark, grainy, signature, cut off, draft)0.5";
+                    //}
+                    //else if (creativity >= 3)
+                    //{
+                    //    newScale = Math.Max(creativity * 1.5, 5);
+                    //}
+                    //else
+                    //{
+                    //    newScale = 3 * (3.1 - creativity) * 10;
+                    //    newLimiter = creativity * 0.75;
+                    //    newNoise = Math.Max((1 - creativity / 3) * 3, 0);
+                    //    globalPrompt = "(incredible photo of a)";
+                    //    globalNegativePrompt = "(cartoon anime art painting)+";
+                    //    if (creativity <= 2.5)
+                    //    {
+                    //        globalPrompt += "++";
+                    //        globalNegativePrompt += "++";
+                    //    }
+                    //}
+
+                    txt_Scale.Text = scale.ToString();
+                    txt_Limiter.Text = limiter.ToString();
+                    txt_Noise.Text = noise.ToString();
                 }
             }
             catch { }
@@ -1811,7 +1877,7 @@ namespace MitchJourn_e
         }
         private void ScanModels()
         {
-            string modelPath = $"{Settings.Default["MainPath"]}\\models\\ldm\\";
+            string modelPath = $"{Settings.Default["MainPath"]}\\models\\ldm\\stable-diffusion-v1\\";
 
             if (Directory.Exists(modelPath))
             {
@@ -1848,9 +1914,9 @@ namespace MitchJourn_e
 
                 string configPath = $"{Settings.Default["MainPath"]}\\configs\\models.yaml";
                 string configText = "stable-diffusion-1.5:\r\n" +
-                    "  description: The newest Stable Diffusion version 1.5 weight file (4.27 GB)\r\n" +
-                    $"  weights: ./models/ldm/{Path.GetFileName(Settings.Default["ModelPath"].ToString())}\r\n" +
-                    "  config: ./configs/stable-diffusion/v1-inference.yaml\r\n" +
+                    "  description: Generated by MitchJourn-E\r\n" +
+                    $"  weights: models/ldm/stable-diffusion-v1/{Path.GetFileName(Settings.Default["ModelPath"].ToString())}\r\n" +
+                    "  config: configs/stable-diffusion/v1-inference.yaml\r\n" +
                     "  width: 512\r\n" +
                     "  height: 512\r\n" +
                     "  vae: ./models/ldm/stable-diffusion-v1/vae-ft-mse-840000-ema-pruned.ckpt\r\n" +
