@@ -223,7 +223,7 @@
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="OutputPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\InvokeAI-main\outputs</Value>
+      <Value Profile="(Default)">C:\invokeai\outputs</Value>
     </Setting>
   </Settings>
 </SettingsFile>

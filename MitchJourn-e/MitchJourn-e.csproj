@@ -17,8 +17,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="SDWords.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="mitch journ-e.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SDWords.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

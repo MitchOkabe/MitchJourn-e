@@ -60,6 +60,7 @@ namespace MitchJourn_e
         bool windowClosing = false;
         List<string> tempClipboardImagePaths = new List<string>();
         BitmapSource clipboardImage;
+        RandomWord randomWord = new RandomWord();
 
         public System.Windows.Window imageViewer = null;
 
@@ -179,11 +180,11 @@ namespace MitchJourn_e
                     showProgress = "--save_intermediates 1";
                 }
 
-                //// highrez fix
-                //if ((bool)chk_HighrezFix.IsChecked)
-                //{
-                //    highRezFix = "--hires_fix";
-                //}
+                // highrez fix
+                if ((bool)chk_HighrezFix.IsChecked)
+                {
+                    highRezFix = "--hires_fix";
+                }
 
                 promptSettings = "" +
                         $"-W {imageWidth} " +
@@ -462,7 +463,7 @@ namespace MitchJourn_e
                                     }
 
                                     // sequential prompting
-                                    if ((bool)chk_SequencialPrompting.IsChecked)
+                                    if ((bool)chk_SequentialPrompting.IsChecked)
                                     {
                                         txt_ImagePrompt.Text = renderedImage.filePath;
                                     }
@@ -715,12 +716,18 @@ namespace MitchJourn_e
                     // rebuild the string, adding back only the following allowed characters
                     if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == ' ' || c == '.' || c == '_' || c == ',' 
                         || c == '/' || c == '?' || c == '!' || c == '&' || c == '+' || c == '$' || c == '%' || c == '^' || c == '#' || c == '@'
-                        || c == '(' || c == ')' || c == ':' || c == '-' || c == '\\' || c == '[' || c == ']')
+                        || c == '(' || c == ')' || c == ':' || c == '-' || c == '\\' || c == '[' || c == ']' || c == '*')
                     {
                         stringBuilder.Append(c);
                     }
                 }
                 output = stringBuilder.ToString();
+
+                while (output.Contains("*random*"))
+                {
+                    var regex = new Regex(Regex.Escape("*random*"));
+                    output = regex.Replace(output, randomWord.GetWord(), 1);
+                }
 
                 if ((bool)chk_AlternateToken.IsChecked)
                 {
@@ -1259,7 +1266,7 @@ namespace MitchJourn_e
         private void btn_ClearImagePrompt_Click(object sender, RoutedEventArgs e)
         {
             txt_ImagePrompt.Text = "";
-            chk_SequencialPrompting.IsChecked = false;
+            chk_SequentialPrompting.IsChecked = false;
         }
 
         private void btn_ClearPromptHelper_Click(object sender, RoutedEventArgs e)
@@ -1385,6 +1392,7 @@ namespace MitchJourn_e
         private void chk_HighRes_Checked(object sender, RoutedEventArgs e)
         {
             firstUpscaleRequest = true;
+            chk_HighrezFix.IsChecked = true;
         }
 
         private void btn_MetadataExtractor_Click(object sender, RoutedEventArgs e)
@@ -1392,14 +1400,17 @@ namespace MitchJourn_e
             txt_extractedMetadata.Text = GetImageMetaData(txt_ImagePathMetaData.Text);
         }
 
-        private void chk_SequencialPrompting_Unchecked(object sender, RoutedEventArgs e)
+        private void chk_SequentialPrompting_Unchecked(object sender, RoutedEventArgs e)
         {
             txt_ImagePrompt.Text = "";
         }
 
-        private void chk_SequencialPrompting_Checked(object sender, RoutedEventArgs e)
+        private void chk_SequentialPrompting_Checked(object sender, RoutedEventArgs e)
         {
             string lastImageFilePath = "";
+
+            chk_ClipboardPrompt.IsChecked = false;
+
             try
             {
                 lastImageFilePath = ((RenderedImage)((Image)stack_Images.Items[0]).Tag).filePath;
@@ -1435,8 +1446,9 @@ namespace MitchJourn_e
 
         private void UpdateCreativity()
         {
-            globalPrompt = "";
-            globalNegativePrompt = "";
+            globalPrompt = "(incredibly detailed high quality)0.5";
+            globalNegativePrompt = "(framed ugly tiling poorly drawn out of frame disfigured deformed blurry blurred watermark grainy signature cut off draft compressed)0.5";
+
             try
             {
                 if (txt_Creativity != null && txt_Scale != null & txt_Limiter != null)
@@ -1960,6 +1972,11 @@ namespace MitchJourn_e
                 double.TryParse(maybeDouble.ToString(), out output);
             }
             return output;
+        }
+
+        private void chk_HighRes_Unchecked(object sender, RoutedEventArgs e)
+        {
+            chk_HighrezFix.IsChecked = false;
         }
     }
 }

@@ -573,7 +573,7 @@ namespace MitchJourn_e.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\InvokeAI-main\\outputs")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\invokeai\\outputs")]
         public string OutputPath {
             get {
                 return ((string)(this["OutputPath"]));
