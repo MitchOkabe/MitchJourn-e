@@ -61,6 +61,8 @@ namespace MitchJourn_e
         List<string> tempClipboardImagePaths = new List<string>();
         BitmapSource clipboardImage;
         RandomWord randomWord = new RandomWord();
+        string[]? promptFolderFiles;
+        int promptFolderIndex = -1;
 
         public System.Windows.Window imageViewer = null;
 
@@ -127,6 +129,11 @@ namespace MitchJourn_e
                 double imageHeight = SafeInt(txt_Height.Text);
 
                 lbl_Status.Content = "Loading...";
+
+                if (promptFolderFiles != null)
+                {
+                    lbl_Status.Content = $"Loading image Sequence {promptFolderIndex}/{promptFolderFiles.Length}";
+                }
 
                 if (promptText != "")
                 {
@@ -358,11 +365,6 @@ namespace MitchJourn_e
                                     myBitmapImage.UriSource = new Uri(filePath);
                                     myBitmapImage.EndInit();
 
-                                    if (imageViewer != null)
-                                    {
-                                        ((ImageViewer)imageViewer).DisplayImage(myBitmapImage);
-                                    }
-
                                     // Create the image using the bitmap
                                     Image output = new Image
                                     {
@@ -387,6 +389,10 @@ namespace MitchJourn_e
 
                                     output.Tag = renderedImage;
 
+                                    if (imageViewer != null)
+                                    {
+                                        ((ImageViewer)imageViewer).DisplayImage(myBitmapImage, renderedImage);
+                                    }
 
                                     // Add the right click menu to the image
                                     ContextMenu rightClickMenu = new ContextMenu();
@@ -468,12 +474,29 @@ namespace MitchJourn_e
                                         txt_ImagePrompt.Text = renderedImage.filePath;
                                     }
 
+                                    // Folder Prompt feature
+                                    if (promptFolderFiles != null && promptFolderIndex > promptFolderFiles.Length - 1)
+                                    {
+                                        lbl_Status.Content = $"Done creating image Sequence {promptFolderIndex}/{promptFolderFiles.Length}";
+                                        promptFolderIndex = -1;
+                                        promptFolderFiles = null;
+                                        txt_ImagePrompt.Text = "";
+                                        chk_ContinuouslyPrompt.IsChecked = false;
+                                    }
+                                    if (promptFolderFiles != null && promptFolderFiles.Length > 0 && promptFolderIndex <= promptFolderFiles.Length - 1)
+                                    {
+                                        txt_ImagePrompt.Text = promptFolderFiles[promptFolderIndex];
+                                        promptFolderIndex++;
+                                        chk_ContinuouslyPrompt.IsChecked = true;
+                                    }
+
                                     // continuous prompting
                                     if ((bool)chk_ContinuouslyPrompt.IsChecked)
                                     {
                                         StartRendering();
                                     }
                                 }
+
                                 // Clipboard feature
                                 if ((bool)chk_ClipboardPrompt.IsChecked)
                                 {
@@ -577,6 +600,7 @@ namespace MitchJourn_e
                             catch { return; }
                         });
                     }
+
                 }
 
             }
@@ -846,7 +870,7 @@ namespace MitchJourn_e
         /// <summary>
         /// Right click menu item for images: Recreate Prompt
         /// </summary>
-        private void MenuItemRecreatePrompt_Click(object sender, RoutedEventArgs e)
+        public void MenuItemRecreatePrompt_Click(object sender, RoutedEventArgs e)
         {
             RenderedImage image = (RenderedImage)((MenuItem)sender).Tag;
 
@@ -869,7 +893,7 @@ namespace MitchJourn_e
         /// <summary>
         /// Right click menu item for Use as Image-To-Image
         /// </summary>
-        private void menuItemImageToImage_Click(object sender, RoutedEventArgs e)
+        public void menuItemImageToImage_Click(object sender, RoutedEventArgs e)
         {
             RenderedImage image = (RenderedImage)((MenuItem)sender).Tag;
             chk_ClipboardPrompt.IsChecked = false;
@@ -879,7 +903,7 @@ namespace MitchJourn_e
         /// <summary>
         /// Right click menu item for images: Open Containing Folder
         /// </summary>
-        private void MenuItemOpenContainingFolder_Click(object sender, RoutedEventArgs e)
+        public void MenuItemOpenContainingFolder_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -892,7 +916,7 @@ namespace MitchJourn_e
         /// <summary>
         /// Right click menu item for images: Save As
         /// </summary>
-        private void MenuItemSaveAs_Click(object sender, RoutedEventArgs e)
+        public void MenuItemSaveAs_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -917,7 +941,7 @@ namespace MitchJourn_e
         /// <summary>
         /// Right click menu item for images: Delete Image
         /// </summary>
-        private void MenuItemDelete_Click(object sender, RoutedEventArgs e)
+        public void MenuItemDelete_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -943,7 +967,7 @@ namespace MitchJourn_e
         /// <summary>
         /// Right click menu item for images: Create Variations
         /// </summary>
-        private void MenuItemCreateVariation_Click(object sender, RoutedEventArgs e)
+        public void MenuItemCreateVariation_Click(object sender, RoutedEventArgs e)
         {
             RenderedImage renderedImage = (RenderedImage)((MenuItem)sender).Tag;
 
@@ -971,7 +995,7 @@ namespace MitchJourn_e
             
         }
 
-        private void MenuItemGetFilePath_Click(object sender, RoutedEventArgs e)
+        public void MenuItemGetFilePath_Click(object sender, RoutedEventArgs e)
         {
             string renderedImage = ((MenuItem)sender).Tag.ToString();
             Clipboard.SetDataObject(renderedImage);
@@ -1305,12 +1329,20 @@ namespace MitchJourn_e
 
         void StartPromptFolderExperiment(string folderPath)
         {
-            string[] files = Directory.GetFiles(folderPath);
-
-            foreach (string file in files)
+            //if (File.Exists(folderPath))
             {
-                txt_ImagePrompt.Text = $"\"{file}\"";
-                StartRendering();
+                try
+                {
+                    chk_ContinuouslyPrompt.IsChecked = true;
+                    promptFolderFiles = Directory.GetFiles(folderPath);
+                    promptFolderIndex = 1;
+                    txt_ImagePrompt.Text = promptFolderFiles[0];
+                    StartRendering();
+                }
+                catch
+                {
+                    lbl_Status.Content = "Failed to find png files.";
+                }
             }
         }
         private void btn_AddPromptPreset_Click(object sender, RoutedEventArgs e)

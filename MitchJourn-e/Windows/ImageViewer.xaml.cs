@@ -28,12 +28,12 @@ namespace MitchJourn_e.Windows
             DisplayLastImage();
         }
 
-        public ImageViewer(BitmapImage image)
-        {
-            InitializeComponent();
-            mainWindow.imageViewer = this;
-            DisplayImage(image);
-        }
+        //public ImageViewer(BitmapImage image)
+        //{
+        //    InitializeComponent();
+        //    mainWindow.imageViewer = this;
+        //    DisplayImage(image);
+        //}
 
         /// <summary>
         /// Displays the last image in the MainWindow's image stack
@@ -46,12 +46,12 @@ namespace MitchJourn_e.Windows
             {
                 if (stackImages.Items.GetItemAt(0) != null)
                 {
-                    Image.Source = ((Image)stackImages.Items.GetItemAt(0)).Source;
+                    mainImage.Source = ((Image)stackImages.Items.GetItemAt(0)).Source;
 
                     if (displayFirstImage)
                     {
-                        this.Width = Image.Width;
-                        this.Height = Image.Height;
+                        this.Width = mainImage.Width;
+                        this.Height = mainImage.Height;
                         displayFirstImage = false;
                     }
                 }
@@ -64,7 +64,7 @@ namespace MitchJourn_e.Windows
         /// </summary>
         /// <param name="bitmapImageInput"></param>
         /// <param name="scale">Upscale image multiplier. Similar to stretching the image, has no effect in full screen</param>
-        public void DisplayImage(BitmapImage bitmapImageInput, double scale = 1)
+        public void DisplayImage(BitmapImage bitmapImageInput, RenderedImage renderedImage, double scale = 1)
         {
             // recreate the image at the upscaled size
             var bitmapImage = new TransformedBitmap(bitmapImageInput,
@@ -72,14 +72,74 @@ namespace MitchJourn_e.Windows
                 (bitmapImageInput.PixelWidth * scale) / bitmapImageInput.PixelWidth,
                 (bitmapImageInput.PixelHeight * scale) / bitmapImageInput.PixelHeight));
 
-            Image.Source = bitmapImage;
+            mainImage.Source = bitmapImage;
 
             if (displayFirstImage)
             {
-                this.Width = Image.Width;
-                this.Height = Image.Height;
+                this.Width = mainImage.Width;
+                this.Height = mainImage.Height;
                 displayFirstImage = false;
             }
+
+            // Add the right click menu to the image
+            ContextMenu rightClickMenu = new ContextMenu();
+
+            mainImage.ContextMenu = rightClickMenu;
+
+            // Create Variation
+            MenuItem menuItemCreateVariation = new MenuItem();
+            menuItemCreateVariation.Header = "Create Variations";
+            menuItemCreateVariation.Tag = renderedImage;
+            menuItemCreateVariation.Click += mainWindow.MenuItemCreateVariation_Click;
+            rightClickMenu.Items.Add(menuItemCreateVariation);
+
+            // Recreate prompt
+            MenuItem menuItemRecreatePrompt = new MenuItem();
+            menuItemRecreatePrompt.Header = "Recreate Prompt";
+            menuItemRecreatePrompt.Tag = renderedImage;
+            menuItemRecreatePrompt.Click += mainWindow.MenuItemRecreatePrompt_Click;
+            rightClickMenu.Items.Add(menuItemRecreatePrompt);
+
+            // Use as Image-To-Image
+            MenuItem menuItemImageToImage = new MenuItem();
+            menuItemImageToImage.Header = "Use as Image-To-Image";
+            menuItemImageToImage.Tag = renderedImage;
+            menuItemImageToImage.Click += mainWindow.menuItemImageToImage_Click;
+            rightClickMenu.Items.Add(menuItemImageToImage);
+
+            // ----
+            rightClickMenu.Items.Add(new Separator());
+
+            // Save As
+            MenuItem menuItemSaveAs = new MenuItem();
+            menuItemSaveAs.Header = "Save As";
+            menuItemSaveAs.Tag = renderedImage.filePath;
+            menuItemSaveAs.Click += mainWindow.MenuItemSaveAs_Click;
+            rightClickMenu.Items.Add(menuItemSaveAs);
+
+            // Get File Path
+            MenuItem menuItemGetFilePath = new MenuItem();
+            menuItemGetFilePath.Header = "Get File Path";
+            menuItemGetFilePath.Tag = renderedImage.filePath;
+            menuItemGetFilePath.Click += mainWindow.MenuItemGetFilePath_Click;
+            rightClickMenu.Items.Add(menuItemGetFilePath);
+
+            // Open Containing Folder
+            MenuItem menuItemOpenContainingFolder = new MenuItem();
+            menuItemOpenContainingFolder.Header = "Open Containing Folder";
+            menuItemOpenContainingFolder.Tag = renderedImage.filePath;
+            menuItemOpenContainingFolder.Click += mainWindow.MenuItemOpenContainingFolder_Click;
+            rightClickMenu.Items.Add(menuItemOpenContainingFolder);
+
+            // ----
+            rightClickMenu.Items.Add(new Separator());
+
+            // Delete
+            MenuItem menuItemDelete = new MenuItem();
+            menuItemDelete.Header = "Delete";
+            menuItemDelete.Tag = renderedImage;
+            menuItemDelete.Click += mainWindow.MenuItemDelete_Click;
+            rightClickMenu.Items.Add(menuItemDelete);
         }
 
     }

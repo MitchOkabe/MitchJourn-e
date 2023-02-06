@@ -10,7 +10,7 @@ namespace MitchJourn_e
     /// <summary>
     /// Used for storing all the prompt info for creating an image, and the image itself
     /// </summary>
-    class RenderedImage
+    public class RenderedImage
     {
         public Image image;
         public string filePath;

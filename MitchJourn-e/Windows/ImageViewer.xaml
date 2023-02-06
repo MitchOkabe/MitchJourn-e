@@ -6,5 +6,5 @@
         xmlns:local="clr-namespace:MitchJourn_e.Windows"
         mc:Ignorable="d"
         Title="Image Viewer" Height="450" Width="800" Background="{x:Null}" MinWidth="150" MinHeight="150">
-    <Image x:Name="Image"/>
+    <Image x:Name="mainImage"/>
 </Window>
