@@ -37,6 +37,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using Wpf.Ui.Common;
+using OpenAI_API.Completions;
 
 namespace MitchJourn_e
 {
@@ -649,9 +650,13 @@ namespace MitchJourn_e
 
                     MenuItem MenuItemPrompt = new MenuItem();
                     MenuItemPrompt.Header = menuHeader;
-                    MenuItemPrompt.StaysOpenOnClick = true;
                     MenuItemPrompt.Tag = $"{topDirectory}/{value}";
                     MenuItemPrompt.Click += PromptHelperMenuItem_Click2;
+                    
+                    if (!allDirectories.Contains("GPT3"))
+                    {
+                        MenuItemPrompt.StaysOpenOnClick = true;
+                    }
                     helperMenuItem.Items.Add(MenuItemPrompt);
 
                     // add the prompt helper editor text boxes and buttons
@@ -726,7 +731,7 @@ namespace MitchJourn_e
         /// <summary>
         /// Removes characters from the prompt that would disallow the generation to run
         /// </summary>
-        private string CleanPrompt(string promptText)
+        public string CleanPrompt(string promptText)
         {
             string output = "";
 
@@ -800,7 +805,7 @@ namespace MitchJourn_e
         /// Add selected menuItem's name to the prompt box
         /// </summary>
         /// <param name="sender">MenuItem</param>
-        private void PromptHelperMenuItem_Click2(object sender, RoutedEventArgs e)
+        private async void PromptHelperMenuItem_Click2(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -809,6 +814,7 @@ namespace MitchJourn_e
                 string[] promptInfo = ((MenuItem)sender).Tag.ToString().Split('/');
                 string promptCategory = promptInfo[0];
                 string promptValue = "";
+                bool useValue = true;
 
                 for (int i = 1; i < promptInfo.Length; i++)
                 {
@@ -823,23 +829,40 @@ namespace MitchJourn_e
                 {
                     targetTextBox = textBoxes[1];
                 }
-
-                if (targetTextBox.Text != "")
+                else if (promptCategory.Contains("GPT3"))
                 {
-                    char[] prompt = targetTextBox.Text.ToCharArray();
-                    if (prompt.Last() == ' ')
+                    GPT3 gpt3 = new GPT3();
+                    useValue = false;
+
+                    Application.Current.Dispatcher.Invoke((Action)async delegate
                     {
-                        targetTextBox.Text += promptValue;
+                        string gptPrompt = promptValue;
+                        await gpt3.PromptToGPT(gptPrompt, CleanPrompt(txt_Prompt.Text));
+                    });
+                }
+
+                if (useValue)
+                {
+                    ((MenuItem)sender).Foreground = System.Windows.Media.Brushes.LightGray;
+
+                    if (targetTextBox.Text != "")
+                    {
+                        char[] prompt = targetTextBox.Text.ToCharArray();
+                        if (prompt.Last() == ' ')
+                        {
+                            targetTextBox.Text += promptValue;
+                        }
+                        else
+                        {
+                            targetTextBox.Text += $" {promptValue}";
+                        }
                     }
                     else
                     {
-                        targetTextBox.Text += $" {promptValue}";
+                        targetTextBox.Text += promptValue;
                     }
                 }
-                else
-                {
-                    targetTextBox.Text += promptValue;
-                }
+
                 expander_settings.IsExpanded = true;
             }
             catch { return; }
@@ -1494,14 +1517,14 @@ namespace MitchJourn_e
 
                     if (creativity < 1) // 0-1
                     {
-                        globalPrompt += "(f/1.4 50mm 200iso 4k)+++";
+                        globalPrompt += "(f/1.4 50mm 200iso 4k photograph)+++";
                         globalNegativePrompt += "(cartoon anime art painting)+++";
                         limiter = 2;
                         scale = 15;
                     }
                     else if (creativity < 2) // 1-2
                     {
-                        globalPrompt += "(f/1.4 50mm 200iso 4k)++";
+                        globalPrompt += "(f/1.4 50mm 200iso 4k photograph)++";
                         globalNegativePrompt += "(cartoon anime art painting)++";
                         scale = 12;
                     }
@@ -1532,27 +1555,27 @@ namespace MitchJourn_e
                     }
                     else if (creativity < 7) // 6-7
                     {
-                        globalPrompt += "(hyperdetailed masterpiece art)";
+                        globalPrompt += "(hyperdetailed masterpiece art *random*)";
                         globalNegativePrompt += "photo";
                         scale = 7;
                     }
                     else if (creativity < 8) // 7-8
                     {
-                        globalPrompt += "(masterpiece amazing hyperdetailed award-winning art artistic creative)+";
+                        globalPrompt += "(masterpiece amazing hyperdetailed award-winning art artistic creative *random*)+";
                         globalNegativePrompt += "photo";
-                        scale = 5;
+                        scale = 6.5;
                     }
                     else if (creativity < 9) // 8-9
                     {
-                        globalPrompt += "(masterpiece intricate amazing awesome splash-art award-winning hyperdetailed trending work-of-art incredible perfect creative)++";
+                        globalPrompt += "(masterpiece intricate amazing awesome splash-art award-winning hyperdetailed trending work-of-art incredible perfect creative *random*)++";
                         globalNegativePrompt += "photo";
-                        scale = 2.5;
+                        scale = 6;
                     }
                     else if (creativity < 10.1) // 9-10
                     {
-                        globalPrompt += "(magical wonderous masterpiece intricate amazing awesome splash-art award-winning hyperdetailed trending work-of-art incredible perfect creative)+++";
-                        globalNegativePrompt += "(photograph photo ugly out of focus blurry grainy noisy text writing watermark logo oversaturation over saturation over shadow)+";
-                        scale = 1.5;
+                        globalPrompt += "(magical wonderous masterpiece intricate amazing awesome splash-art award-winning hyperdetailed trending work-of-art incredible perfect creative *random*)+++";
+                        globalNegativePrompt += "(photograph photo ugly out of focus blurry grainy noisy text writing watermark logo oversaturation over saturation over shadow *random*)+";
+                        scale = 5.5;
                     }
 
 
@@ -1659,6 +1682,8 @@ namespace MitchJourn_e
                     ImageSorter newWindow = new ImageSorter();
                 }
             }
+
+            Application.Current.Shutdown();
         }
 
         private void chk_SortOutputImagesByPrompt_Click(object sender, RoutedEventArgs e)

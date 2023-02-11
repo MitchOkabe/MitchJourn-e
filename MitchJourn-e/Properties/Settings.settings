@@ -15,10 +15,10 @@
       <Value Profile="(Default)">512</Value>
     </Setting>
     <Setting Name="Steps" Type="System.String" Scope="User">
-      <Value Profile="(Default)">50</Value>
+      <Value Profile="(Default)">25</Value>
     </Setting>
     <Setting Name="Seed" Type="System.String" Scope="User">
-      <Value Profile="(Default)">1337</Value>
+      <Value Profile="(Default)">1336</Value>
     </Setting>
     <Setting Name="Scale" Type="System.String" Scope="User">
       <Value Profile="(Default)">7.5</Value>
@@ -51,7 +51,7 @@
       <Value Profile="(Default)">512</Value>
     </Setting>
     <Setting Name="SamplerType" Type="System.String" Scope="User">
-      <Value Profile="(Default)">k_euler_a</Value>
+      <Value Profile="(Default)">k_dpmpp_2_a</Value>
     </Setting>
     <Setting Name="UseFullPrecision" Type="System.String" Scope="User">
       <Value Profile="(Default)">1</Value>
@@ -60,16 +60,16 @@
       <Value Profile="(Default)">512:512</Value>
     </Setting>
     <Setting Name="AspectRatio32" Type="System.String" Scope="User">
-      <Value Profile="(Default)">576:384</Value>
+      <Value Profile="(Default)">864:576</Value>
     </Setting>
     <Setting Name="AspectRatio169" Type="System.String" Scope="User">
-      <Value Profile="(Default)">640:384</Value>
+      <Value Profile="(Default)">960:544</Value>
     </Setting>
     <Setting Name="AspectRatio23" Type="System.String" Scope="User">
-      <Value Profile="(Default)">384:576</Value>
+      <Value Profile="(Default)">576:864</Value>
     </Setting>
     <Setting Name="AspectRatio920" Type="System.String" Scope="User">
-      <Value Profile="(Default)">256:576</Value>
+      <Value Profile="(Default)">544:960</Value>
     </Setting>
     <Setting Name="EnableWelcomePrompt" Type="System.String" Scope="User">
       <Value Profile="(Default)">1</Value>
@@ -77,6 +77,9 @@
     <Setting Name="PromptHelperPresets" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;string&gt;GPT3/Elaborate as an Artist=Elaborate on the description of an image from the perspective of a professional artists. Only use nouns and adjectives and no complete sentences. Description:&lt;/string&gt;
+  &lt;string&gt;GPT3/Elaborate as a Photographerr=Elaborate on the description of an image from the perspective of a professional photographer. Only use nouns and adjectives and no complete sentences. Description:&lt;/string&gt;
+  &lt;string&gt;Random/Random Word=*random*&lt;/string&gt;
   &lt;string&gt;Artists/Greg Rutkowski (dark concept art)=by greg rutkowski&lt;/string&gt;
   &lt;string&gt;Artists/Thoma Kinkades (Flowery Landscape)=by thomas kinkade&lt;/string&gt;
   &lt;string&gt;Artists/John Berkey (Detailed paintings)=very detailed painting by John Berkey&lt;/string&gt;
@@ -224,6 +227,9 @@
     </Setting>
     <Setting Name="OutputPath" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\invokeai\outputs</Value>
+    </Setting>
+    <Setting Name="OpenAIAPIKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

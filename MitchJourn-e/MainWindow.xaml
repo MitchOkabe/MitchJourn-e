@@ -144,6 +144,8 @@
             <TabItem Header="Advanced Settings" MaxWidth="120">
                 <ScrollViewer MaxHeight="620">
                     <StackPanel x:Name="stack_settings">
+                        <Label Content="Open AI API Key"/>
+                        <TextBox x:Name="txt_OpenAIAPIKey" FontSize="16" Padding="2" Margin="6" Text="" Tag="OpenAIAPIKey" TextChanged="SettingsTextChanged"/>
                         <Label Content="Sampler Type (ddim, k_dpm_2_a, k_dpm_2, k_dpmpp_2_a, k_dpmpp_2, k_euler_a, k_euler, k_heun, k_lms, plms)"/>
                         <TextBox x:Name="txt_Sampler" FontSize="16" Padding="2" Margin="6" Text="k_euler_a" Tag="SamplerType" TextChanged="SettingsTextChanged"/>
                         <Label Content="Number of images to generate (not all images will show up in preview if greater than 1)"/>
