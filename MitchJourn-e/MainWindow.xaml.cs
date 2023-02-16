@@ -814,7 +814,8 @@ namespace MitchJourn_e
                 string[] promptInfo = ((MenuItem)sender).Tag.ToString().Split('/');
                 string promptCategory = promptInfo[0];
                 string promptValue = "";
-                bool useValue = true;
+
+                ((MenuItem)sender).Foreground = System.Windows.Media.Brushes.LightGray;
 
                 for (int i = 1; i < promptInfo.Length; i++)
                 {
@@ -828,11 +829,21 @@ namespace MitchJourn_e
                 if (promptCategory.Contains("Negative"))
                 {
                     targetTextBox = textBoxes[1];
+                    char[] prompt = targetTextBox.Text.ToCharArray();
+                    if (prompt.Length > 0 && prompt.Last() == ' ')
+                    {
+                        targetTextBox.Text += promptValue;
+                    }
+                    else
+                    {
+                        targetTextBox.Text += $" {promptValue}";
+                    }
+                    targetTextBox.Text += promptValue;
+                    expander_settings.IsExpanded = true;
                 }
                 else if (promptCategory.Contains("GPT3"))
                 {
                     GPT3 gpt3 = new GPT3();
-                    useValue = false;
 
                     Application.Current.Dispatcher.Invoke((Action)async delegate
                     {
@@ -840,30 +851,10 @@ namespace MitchJourn_e
                         await gpt3.PromptToGPT(gptPrompt, CleanPrompt(txt_Prompt.Text));
                     });
                 }
-
-                if (useValue)
+                else
                 {
-                    ((MenuItem)sender).Foreground = System.Windows.Media.Brushes.LightGray;
-
-                    if (targetTextBox.Text != "")
-                    {
-                        char[] prompt = targetTextBox.Text.ToCharArray();
-                        if (prompt.Last() == ' ')
-                        {
-                            targetTextBox.Text += promptValue;
-                        }
-                        else
-                        {
-                            targetTextBox.Text += $" {promptValue}";
-                        }
-                    }
-                    else
-                    {
-                        targetTextBox.Text += promptValue;
-                    }
+                    wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(promptValue));
                 }
-
-                expander_settings.IsExpanded = true;
             }
             catch { return; }
         }
@@ -879,13 +870,15 @@ namespace MitchJourn_e
                 char[] prompt = txt_Prompt.Text.ToCharArray();
                 if (prompt.Last() == ' ')
                 {
-                    txt_PromptHelper.Text += ((MenuItem)sender).Header;
+                    wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble($"{((MenuItem)sender).Header}"));
+                    //txt_PromptHelper.Text += ((MenuItem)sender).Header;
                 }
                 else
                 {
-                    txt_PromptHelper.Text += $" {((MenuItem)sender).Header}";
+                    wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble($" {((MenuItem)sender).Header}"));
+                    //txt_PromptHelper.Text += $" {((MenuItem)sender).Header}";
                 }
-                expander_settings.IsExpanded = true;
+                //expander_settings.IsExpanded = true;
             }
             catch { return; }
         }

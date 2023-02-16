@@ -122,7 +122,7 @@
                                 <Slider x:Name="slider_imagePromptWeight" Margin="2" Maximum="1" LargeChange="0.05" SmallChange="0.01" TickFrequency="0.01" Value="0.25" Minimum="0.01" ValueChanged="slider_imagePromptWeight_ValueChanged" IsSnapToTickEnabled="True"/>
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="Model: " Margin="0" Foreground="Black" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="cmb_Model" Margin="4" SelectionChanged="cmb_Model_SelectionChanged"/>
+                                    <ComboBox x:Name="cmb_Model" Margin="4" SelectionChanged="cmb_Model_SelectionChanged" MaxWidth="120"/>
                                     <CheckBox Visibility="Collapsed" x:Name="chk_AlternateToken" Content="Use alternative prompt tokens" VerticalAlignment="Center" Margin="4" Foreground="Black"/>
                                     <Label Content="Add noise:" ToolTip="Adds additional random noise to the originally seeded noise. Use ranges between 0.1 and 1.0." Margin="4" Foreground="Black" VerticalAlignment="Center"/>
                                     <TextBox x:Name="txt_Noise" Text="0" Width="48" Margin="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="Black" VerticalAlignment="Center"/>

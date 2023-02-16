@@ -25,6 +25,10 @@ namespace MitchJourn_e.Classes
         SolidColorBrush primaryColour = (SolidColorBrush)new BrushConverter().ConvertFrom("#FFEFEFEF");
         SolidColorBrush transparent = Brushes.Transparent;
         StackPanel RootControl= new StackPanel();
+        public TextBox textPrompt = new TextBox();
+        Button btnDelete = new Button();
+        Button btnMoveLeft = new Button();
+        Button btnMoveRight = new Button();
         MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
 
         public void promptBubble()
@@ -46,12 +50,27 @@ namespace MitchJourn_e.Classes
                 Padding = new Thickness(4),
                 Background = Brushes.White
             };
+            card.MouseEnter += Card_MouseEnter;
+            card.MouseLeave += Card_MouseLeave;
             DragDrop.SetIsDragSource(card, true);
             outputStackPanel.Children.Add(card);
             StackPanel innerStack = new StackPanel { Orientation = Orientation.Horizontal };
             card.Content = innerStack;
 
-            TextBox textPrompt = new TextBox
+            btnDelete = new Button
+            {
+                Content = "x",
+                Margin = new Thickness(-5,-38,0,0),
+                Padding = new Thickness(-2,-4,-2,-4),
+                BorderThickness = new Thickness(0),
+                IsTabStop = false,
+                FontSize = 12,
+                Visibility = Visibility.Hidden
+            };
+            btnDelete.Click += DeleteBubble_Click;
+            innerStack.Children.Add(btnDelete);
+
+            textPrompt = new TextBox
             {
                 Text = prompt,
                 AutoWordSelection = true,
@@ -102,10 +121,115 @@ namespace MitchJourn_e.Classes
             buttonPowerMinus.Click += AdjustPower_Click;
             stackPowerButtons.Children.Add(buttonPowerMinus);
 
+            btnMoveLeft = new Button
+            {
+                Content = "<",
+                Margin = new Thickness(-42, 36,0,-2),
+                Padding = new Thickness(0),
+                BorderThickness = new Thickness(0),
+                IsTabStop = false,
+                FontSize = 12,
+                Visibility = Visibility.Hidden
+            };
+            btnMoveLeft.Click += BtnMoveLeft_Click;
+            innerStack.Children.Add(btnMoveLeft);
+
+            btnMoveRight = new Button
+            {
+                Content = ">",
+                Margin = new Thickness(-24, 36, 0, -2),
+                Padding = new Thickness(0),
+                BorderThickness = new Thickness(0),
+                IsTabStop = false,
+                FontSize = 12,
+                Visibility = Visibility.Hidden
+            };
+            btnMoveRight.Click += BtnMoveRight_Click;
+            innerStack.Children.Add(btnMoveRight);
+
             this.prompt = prompt;
             this.power = power;
 
             return outputStackPanel;
+        }
+
+        private void BtnMoveRight_Click(object sender, RoutedEventArgs e)
+        {
+            UIElement thisBubble = new UIElement();
+            WrapPanel parent = ((WrapPanel)RootControl.Parent);
+            int currentIndex = 0;
+            foreach (UIElement control in parent.Children)
+            {
+                if (control == RootControl)
+                {
+                    thisBubble = control;
+                    break;
+                }
+                currentIndex++;
+            }
+
+            if (currentIndex + 1 < parent.Children.Count)
+            {
+                parent.Children.Remove(thisBubble);
+                parent.Children.Insert(currentIndex + 1, thisBubble);
+            }
+        }
+
+        private void BtnMoveLeft_Click(object sender, RoutedEventArgs e)
+        {
+            UIElement thisBubble = new UIElement();
+            WrapPanel parent = ((WrapPanel)RootControl.Parent);
+            int currentIndex = 0;
+            foreach (UIElement control in parent.Children)
+            {
+                if (control == RootControl)
+                {
+                    thisBubble = control;
+                    break;
+                }
+                currentIndex++;
+            }
+
+            if (currentIndex - 1 >= 1)
+            {
+                parent.Children.Remove(thisBubble);
+                parent.Children.Insert(currentIndex - 1, thisBubble);
+            }
+        }
+
+            private void Card_MouseLeave(object sender, MouseEventArgs e)
+        {
+            btnDelete.Visibility = Visibility.Hidden;
+            btnMoveLeft.Visibility = Visibility.Hidden;
+            btnMoveRight.Visibility = Visibility.Hidden;
+        }
+
+        private void Card_MouseEnter(object sender, MouseEventArgs e)
+        {
+            btnDelete.Visibility = Visibility.Visible;
+            btnMoveLeft.Visibility = Visibility.Visible;
+            btnMoveRight.Visibility = Visibility.Visible;
+        }
+
+        private void DeleteBubble_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteBubble();
+        }
+
+        public void DeleteBubble()
+        {
+            UIElement thisBubble = new UIElement();
+            WrapPanel parent = ((WrapPanel)RootControl.Parent);
+            foreach (UIElement control in parent.Children)
+            {
+                if (control == RootControl)
+                {
+                    thisBubble = control;
+                }
+            }
+            parent.Children.Remove(thisBubble);
+
+            mainWindow.txt_Prompt.Text = mainWindow.ConvertPromptBubblesToString();
         }
 
         private void TextPrompt_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -132,6 +256,28 @@ namespace MitchJourn_e.Classes
                 mainWindow.wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(secondPrompt));
             }
         }
+
+        //public void UpdatePrompt()
+        //{
+        //    TextBox textBox = ((TextBox)sender);
+        //    string fullPrompt = textBox.Text;
+        //    string firstPrompt = "";
+        //    string secondPrompt = "";
+
+        //    for (int i = 0; i < fullPrompt.Length; i++)
+        //    {
+        //        if (i < textBox.SelectionStart)
+        //        {
+        //            firstPrompt += fullPrompt[i];
+        //        }
+        //        else
+        //        {
+        //            secondPrompt += fullPrompt[i];
+        //        }
+        //    }
+        //        ((TextBox)sender).Text = firstPrompt;
+        //    mainWindow.wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(secondPrompt));
+        //}
 
         private void TextPrompt_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
         {
