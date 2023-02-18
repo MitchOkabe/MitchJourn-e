@@ -196,8 +196,6 @@
                         <TextBox x:Name="txt_AspectRatio920" FontSize="16" Padding="2" Margin="6" Text="256:576" Tag="AspectRatio920" TextChanged="SettingsTextChanged"/>
                         <Label Content="Save Progressto Output directory"/>
                         <TextBox x:Name="txt_SaveProgress" FontSize="16" Padding="2" Margin="6" Text="256:576" Tag="SaveProgress" TextChanged="SettingsTextChanged"/>
-                        <Label Content="Delete all generated images on exit (0 or 1)"/>
-                        <TextBox x:Name="txt_DeleteOnExit" FontSize="16" Padding="2" Margin="6" Text="0" Tag="DeleteOnExit" TextChanged="SettingsTextChanged"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

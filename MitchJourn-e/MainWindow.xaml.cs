@@ -455,6 +455,13 @@ namespace MitchJourn_e
                                     menuItemDelete.Click += MenuItemDelete_Click;
                                     rightClickMenu.Items.Add(menuItemDelete);
 
+                                    // Delete All
+                                    MenuItem menuItemDeleteAll = new MenuItem();
+                                    menuItemDeleteAll.Header = "Delete All Images";
+                                    menuItemDeleteAll.Tag = renderedImage;
+                                    menuItemDeleteAll.Click += MenuItemDeleteAll_Click; ;
+                                    rightClickMenu.Items.Add(menuItemDeleteAll);
+
                                     // Add the image to the top of the image stack
                                     stack_Images.Items.Insert(0, output);
                                     lastImg = filePath;
@@ -604,6 +611,24 @@ namespace MitchJourn_e
 
                 }
 
+            }
+        }
+
+        private void MenuItemDeleteAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you would like to delete all these generated images?", "Confirm Deletion",
+                       (MessageBoxButton)MessageBoxButtons.YesNo) == MessageBoxResult.Yes)
+            {
+                foreach (Image image in stack_Images.Items)
+                {
+                    File.Delete(((RenderedImage)image.Tag).filePath);
+                }
+                foreach (string tempClipboardImagePaths in tempClipboardImagePaths)
+                {
+                    File.Delete(tempClipboardImagePaths);
+                }
+                lastImg = "";
+                stack_Images.Items.Clear();
             }
         }
 
@@ -1653,18 +1678,6 @@ namespace MitchJourn_e
             foreach (string tempClipboardImagePaths in tempClipboardImagePaths)
             {
                 File.Delete(tempClipboardImagePaths);
-            }
-
-            if (Settings.Default["DeleteOnExit"].ToString() == "1")
-            {
-                if (MessageBox.Show("Are you sure you would like to delete all these generated images?", "Confirm Deletion",
-                       (MessageBoxButton)MessageBoxButtons.YesNo) == MessageBoxResult.Yes)
-                { 
-                    foreach (Image image in stack_Images.Items)
-                    {
-                        File.Delete(((RenderedImage)image.Tag).filePath);
-                    }
-                }
             }
 
             if ((bool)chk_SortOutputImagesByPrompt.IsChecked)

@@ -30,14 +30,18 @@ namespace MitchJourn_e.Classes
         }
 
         /// <summary>
-        /// Sends a request to GPT3 in the format "{gptPrompt} {input}"
+        /// Sends a request to 
+        /// 
+        /// 3 in the format "{gptPrompt} {input}"
         /// </summary>
         /// <param name="input">Input from the user.</param>
         /// <param name="gptPrompt">Prompt/directions for the gpt3 model in plain English.</param>
         /// <returns></returns>
         public async System.Threading.Tasks.Task PromptToGPT(string gptPrompt, string input)
         {
-            string prompt = $"Using only nouns and adjectives, describe a highly detailed image graphic with the following metadata: {input}";
+            string prompt = $"Using only nouns and adjectives, describe a highly detailed image graphic with the following metadata: {input}" +
+                $" Example output: beautiful highly detailed incredible high-contrast" +
+                $"Output:";
             string returnedRequest = "";
             string output = "";
             
