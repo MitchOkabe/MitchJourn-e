@@ -116,7 +116,7 @@ namespace MitchJourn_e
 
             Application.Current.Dispatcher.Invoke((Action)async delegate
             {
-                string prompt = CleanPrompt(txt_Prompt.Text);
+                string prompt = CleanPrompt(ConvertPromptBubblesToString()); //CleanPrompt(txt_Prompt.Text);
                 string promptHelper = CleanPrompt(txt_PromptHelper.Text);
                 string negativePrompt = CleanPrompt(txt_NegativePrompt.Text);
                 string promptSettings = "";
@@ -128,6 +128,9 @@ namespace MitchJourn_e
                 string highRezFix = "";
                 double imageWidth = SafeInt(txt_Width.Text);
                 double imageHeight = SafeInt(txt_Height.Text);
+
+                globalPrompt = CleanPrompt(globalPrompt);
+                globalNegativePrompt = CleanPrompt(globalNegativePrompt);
 
                 lbl_Status.Content = "Loading...";
 
@@ -171,7 +174,7 @@ namespace MitchJourn_e
                 {
                     if (float.TryParse(txt_ImagePromptWeight.Text, out float imageWeight))
                     {
-                        imagePrompt += $"-I {txt_ImagePrompt.Text.Replace(@"\", @"\\")}";
+                        imagePrompt += $"-I \"{txt_ImagePrompt.Text.Replace(@"'", @"").Replace("\"", @"")}\"";
                         imagePrompt += $" --strength {1 - imageWeight}";
                     }
                 }
@@ -382,11 +385,11 @@ namespace MitchJourn_e
                                     //    Stretch = System.Windows.Media.Stretch.UniformToFill
                                     //};
 
-                                    bool upscalledImage = false;
+                                    bool upscaledImage = false;
 
-                                    // Create the renderedImage object and store useful metadata. This could be embeded in the png?
-                                    RenderedImage renderedImage = new RenderedImage().CreateRenderedImage(output, filePath, txt_Prompt.Text, txt_Scale.Text, txt_Seed.Text,
-                                        txt_Steps.Text, myBitmapImage.Width.ToString(), myBitmapImage.Height.ToString(), txt_ImagePrompt.Text, txt_ImagePromptWeight.Text, upscalledImage);
+                                    // Create the renderedImage object and store useful metadata. This could be embedded in the png?
+                                    RenderedImage renderedImage = new RenderedImage().CreateRenderedImage(output, filePath, txt_Prompt.Text + txt_NegativePrompt.Text, txt_Scale.Text, txt_Seed.Text,
+                                        txt_Steps.Text, myBitmapImage.Width.ToString(), myBitmapImage.Height.ToString(), txt_ImagePrompt.Text, txt_ImagePromptWeight.Text, upscaledImage);
 
                                     output.Tag = renderedImage;
 
@@ -430,6 +433,13 @@ namespace MitchJourn_e
                                     menuItemSaveAs.Tag = renderedImage.filePath;
                                     menuItemSaveAs.Click += MenuItemSaveAs_Click;
                                     rightClickMenu.Items.Add(menuItemSaveAs);
+
+                                    // Save All
+                                    MenuItem menuItemSaveAll = new MenuItem();
+                                    menuItemSaveAll.Header = "Save All Images";
+                                    menuItemSaveAll.Tag = renderedImage.filePath;
+                                    menuItemSaveAll.Click += MenuItemSaveAll_Click; ;
+                                    rightClickMenu.Items.Add(menuItemSaveAll);
 
                                     // Get File Path
                                     MenuItem menuItemGetFilePath = new MenuItem();
@@ -614,21 +624,58 @@ namespace MitchJourn_e
             }
         }
 
+        private void MenuItemSaveAll_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                FolderBrowserDialog SaveFolderDialog = new FolderBrowserDialog()
+                {
+                    RootFolder = Environment.SpecialFolder.MyPictures,
+                };
+
+                SaveFolderDialog.ShowDialog();
+
+                if (SaveFolderDialog.SelectedPath != "")
+                {
+                    foreach (Image image in stack_Images.Items)
+                    {
+                        string imageFilePath = ((RenderedImage)image.Tag).filePath;
+                        string[] fileParts = imageFilePath.Split('\\');
+                        File.Copy(imageFilePath, $"{SaveFolderDialog.SelectedPath}\\{fileParts.Last()}");
+                    }
+                }
+            }
+            catch
+            {
+                lbl_Status.Content = "Failed to save png";
+            }
+        }
+
         private void MenuItemDeleteAll_Click(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show("Are you sure you would like to delete all these generated images?", "Confirm Deletion",
-                       (MessageBoxButton)MessageBoxButtons.YesNo) == MessageBoxResult.Yes)
+            try
             {
-                foreach (Image image in stack_Images.Items)
+                if (MessageBox.Show("Are you sure you would like to delete all these generated images?", "Confirm Deletion",
+                           (MessageBoxButton)MessageBoxButtons.YesNo) == MessageBoxResult.Yes)
                 {
-                    File.Delete(((RenderedImage)image.Tag).filePath);
+                    foreach (Image image in stack_Images.Items)
+                    {
+                        if (image.Tag is RenderedImage)
+                        {
+                            File.Delete(((RenderedImage)image.Tag).filePath);
+                        }
+                    }
+                    foreach (string tempClipboardImagePaths in tempClipboardImagePaths)
+                    {
+                        File.Delete(tempClipboardImagePaths);
+                    }
+                    lastImg = "";
+                    stack_Images.Items.Clear();
                 }
-                foreach (string tempClipboardImagePaths in tempClipboardImagePaths)
-                {
-                    File.Delete(tempClipboardImagePaths);
-                }
-                lastImg = "";
-                stack_Images.Items.Clear();
+            }
+            catch
+            {
+                lbl_Status.Content = "Failed to delete all images.";
             }
         }
 
@@ -765,8 +812,17 @@ namespace MitchJourn_e
                 output = promptText;
 
                 StringBuilder stringBuilder = new StringBuilder();
-                foreach (char c in promptText)
+                //foreach (char c in promptText)
+                for (int i = 0; i < promptText.Length; i++)
                 {
+                    char c = promptText[i];
+
+                    // remove leading and trailing spaces
+                    if ((i == 0 || i == promptText.Length - 1 ) && c == ' ')
+                    {
+                        continue;
+                    }
+
                     // rebuild the string, adding back only the following allowed characters
                     if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == ' ' || c == '.' || c == '_' || c == ',' 
                         || c == '/' || c == '?' || c == '!' || c == '&' || c == '+' || c == '$' || c == '%' || c == '^' || c == '#' || c == '@'
@@ -854,17 +910,20 @@ namespace MitchJourn_e
                 if (promptCategory.Contains("Negative"))
                 {
                     targetTextBox = textBoxes[1];
-                    char[] prompt = targetTextBox.Text.ToCharArray();
-                    if (prompt.Length > 0 && prompt.Last() == ' ')
-                    {
-                        targetTextBox.Text += promptValue;
-                    }
-                    else
-                    {
-                        targetTextBox.Text += $" {promptValue}";
-                    }
-                    targetTextBox.Text += promptValue;
-                    expander_settings.IsExpanded = true;
+                    //char[] prompt = targetTextBox.Text.ToCharArray();
+                    //if (prompt.Length > 0 && prompt.Last() == ' ')
+                    //{
+                    //    //targetTextBox.Text += promptValue;
+                    //    wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(promptValue,0,true));
+                    //}
+                    //else
+                    //{
+                    //    //targetTextBox.Text += $" {promptValue}";
+                    //    wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble($" {promptValue}", 0, true));
+                    //}
+                    //targetTextBox.Text += promptValue;
+                    wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(promptValue, 0, true));
+                    //expander_settings.IsExpanded = true;
                 }
                 else if (promptCategory.Contains("GPT3"))
                 {
@@ -999,6 +1058,7 @@ namespace MitchJourn_e
                         break;
                     }
                 }
+                lastImg = "";
                 GC.Collect();
                 File.Delete(renderedImage.filePath);
             }
@@ -1049,6 +1109,8 @@ namespace MitchJourn_e
         /// <param name="processID"></param>
         private void StopRendering(int processID = -1)
         {
+            promptFolderFiles = null;
+
             if (processID == -1)
             {
                 processID = currentCMDProcessID;
@@ -1074,6 +1136,8 @@ namespace MitchJourn_e
         /// </summary>
         private void btn_Stop_Click(object sender, RoutedEventArgs e)
         {
+            promptFolderFiles = null;
+
             if (chk_ContinuouslyPrompt.IsChecked != true)
             {
                 StopRendering();
@@ -1374,8 +1438,16 @@ namespace MitchJourn_e
             {
                 try
                 {
+                    char[] invalidFilePathCharacters = System.IO.Path.GetInvalidPathChars();
+                    string cleanFolderPath = String.Join("_", folderPath.Split(invalidFilePathCharacters, StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.');
+
+                    //if (!folderPath.StartsWith("\"") || !folderPath.EndsWith("\"")) 
+                    //{
+                    //    folderPath = CleanPrompt(folderPath);
+                    //}
+
                     chk_ContinuouslyPrompt.IsChecked = true;
-                    promptFolderFiles = Directory.GetFiles(folderPath);
+                    promptFolderFiles = Directory.GetFiles(cleanFolderPath);
                     promptFolderIndex = 1;
                     txt_ImagePrompt.Text = promptFolderFiles[0];
                     StartRendering();
@@ -1704,7 +1776,7 @@ namespace MitchJourn_e
 
         private string GatherPromptBubbles()
         {
-            List<PromptBubble> promptBubbles = new List<PromptBubble>();
+            //List<PromptBubble> promptBubbles = new List<PromptBubble>();
             string prompt = "";
 
             foreach (Object control in wrp_PromptBubbles.Children)
@@ -1716,7 +1788,16 @@ namespace MitchJourn_e
                     if (promptBubbleStack.Tag is PromptBubble)
                     {
                         PromptBubble promptBubble = (PromptBubble)promptBubbleStack.Tag;
-                        prompt += $"({promptBubble.prompt}){1+0.1*promptBubble.power} ";
+                        char braceStart = '(';
+                        char braceEnd = ')';
+
+                        if (promptBubble.isNegativePrompt)
+                        {
+                            braceStart = '[';
+                            braceEnd = ']';
+                        }
+
+                        prompt += $"{braceStart}{promptBubble.prompt}{braceEnd}{1+0.1*promptBubble.power} ";
                     }
                 }
             }
@@ -1724,7 +1805,7 @@ namespace MitchJourn_e
             string cleanedPrompt = CleanPrompt(prompt);
             txt_Prompt.Text = cleanedPrompt;
 
-            return CleanPrompt(prompt);
+            return cleanedPrompt;
         }
 
         public string ConvertPromptBubblesToString()
@@ -1749,17 +1830,26 @@ namespace MitchJourn_e
             {
                 try
                 {
+                    char braceStart = '(';
+                    char braceEnd = ')';
+
+                    if (bubble.isNegativePrompt)
+                    {
+                        braceStart = '[';
+                        braceEnd = ']';
+                    }
+
                     if (bubble.power > 0)
                     {
-                        output += $"({bubble.prompt}){Math.Round(1 + bubble.power * .1, 2)} ";
+                        output += $"{braceStart}{bubble.prompt}{braceEnd}{Math.Round(1 + bubble.power * .1, 2)} ";
                     }
                     else if (bubble.power < 0)
                     {
-                        output += $"({bubble.prompt}){Math.Round((bubble.power * .1) + 1, 2)} ";
+                        output += $"{braceStart}{bubble.prompt}{braceEnd}{Math.Round((bubble.power * .1) + 1, 2)} ";
                     }
                     else
                     {
-                        output += $"({bubble.prompt})1 ";
+                        output += $"{braceStart}{bubble.prompt}{braceEnd}1 ";
                     }
                 }
                 catch { }
@@ -1796,19 +1886,56 @@ namespace MitchJourn_e
 
             datalog += "Processing starts" + Environment.NewLine;
             string[] prompts = input.Split(new char[] { '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
+            List<string> negativePrompts = new List<string>();
+            List<string> positivePrompts = new List<string>();
+
+            foreach (string prompt in prompts)
+            {
+                if (prompt.Contains('[') && prompt.Contains(']'))
+                {
+                    string[] startBrace = prompt.Split(new char[] { '[' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (string part in startBrace)
+                    {
+                        string[] endBrace = part.Split(new char[] { ']' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (endBrace.Length > 1)
+                        {
+                            negativePrompts.Add(endBrace[0].ToString());
+                            negativePrompts.Add(endBrace[1].ToString());
+                        }
+                        else
+                        {
+                            positivePrompts.Add(endBrace[0].ToString());
+                        }
+                    }
+                }
+                else
+                {
+                    positivePrompts.Add(prompt);
+                }
+            }
+
+            
             datalog += "String segments: " + prompts.Length + Environment.NewLine;
 
-            for (int i = 0; i < prompts.Length; i++)
+            foreach (string prompt in positivePrompts)
+            //for (int i = 0; i < prompts.Length; i++)
             {
-                datalog += "Segment: " + i + Environment.NewLine;
+                //datalog += "Segment: " + i + Environment.NewLine;
                 string reformedPrompt = "";
                 PromptBubble promptBubble = new PromptBubble();
 
+                //if (!allSplitPrompts[prompt])
+                //{
+                //    promptBubble.isNegativePrompt = true;
+                //}
+
                 // if the bubble has + notation, add power to the previous prompt
                 // note: doesn't support - notation, as common prompts include this, without meaning decrease power
-                if (prompts[i].Contains("+"))
+                if (prompt.Contains("+"))
                 {
-                    char[] chars = prompts[i].ToCharArray();
+                    char[] chars = prompt.ToCharArray();
                     foreach (char c in chars)
                     {
                         if (c == '+')
@@ -1817,7 +1944,7 @@ namespace MitchJourn_e
                             lastPromptBubble.power++;
                             lastPromptBubble.Tag = lastPromptBubble;
                             promptBubbles.RemoveAt(promptBubbles.Count - 1);
-                            promptBubbles.Add(lastPromptBubble.CreatePromptBubble(lastPromptBubble.prompt, lastPromptBubble.power));
+                            promptBubbles.Add(lastPromptBubble.CreatePromptBubble(lastPromptBubble.prompt, lastPromptBubble.power, lastPromptBubble.isNegativePrompt));
                         }
                         else
                         {
@@ -1829,7 +1956,7 @@ namespace MitchJourn_e
                 // if the bubble has numeric notation, add power to the previous prompt
                 if (reformedPrompt == "")
                 {
-                    reformedPrompt = prompts[i];
+                    reformedPrompt = prompt;
                 }
                 //if (reformedPrompt.Contains("1."))
                 if (promptBubbles.Count > 0)
@@ -1867,7 +1994,7 @@ namespace MitchJourn_e
                             lastPromptBubble.power = (int)finalPower;
                             lastPromptBubble.Tag = lastPromptBubble;
                             promptBubbles.RemoveAt(promptBubbles.Count - 1);
-                            promptBubbles.Add(lastPromptBubble.CreatePromptBubble(lastPromptBubble.prompt,lastPromptBubble.power));
+                            promptBubbles.Add(lastPromptBubble.CreatePromptBubble(lastPromptBubble.prompt,lastPromptBubble.power, lastPromptBubble.isNegativePrompt));
                             datalog += $"Adding power: {finalPower}" + Environment.NewLine;
                             j++;
                             break;
@@ -1881,6 +2008,106 @@ namespace MitchJourn_e
                 }
 
                 StackPanel promptBubbleStack = promptBubble.CreatePromptBubble(reformedPrompt);
+                if (promptBubbleStack.Tag is PromptBubble &&
+                    reformedPrompt != "")
+                {
+                    // create the new UI object for the bubble
+                    promptBubbles.Add(promptBubbleStack);
+                    promptBubbleIndex++;
+                }
+
+                datalog += "------end-------" + Environment.NewLine;
+            }
+
+            foreach (string prompt in negativePrompts)
+            //for (int i = 0; i < prompts.Length; i++)
+            {
+                //datalog += "Segment: " + i + Environment.NewLine;
+                string reformedPrompt = "";
+                PromptBubble promptBubble = new PromptBubble();
+                promptBubble.isNegativePrompt = true;
+                //if (!allSplitPrompts[prompt])
+                //{
+                //    promptBubble.isNegativePrompt = true;
+                //}
+
+                // if the bubble has + notation, add power to the previous prompt
+                // note: doesn't support - notation, as common prompts include this, without meaning decrease power
+                if (prompt.Contains("+"))
+                {
+                    char[] chars = prompt.ToCharArray();
+                    foreach (char c in chars)
+                    {
+                        if (c == '+')
+                        {
+                            PromptBubble lastPromptBubble = (PromptBubble)((StackPanel)promptBubbles.Last()).Tag;
+                            lastPromptBubble.power++;
+                            lastPromptBubble.Tag = lastPromptBubble;
+                            promptBubbles.RemoveAt(promptBubbles.Count - 1);
+                            promptBubbles.Add(lastPromptBubble.CreatePromptBubble(lastPromptBubble.prompt, lastPromptBubble.power, lastPromptBubble.isNegativePrompt));
+                        }
+                        else
+                        {
+                            reformedPrompt += c;
+                        }
+                    }
+                }
+
+                // if the bubble has numeric notation, add power to the previous prompt
+                if (reformedPrompt == "")
+                {
+                    reformedPrompt = prompt;
+                }
+                //if (reformedPrompt.Contains("1."))
+                if (promptBubbles.Count > 0)
+                {
+                    datalog += "Not first prompt bubble" + Environment.NewLine;
+                    string[] promptParts = reformedPrompt.Split(" ");
+                    reformedPrompt = "";
+                    double finalPower = 0;
+
+                    PromptBubble lastPromptBubble = (PromptBubble)((StackPanel)promptBubbles.Last()).Tag;
+
+                    int j = 0;
+                    foreach (string promptPart in promptParts)
+                    {
+                        bool isDouble = double.TryParse(promptPart, out double power);
+                        if (!isDouble && promptPart != "" && promptPart != " ")
+                        {
+                            datalog += $"Adding Prompt part: {promptPart} " + Environment.NewLine;
+                            reformedPrompt += promptPart + " ";
+                        }
+                        else if (isDouble && j == 0)
+                        {
+                            if (power > 1)
+                            {
+                                finalPower = Math.Round((power - 1) * 10, 1);
+                            }
+                            else if (power < 1)
+                            {
+                                finalPower = Math.Round((1 - power) * -10, 1);
+                            }
+                            else if (power == 1)
+                            {
+                                finalPower = 0;
+                            }
+                            lastPromptBubble.power = (int)finalPower;
+                            lastPromptBubble.Tag = lastPromptBubble;
+                            promptBubbles.RemoveAt(promptBubbles.Count - 1);
+                            promptBubbles.Add(lastPromptBubble.CreatePromptBubble(lastPromptBubble.prompt, lastPromptBubble.power, lastPromptBubble.isNegativePrompt));
+                            datalog += $"Adding power: {finalPower}" + Environment.NewLine;
+                            j++;
+                            break;
+                        }
+                        j++;
+                    }
+                }
+                else
+                {
+                    datalog += "First prompt bubble! " + reformedPrompt + Environment.NewLine;
+                }
+
+                StackPanel promptBubbleStack = promptBubble.CreatePromptBubble(reformedPrompt,0,true);
                 if (promptBubbleStack.Tag is PromptBubble &&
                     reformedPrompt != "")
                 {
@@ -2040,6 +2267,11 @@ namespace MitchJourn_e
         private void chk_HighRes_Unchecked(object sender, RoutedEventArgs e)
         {
             chk_HighrezFix.IsChecked = false;
+        }
+
+        private void btn_AddNegativePromptBubble_Click(object sender, RoutedEventArgs e)
+        {
+            wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble("",0,true));
         }
     }
 }

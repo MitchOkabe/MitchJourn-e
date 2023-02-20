@@ -22,22 +22,30 @@ namespace MitchJourn_e.Classes
     {
         public int power = 0;
         public string prompt = "";
-        SolidColorBrush primaryColour = (SolidColorBrush)new BrushConverter().ConvertFrom("#FFEFEFEF");
+        public TextBox textPrompt = new TextBox();
+        public bool isNegativePrompt = false; 
+
+        SolidColorBrush primaryColour = (SolidColorBrush)new BrushConverter().ConvertFrom("#fcfcff");
+        SolidColorBrush secondaryColour = (SolidColorBrush)new BrushConverter().ConvertFrom("#aad7ff"); 
+        SolidColorBrush negativePrimaryColour = (SolidColorBrush)new BrushConverter().ConvertFrom("#ffecf0");
+        SolidColorBrush negativeSecondaryColour = (SolidColorBrush)new BrushConverter().ConvertFrom("#c98499");
         SolidColorBrush transparent = Brushes.Transparent;
         StackPanel RootControl= new StackPanel();
-        public TextBox textPrompt = new TextBox();
         Button btnDelete = new Button();
         Button btnMoveLeft = new Button();
         Button btnMoveRight = new Button();
         MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
+        Thread currentlyPreparingThread = null;
 
         public void promptBubble()
         {
 
         }
 
-        public StackPanel CreatePromptBubble(string prompt = "", int power = 0)
+        public StackPanel CreatePromptBubble(string prompt = "", int power = 0, bool isNegativePrompt = false)
         {
+            this.isNegativePrompt = isNegativePrompt;
+
             StackPanel outputStackPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -47,9 +55,18 @@ namespace MitchJourn_e.Classes
 
             Card card = new Card()
             {
-                Padding = new Thickness(4),
-                Background = Brushes.White
+                Padding = new Thickness(4)
             };
+
+            if (!isNegativePrompt)
+            {
+                card.Background = secondaryColour;
+            }
+            else
+            {
+                card.Background = negativeSecondaryColour;
+            }
+
             card.MouseEnter += Card_MouseEnter;
             card.MouseLeave += Card_MouseLeave;
             DragDrop.SetIsDragSource(card, true);
@@ -84,6 +101,16 @@ namespace MitchJourn_e.Classes
                 Padding = new Thickness(4),
                 Style = null
             };
+
+            if (!isNegativePrompt)
+            {
+                textPrompt.Background = primaryColour;
+            }
+            else
+            {
+                textPrompt.Background = negativePrimaryColour;
+            }
+
             textPrompt.TextChanged += TextPrompt_TextChanged;
             textPrompt.SpellCheck.IsEnabled = true;
             textPrompt.GotKeyboardFocus += TextPrompt_GotKeyboardFocus;
@@ -150,7 +177,47 @@ namespace MitchJourn_e.Classes
             this.prompt = prompt;
             this.power = power;
 
+            var getFocus = new Thread(GetFocus);
+            getFocus.Start();
+            currentlyPreparingThread = getFocus;
+
             return outputStackPanel;
+        }
+
+        private void GetFocus()
+        {
+            if (textPrompt != null)
+            {
+                Thread.Sleep(10);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    textPrompt.Focus();
+                });
+
+            }
+        }
+
+        private int GetCurrentIndex()
+        {
+            UIElement thisBubble = new UIElement();
+            WrapPanel parent = ((WrapPanel)RootControl.Parent);
+            int currentIndex = 0;
+
+            if (parent != null)
+            {
+
+                foreach (UIElement control in parent.Children)
+                {
+                    if (control == RootControl)
+                    {
+                        thisBubble = control;
+                        break;
+                    }
+                    currentIndex++;
+                }
+            }
+
+            return currentIndex;
         }
 
         private void BtnMoveRight_Click(object sender, RoutedEventArgs e)
@@ -197,7 +264,7 @@ namespace MitchJourn_e.Classes
             }
         }
 
-            private void Card_MouseLeave(object sender, MouseEventArgs e)
+        private void Card_MouseLeave(object sender, MouseEventArgs e)
         {
             btnDelete.Visibility = Visibility.Hidden;
             btnMoveLeft.Visibility = Visibility.Hidden;
@@ -252,8 +319,9 @@ namespace MitchJourn_e.Classes
                         secondPrompt += fullPrompt[i];
                     }
                 }
-                ((TextBox)sender).Text = firstPrompt;
-                mainWindow.wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(secondPrompt));
+
+                ((TextBox)sender).Text = mainWindow.CleanPrompt(firstPrompt);
+                mainWindow.wrp_PromptBubbles.Children.Insert(GetCurrentIndex() + 1, new PromptBubble().CreatePromptBubble(mainWindow.CleanPrompt(secondPrompt), power, isNegativePrompt));
             }
         }
 

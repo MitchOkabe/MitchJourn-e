@@ -37,9 +37,14 @@
                     </StackPanel>
                     <TextBox Visibility="Collapsed" x:Name="txt_Prompt" FontSize="16" Padding="2" Margin="4" TabIndex="0" SpellCheck.IsEnabled="True" TextChanged="txt_Prompt_TextChanged"/>
                     <WrapPanel Orientation="Horizontal" x:Name="wrp_PromptBubbles" Margin="6">
-                        <ui:Card Padding="0">
-                            <Button x:Name="btn_AddPromptBubble" MinHeight="40" Content="+" BorderBrush="{x:Null}" Click="btn_AddPromptBubble_Click" Foreground="Black" Background="White" TabIndex="4"/>
-                        </ui:Card>
+                        <WrapPanel Orientation="Vertical">
+                            <ui:Card Padding="0">
+                                <Button x:Name="btn_AddPromptBubble" Height="28" Content="+" Padding="12,0,12,0" BorderBrush="{x:Null}" Click="btn_AddPromptBubble_Click" Foreground="Black" Background="White" TabIndex="4"/>
+                            </ui:Card>
+                            <ui:Card Padding="0">
+                                <Button x:Name="btn_AddNegativePromptBubble" Height="28" Content="-" Padding="14,0,14,0" BorderBrush="{x:Null}" Click="btn_AddNegativePromptBubble_Click"  Foreground="Black" Background="White" TabIndex="5"/>
+                            </ui:Card>
+                        </WrapPanel>
                     </WrapPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,-8,0,0">
                         <Button x:Name="btn_Go" Content="Go" Width="69" Padding="8" Margin="6" Click="btn_Go_Click" TabIndex="1" Background="White" Foreground="Black" />
@@ -74,7 +79,7 @@
                                     <TextBox x:Name="txt_Steps" Text="50" Margin="4,0,0,0" Width="42" Tag="Steps" TextChanged="SettingsTextChanged" Foreground="Black" VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <Slider x:Name="slider_Steps" Margin="2" Maximum="200" LargeChange="10" SmallChange="1" TickFrequency="1" Value="50" Minimum="10" IsSnapToTickEnabled="True" ValueChanged="slider_Steps_ValueChanged" VerticalAlignment="Center"/>
-                                <Label Content="Prompt helper text" Padding="2" Foreground="Black" VerticalAlignment="Center"/>
+                                <Label Content="Addtional prompt text" Padding="2" Foreground="Black" VerticalAlignment="Center"/>
                                 
                                 <WrapPanel Orientation="Horizontal" Visibility="Collapsed">
                                     <ui:Card Padding="0">
