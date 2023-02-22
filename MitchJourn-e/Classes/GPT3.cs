@@ -37,7 +37,7 @@ namespace MitchJourn_e.Classes
         /// <param name="input">Input from the user.</param>
         /// <param name="gptPrompt">Prompt/directions for the gpt3 model in plain English.</param>
         /// <returns></returns>
-        public async System.Threading.Tasks.Task PromptToGPT(string gptPrompt, string input)
+        public async System.Threading.Tasks.Task PromptToGPT(string gptPrompt, string input, bool isNegativePrompt = false)
         {
             string prompt = $"Using only nouns and adjectives, describe a highly detailed image graphic with the following metadata: {input}" +
                 $" Example output: beautiful highly detailed incredible high-contrast" +
@@ -47,30 +47,46 @@ namespace MitchJourn_e.Classes
             
             if (gptPrompt != "")
             {
-                prompt = $"{gptPrompt} {input}";
+                prompt = $"{gptPrompt} {input}. Result:";
             }
 
             if (Properties.Settings.Default["OpenAIAPIKey"].ToString() != "")
             {
                 try
                 {
-                    await api.Completions.StreamCompletionAsync(
-                    new CompletionRequest(prompt: prompt, model: Model.DavinciText, max_tokens: 64, temperature: 0.7, top_p: 1, numOutputs: 1, presencePenalty: null, frequencyPenalty: 0,
-                    logProbs: null, echo: false, stopSequences: null),
-                    res => returnedRequest += res.ToString());
+                    //await api.Completions.StreamCompletionAsync(
+                    //new CompletionRequest(prompt: prompt, model: Model.DavinciText, max_tokens: 64, temperature: 1, top_p: 1, numOutputs: 1, presencePenalty: 0.5, frequencyPenalty: 0.5,
+                    //logProbs: null, echo: false, stopSequences: null),
+                    //res => returnedRequest += res.ToString());
 
                     MainWindow mainWindow = ((MainWindow)Application.Current.MainWindow);
-                    StackPanel promptBubble = new PromptBubble().CreatePromptBubble();
+                    StackPanel promptBubble = new PromptBubble().CreatePromptBubble("",0,isNegativePrompt);
                     mainWindow.wrp_PromptBubbles.Children.Add(promptBubble);
 
-                    await foreach (var token in api.Completions.StreamCompletionEnumerableAsync(new CompletionRequest(prompt, Model.DavinciText, 200, 0.5, presencePenalty: 0.1, frequencyPenalty: 0.1)))
+                    await foreach (var token in api.Completions.StreamCompletionEnumerableAsync(new CompletionRequest(
+                        prompt: prompt, 
+                        model: Model.DavinciText, 
+                        max_tokens: 128, 
+                        temperature: 1, 
+                        top_p: 1, 
+                        numOutputs: 1, 
+                        presencePenalty: 2, 
+                        frequencyPenalty: 2,
+                        logProbs: null, 
+                        echo: false, 
+                        stopSequences: null
+                        )))
                     {
                         string safeToken = SafeString(token);
                         if (safeToken != "" && safeToken != "\n")
                         {
                             Application.Current.Dispatcher.Invoke((Action)delegate
                             {
-                                //mainWindow.txt_PromptHelper.Text += safeToken;
+                                if (((PromptBubble)promptBubble.Tag).textPrompt.Text.Length > 130 && safeToken.Contains(' '))
+                                {
+                                    promptBubble = new PromptBubble().CreatePromptBubble("", 0, isNegativePrompt);
+                                    mainWindow.wrp_PromptBubbles.Children.Add(promptBubble);
+                                }
                                 ((PromptBubble)promptBubble.Tag).textPrompt.Text += safeToken;
                             });
                         }

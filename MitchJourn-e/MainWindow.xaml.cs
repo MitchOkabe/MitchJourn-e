@@ -895,6 +895,7 @@ namespace MitchJourn_e
                 string[] promptInfo = ((MenuItem)sender).Tag.ToString().Split('/');
                 string promptCategory = promptInfo[0];
                 string promptValue = "";
+                bool isNegativePrompt = ((MenuItem)sender).Header.ToString().ToLower().Contains("negative");
 
                 ((MenuItem)sender).Foreground = System.Windows.Media.Brushes.LightGray;
 
@@ -909,21 +910,8 @@ namespace MitchJourn_e
 
                 if (promptCategory.Contains("Negative"))
                 {
-                    targetTextBox = textBoxes[1];
-                    //char[] prompt = targetTextBox.Text.ToCharArray();
-                    //if (prompt.Length > 0 && prompt.Last() == ' ')
-                    //{
-                    //    //targetTextBox.Text += promptValue;
-                    //    wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(promptValue,0,true));
-                    //}
-                    //else
-                    //{
-                    //    //targetTextBox.Text += $" {promptValue}";
-                    //    wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble($" {promptValue}", 0, true));
-                    //}
-                    //targetTextBox.Text += promptValue;
+                    //targetTextBox = textBoxes[1];
                     wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(promptValue, 0, true));
-                    //expander_settings.IsExpanded = true;
                 }
                 else if (promptCategory.Contains("GPT3"))
                 {
@@ -932,13 +920,16 @@ namespace MitchJourn_e
                     Application.Current.Dispatcher.Invoke((Action)async delegate
                     {
                         string gptPrompt = promptValue;
-                        await gpt3.PromptToGPT(gptPrompt, CleanPrompt(txt_Prompt.Text));
+                        //if (promptCategory)
+                        await gpt3.PromptToGPT(gptPrompt, CleanPrompt(txt_Prompt.Text), isNegativePrompt);
                     });
                 }
                 else
                 {
                     wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble(promptValue));
                 }
+
+                //expander_settings.IsExpanded = true;
             }
             catch { return; }
         }
@@ -2272,6 +2263,11 @@ namespace MitchJourn_e
         private void btn_AddNegativePromptBubble_Click(object sender, RoutedEventArgs e)
         {
             wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble("",0,true));
+        }
+
+        private void cmb_Model_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            ScanModels();
         }
     }
 }
