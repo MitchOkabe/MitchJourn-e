@@ -38,6 +38,7 @@ using System.Text.RegularExpressions;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using Wpf.Ui.Common;
 using OpenAI_API.Completions;
+using System.Threading;
 
 namespace MitchJourn_e
 {
@@ -47,21 +48,23 @@ namespace MitchJourn_e
     public partial class MainWindow : System.Windows.Window
     {
         System.Timers.Timer timer;
-        string lastImg = "";
-        string lastPrompt = "";
-        string currentProcessName = "";
-        public int currentCMDProcessID = 0;
+        string lastInvokeImage = "";
+        string lastAutomaticImage = "";
+        string lastAutomaticImage2 = "";
+        public int currentInvokeProcessID = 0;
+        public int currentAutomaticProcessID = 0;
+        public int currentInvokeWebProcessID = 0;
         public Process rendererProcess;
-        //public StreamWriter textWriter;
+        public Process invokeAIWebProcess;
+        public Process automaticWebProcess;
         bool isFirstRun = true;
-        bool firstUpscaleRequest = false;
-        Random rand = new Random();
+        Random rand = new();
         string globalPrompt = "";
         string globalNegativePrompt = "";
         bool windowClosing = false;
-        List<string> tempClipboardImagePaths = new List<string>();
+        List<string> tempClipboardImagePaths = new();
         BitmapSource clipboardImage;
-        RandomWord randomWord = new RandomWord();
+        RandomWord randomWord = new();
         string[]? promptFolderFiles;
         int promptFolderIndex = -1;
 
@@ -70,8 +73,8 @@ namespace MitchJourn_e
         public MainWindow()
         {
             InitializeComponent();
-            InitializePromptHelper();
             InitializeSettings();
+            InitializePromptHelper();
             InitializePromptBubbles();
             StartRendering();
             UpdateCreativity();
@@ -96,6 +99,16 @@ namespace MitchJourn_e
             {
                 StartRendering();
             }
+        }
+
+        /// <summary>
+        /// Request to start rendering
+        /// </summary>
+        /// <param name="promptText">If promptText is "", render using the user provided prompt</param>
+        /// <param name="incrementSeed">Use the next seed?</param>
+        public void RequestRendering(string promptText = "", bool incrementSeed = true) 
+        {
+            StartRendering(promptText, incrementSeed);
         }
 
         /// <summary>
@@ -224,8 +237,8 @@ namespace MitchJourn_e
                     // start a new cmd prompt
                     process = Process.Start(processStartInfo);
 
-                    currentProcessName = process.MainWindowTitle;
-                    currentCMDProcessID = process.Id;
+                    //currentProcessName = process.MainWindowTitle;
+                    currentInvokeProcessID = process.Id;
                     rendererProcess = process;
                     //textWriter = process.StandardInput;
                     string sampler = Settings.Default["SamplerType"].ToString();
@@ -292,7 +305,7 @@ namespace MitchJourn_e
                 timer.Elapsed += (sender, e) => DisplayImage();
                 timer.Start();
 
-                lastPrompt = txt_Prompt.Text;
+                //lastPrompt = txt_Prompt.Text;
             });
 
         }
@@ -316,309 +329,252 @@ namespace MitchJourn_e
         {
             if (!windowClosing)
             {
-                string imageDirectory = $"{Settings.Default["OutputPath"]}";
+                // check InvokeAI image output path, then check Automatic111 image output path
+                string[] imageDirectories = { $"{Settings.Default["OutputPath"]}", $"{Settings.Default["AutomaticMainPath"]}\\outputs\\txt2img-images", $"{Settings.Default["AutomaticMainPath"]}\\outputs\\img2img-images" };
 
-                if (Directory.Exists(imageDirectory))
+                for (int i = 0; i < imageDirectories.Length; i++)
                 {
-                    DirectoryInfo directoryInfo = new DirectoryInfo(imageDirectory);
+                    string imageDirectory = imageDirectories[i];
 
-                    FileInfo[] Files = directoryInfo.GetFiles("*.png"); // Get all png files
+                    //string imageDirectory = $"{Settings.Default["OutputPath"]}";
 
-                    if (Files.Length > 0)
+                    if (Directory.Exists(imageDirectory))
                     {
-                        Application.Current.Dispatcher.Invoke((Action)delegate
+                        DirectoryInfo directoryInfo = new DirectoryInfo(imageDirectory);
+
+                        FileInfo[] Files = directoryInfo.GetFiles("*.png"); // Get all png files
+
+                        if (Files.Length > 0)
                         {
-                            try
+                            Application.Current.Dispatcher.Invoke((Action)delegate
                             {
-                                // Check if there is a new image in the folder
-                                string filePath = Files.Last().FullName;
-                                if (filePath != lastImg)
+                                try
                                 {
-                                    // Don't display an image from last boot
-                                    if (lastImg == "")
+                                    // Check if there is a new image in the folder
+                                    string filePath = Files.Last().FullName;
+                                    if ((filePath != lastInvokeImage && i == 0) || (filePath != lastAutomaticImage && i == 1) || (filePath != lastAutomaticImage2 && i == 2))
                                     {
-                                        lastImg = filePath;
-                                        return;
+                                        // Don't display an image from last boot
+                                        if ((lastInvokeImage == "" && i == 0))
+                                        {
+                                            lastInvokeImage = filePath;
+                                            return;
+                                        }
+                                        else if (lastAutomaticImage == "" && i == 1)
+                                        {
+                                            lastAutomaticImage = filePath;
+                                            return;
+                                        }
+                                        else if (lastAutomaticImage2 == "" && i == 2)
+                                        {
+                                            lastAutomaticImage2 = filePath;
+                                            return;
+                                        }
+
+                                        // create a bitmap from the image file
+                                        BitmapImage myBitmapImage = new BitmapImage();
+                                        myBitmapImage.BeginInit();
+                                        myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                        myBitmapImage.UriSource = new Uri(filePath);
+                                        myBitmapImage.EndInit();
+
+                                        // Create the image using the bitmap
+                                        Image output = new Image
+                                        {
+                                            Margin = new Thickness(8),
+                                            Stretch = System.Windows.Media.Stretch.Uniform,
+                                            Source = myBitmapImage,
+                                            HorizontalAlignment = System.Windows.HorizontalAlignment.Left
+                                        };
+                                        scroll_Images.MaxHeight = myBitmapImage.Height + 50;
+
+                                        bool upscaledImage = false;
+
+                                        // Create the renderedImage object and store useful metadata. This could be embedded in the png?
+                                        RenderedImage renderedImage = new RenderedImage().CreateRenderedImage(output, filePath, txt_Prompt.Text + txt_NegativePrompt.Text, txt_Scale.Text, txt_Seed.Text,
+                                            txt_Steps.Text, myBitmapImage.Width.ToString(), myBitmapImage.Height.ToString(), txt_ImagePrompt.Text, txt_ImagePromptWeight.Text, upscaledImage);
+
+                                        output.Tag = renderedImage;
+
+                                        if (imageViewer != null)
+                                        {
+                                            ((ImageViewer)imageViewer).DisplayImage(myBitmapImage, renderedImage);
+                                        }
+
+                                        // Add the right click menu to the image
+                                        ContextMenu rightClickMenu = new ContextMenu();
+
+                                        output.ContextMenu = rightClickMenu;
+
+                                        // Create Variation
+                                        MenuItem menuItemCreateVariation = new MenuItem();
+                                        menuItemCreateVariation.Header = "Create Variations";
+                                        menuItemCreateVariation.Tag = renderedImage;
+                                        menuItemCreateVariation.Click += MenuItemCreateVariation_Click;
+                                        rightClickMenu.Items.Add(menuItemCreateVariation);
+
+                                        // Recreate prompt
+                                        MenuItem menuItemRecreatePrompt = new MenuItem();
+                                        menuItemRecreatePrompt.Header = "Recreate Prompt";
+                                        menuItemRecreatePrompt.Tag = renderedImage;
+                                        menuItemRecreatePrompt.Click += MenuItemRecreatePrompt_Click;
+                                        rightClickMenu.Items.Add(menuItemRecreatePrompt);
+
+                                        // Use as Image-To-Image
+                                        MenuItem menuItemImageToImage = new MenuItem();
+                                        menuItemImageToImage.Header = "Use as Image-To-Image";
+                                        menuItemImageToImage.Tag = renderedImage;
+                                        menuItemImageToImage.Click += menuItemImageToImage_Click;
+                                        rightClickMenu.Items.Add(menuItemImageToImage);
+
+                                        // ----
+                                        rightClickMenu.Items.Add(new Separator());
+
+                                        // Save As
+                                        MenuItem menuItemSaveAs = new MenuItem();
+                                        menuItemSaveAs.Header = "Save As";
+                                        menuItemSaveAs.Tag = renderedImage.filePath;
+                                        menuItemSaveAs.Click += MenuItemSaveAs_Click;
+                                        rightClickMenu.Items.Add(menuItemSaveAs);
+
+                                        // Save All
+                                        MenuItem menuItemSaveAll = new MenuItem();
+                                        menuItemSaveAll.Header = "Save All Images";
+                                        menuItemSaveAll.Tag = renderedImage.filePath;
+                                        menuItemSaveAll.Click += MenuItemSaveAll_Click; ;
+                                        rightClickMenu.Items.Add(menuItemSaveAll);
+
+                                        // Get File Path
+                                        MenuItem menuItemGetFilePath = new MenuItem();
+                                        menuItemGetFilePath.Header = "Get File Path";
+                                        menuItemGetFilePath.Tag = renderedImage.filePath;
+                                        menuItemGetFilePath.Click += MenuItemGetFilePath_Click;
+                                        rightClickMenu.Items.Add(menuItemGetFilePath);
+
+                                        // Open Containing Folder
+                                        MenuItem menuItemOpenContainingFolder = new MenuItem();
+                                        menuItemOpenContainingFolder.Header = "Open Containing Folder";
+                                        menuItemOpenContainingFolder.Tag = renderedImage.filePath;
+                                        menuItemOpenContainingFolder.Click += MenuItemOpenContainingFolder_Click;
+                                        rightClickMenu.Items.Add(menuItemOpenContainingFolder);
+
+                                        // ----
+                                        rightClickMenu.Items.Add(new Separator());
+
+                                        // Delete
+                                        MenuItem menuItemDelete = new MenuItem();
+                                        menuItemDelete.Header = "Delete";
+                                        menuItemDelete.Tag = renderedImage;
+                                        menuItemDelete.Click += MenuItemDelete_Click;
+                                        rightClickMenu.Items.Add(menuItemDelete);
+
+                                        // Delete All
+                                        MenuItem menuItemDeleteAll = new MenuItem();
+                                        menuItemDeleteAll.Header = "Delete All Images";
+                                        menuItemDeleteAll.Tag = renderedImage;
+                                        menuItemDeleteAll.Click += MenuItemDeleteAll_Click; ;
+                                        rightClickMenu.Items.Add(menuItemDeleteAll);
+
+                                        // Add the image to the top of the image stack
+                                        stack_Images.Items.Insert(0, output);
+
+                                        if (i == 0)
+                                        {
+                                            lastInvokeImage = filePath;
+                                        }
+                                        else if (i == 1)
+                                        {
+                                            lastAutomaticImage = filePath;
+                                        }
+                                        else if (i == 2)
+                                        {
+                                            lastAutomaticImage2 = filePath;
+                                        }
+
+                                        // If trying to create variations of upscalled images (too large to recreate image size)
+                                        if (lbl_Status.Content.ToString() != "Can't set upscaled image as image source, creating downrezed version instead...")
+                                        {
+                                            lbl_Status.Content = $"Created image from seed {txt_Seed.Text}";
+                                        }
+                                        else
+                                        {
+                                            lbl_Status.Content = "Created downrezed version.";
+                                        }
+
+                                        // sequential prompting
+                                        if ((bool)chk_SequentialPrompting.IsChecked)
+                                        {
+                                            txt_ImagePrompt.Text = renderedImage.filePath;
+                                        }
+
+                                        // Folder Prompt feature
+                                        if (promptFolderFiles != null && promptFolderIndex > promptFolderFiles.Length - 1)
+                                        {
+                                            lbl_Status.Content = $"Done creating image Sequence {promptFolderIndex}/{promptFolderFiles.Length}";
+                                            promptFolderIndex = -1;
+                                            promptFolderFiles = null;
+                                            txt_ImagePrompt.Text = "";
+                                            chk_ContinuouslyPrompt.IsChecked = false;
+                                        }
+                                        if (promptFolderFiles != null && promptFolderFiles.Length > 0 && promptFolderIndex <= promptFolderFiles.Length - 1)
+                                        {
+                                            txt_ImagePrompt.Text = promptFolderFiles[promptFolderIndex];
+                                            promptFolderIndex++;
+                                            chk_ContinuouslyPrompt.IsChecked = true;
+                                        }
+
+                                        // continuous prompting
+                                        if ((bool)chk_ContinuouslyPrompt.IsChecked)
+                                        {
+                                            StartRendering();
+                                        }
                                     }
 
-                                    //// bool upscaleRequested is true if the chk_HighRes is checked
-                                    //bool.TryParse(chk_HighRes.IsChecked.ToString(), out bool upscaleRequested);
-
-                                    //// if upscale has been requested and an image shows up in the folder
-                                    //// and that image is too small to be an upscale, don't display it
-                                    //if (upscaleRequested || firstUpscaleRequest)
-                                    //{
-                                    //    long fileSizeKB = 0;
-
-                                    //    if (File.Exists(filePath))
-                                    //    {
-                                    //        fileSizeKB = new FileInfo(filePath).Length / 1024;
-                                    //    }
-
-                                    //    if (fileSizeKB < 725)
-                                    //    {
-                                    //        return;
-                                    //    }
-                                    //    firstUpscaleRequest = false;
-                                    //}
-
-                                    // create a bitmap from the image file
-                                    BitmapImage myBitmapImage = new BitmapImage();
-                                    myBitmapImage.BeginInit();
-                                    myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                    myBitmapImage.UriSource = new Uri(filePath);
-                                    myBitmapImage.EndInit();
-
-                                    // Create the image using the bitmap
-                                    Image output = new Image
+                                    // Clipboard feature
+                                    if ((bool)chk_ClipboardPrompt.IsChecked)
                                     {
-                                        Margin = new Thickness(8),
-                                        Stretch = System.Windows.Media.Stretch.Uniform,
-                                        Source = myBitmapImage,
-                                        HorizontalAlignment = System.Windows.HorizontalAlignment.Left
-                                    };
-                                    scroll_Images.MaxHeight = myBitmapImage.Height + 50;
+                                        BitmapSource currentClipboardImage = null;
 
-                                    //ImageBrush imageBrush = new ImageBrush
-                                    //{
-                                    //    ImageSource = myBitmapImage,
-                                    //    Stretch = System.Windows.Media.Stretch.UniformToFill
-                                    //};
+                                        if (Clipboard.ContainsImage())
+                                        {
+                                            currentClipboardImage = Clipboard.GetImage();
 
-                                    bool upscaledImage = false;
-
-                                    // Create the renderedImage object and store useful metadata. This could be embedded in the png?
-                                    RenderedImage renderedImage = new RenderedImage().CreateRenderedImage(output, filePath, txt_Prompt.Text + txt_NegativePrompt.Text, txt_Scale.Text, txt_Seed.Text,
-                                        txt_Steps.Text, myBitmapImage.Width.ToString(), myBitmapImage.Height.ToString(), txt_ImagePrompt.Text, txt_ImagePromptWeight.Text, upscaledImage);
-
-                                    output.Tag = renderedImage;
-
-                                    if (imageViewer != null)
-                                    {
-                                        ((ImageViewer)imageViewer).DisplayImage(myBitmapImage, renderedImage);
-                                    }
-
-                                    // Add the right click menu to the image
-                                    ContextMenu rightClickMenu = new ContextMenu();
-
-                                    output.ContextMenu = rightClickMenu;
-
-                                    // Create Variation
-                                    MenuItem menuItemCreateVariation = new MenuItem();
-                                    menuItemCreateVariation.Header = "Create Variations";
-                                    menuItemCreateVariation.Tag = renderedImage;
-                                    menuItemCreateVariation.Click += MenuItemCreateVariation_Click;
-                                    rightClickMenu.Items.Add(menuItemCreateVariation);
-
-                                    // Recreate prompt
-                                    MenuItem menuItemRecreatePrompt = new MenuItem();
-                                    menuItemRecreatePrompt.Header = "Recreate Prompt";
-                                    menuItemRecreatePrompt.Tag = renderedImage;
-                                    menuItemRecreatePrompt.Click += MenuItemRecreatePrompt_Click;
-                                    rightClickMenu.Items.Add(menuItemRecreatePrompt);
-
-                                    // Use as Image-To-Image
-                                    MenuItem menuItemImageToImage = new MenuItem();
-                                    menuItemImageToImage.Header = "Use as Image-To-Image";
-                                    menuItemImageToImage.Tag = renderedImage;
-                                    menuItemImageToImage.Click += menuItemImageToImage_Click;
-                                    rightClickMenu.Items.Add(menuItemImageToImage);
-
-                                    // ----
-                                    rightClickMenu.Items.Add(new Separator());
-
-                                    // Save As
-                                    MenuItem menuItemSaveAs = new MenuItem();
-                                    menuItemSaveAs.Header = "Save As";
-                                    menuItemSaveAs.Tag = renderedImage.filePath;
-                                    menuItemSaveAs.Click += MenuItemSaveAs_Click;
-                                    rightClickMenu.Items.Add(menuItemSaveAs);
-
-                                    // Save All
-                                    MenuItem menuItemSaveAll = new MenuItem();
-                                    menuItemSaveAll.Header = "Save All Images";
-                                    menuItemSaveAll.Tag = renderedImage.filePath;
-                                    menuItemSaveAll.Click += MenuItemSaveAll_Click; ;
-                                    rightClickMenu.Items.Add(menuItemSaveAll);
-
-                                    // Get File Path
-                                    MenuItem menuItemGetFilePath = new MenuItem();
-                                    menuItemGetFilePath.Header = "Get File Path";
-                                    menuItemGetFilePath.Tag = renderedImage.filePath;
-                                    menuItemGetFilePath.Click += MenuItemGetFilePath_Click;
-                                    rightClickMenu.Items.Add(menuItemGetFilePath);
-
-                                    // Open Containing Folder
-                                    MenuItem menuItemOpenContainingFolder = new MenuItem();
-                                    menuItemOpenContainingFolder.Header = "Open Containing Folder";
-                                    menuItemOpenContainingFolder.Tag = renderedImage.filePath;
-                                    menuItemOpenContainingFolder.Click += MenuItemOpenContainingFolder_Click;
-                                    rightClickMenu.Items.Add(menuItemOpenContainingFolder);
-
-                                    // ----
-                                    rightClickMenu.Items.Add(new Separator());
-
-                                    // Delete
-                                    MenuItem menuItemDelete = new MenuItem();
-                                    menuItemDelete.Header = "Delete";
-                                    menuItemDelete.Tag = renderedImage;
-                                    menuItemDelete.Click += MenuItemDelete_Click;
-                                    rightClickMenu.Items.Add(menuItemDelete);
-
-                                    // Delete All
-                                    MenuItem menuItemDeleteAll = new MenuItem();
-                                    menuItemDeleteAll.Header = "Delete All Images";
-                                    menuItemDeleteAll.Tag = renderedImage;
-                                    menuItemDeleteAll.Click += MenuItemDeleteAll_Click; ;
-                                    rightClickMenu.Items.Add(menuItemDeleteAll);
-
-                                    // Add the image to the top of the image stack
-                                    stack_Images.Items.Insert(0, output);
-                                    lastImg = filePath;
-
-                                    // If trying to create variations of upscalled images (too large to recreate image size)
-                                    if (lbl_Status.Content.ToString() != "Can't set upscaled image as image source, creating downrezed version instead...")
-                                    {
-                                        lbl_Status.Content = $"Created image from seed {txt_Seed.Text}";
-                                    }
-                                    else
-                                    {
-                                        lbl_Status.Content = "Created downrezed version.";
-                                    }
-
-                                    // sequential prompting
-                                    if ((bool)chk_SequentialPrompting.IsChecked)
-                                    {
-                                        txt_ImagePrompt.Text = renderedImage.filePath;
-                                    }
-
-                                    // Folder Prompt feature
-                                    if (promptFolderFiles != null && promptFolderIndex > promptFolderFiles.Length - 1)
-                                    {
-                                        lbl_Status.Content = $"Done creating image Sequence {promptFolderIndex}/{promptFolderFiles.Length}";
-                                        promptFolderIndex = -1;
-                                        promptFolderFiles = null;
-                                        txt_ImagePrompt.Text = "";
-                                        chk_ContinuouslyPrompt.IsChecked = false;
-                                    }
-                                    if (promptFolderFiles != null && promptFolderFiles.Length > 0 && promptFolderIndex <= promptFolderFiles.Length - 1)
-                                    {
-                                        txt_ImagePrompt.Text = promptFolderFiles[promptFolderIndex];
-                                        promptFolderIndex++;
-                                        chk_ContinuouslyPrompt.IsChecked = true;
-                                    }
-
-                                    // continuous prompting
-                                    if ((bool)chk_ContinuouslyPrompt.IsChecked)
-                                    {
-                                        StartRendering();
-                                    }
-                                }
-
-                                // Clipboard feature
-                                if ((bool)chk_ClipboardPrompt.IsChecked)
-                                {
-                                    BitmapSource currentClipboardImage = null;
-
-                                    if (Clipboard.ContainsImage())
-                                    {
-                                        currentClipboardImage = Clipboard.GetImage();
-
-                                        if (currentClipboardImage.PixelWidth > 64 && currentClipboardImage.PixelHeight > 64)
-                                        { 
-                                            clipboardImage = currentClipboardImage;
-
-                                            //System.Drawing.Color CurrentPixel1;
-                                            //System.Drawing.Color CurrentPixel2;
-                                            //System.Drawing.Color OldPixel1;
-                                            //System.Drawing.Color OldPixel2;
-
-                                            //Bitmap bitmap1;
-                                            //Bitmap bitmap2;
-
-                                            if (clipboardImage != null)
+                                            if (currentClipboardImage.PixelWidth > 64 && currentClipboardImage.PixelHeight > 64)
                                             {
-                                            //    using (var outStream = new MemoryStream())
-                                            //    {
-                                            //        BitmapEncoder enc = new BmpBitmapEncoder();
-                                            //        enc.Frames.Add(BitmapFrame.Create(currentClipboardImage));
-                                            //        enc.Save(outStream);
-                                            //        bitmap1 = new Bitmap(outStream);
-                                            //    }
+                                                clipboardImage = currentClipboardImage;
 
-                                            //    int width = int.Parse(currentClipboardImage.Width.ToString()) - 1;
-
-                                            //    // Get the color of a pixel within myBitmap.
-                                            //    CurrentPixel1 = bitmap1.GetPixel(1, 1);
-                                            //    CurrentPixel2 = bitmap1.GetPixel(width, 1);
-
-                                            //    using (var outStream = new MemoryStream())
-                                            //    {
-                                            //        BitmapEncoder enc = new BmpBitmapEncoder();
-                                            //        enc.Frames.Add(BitmapFrame.Create(clipboardImage));
-                                            //        enc.Save(outStream);
-                                            //        bitmap2 = new Bitmap(outStream);
-                                            //    }
-
-                                            //    width = int.Parse(clipboardImage.Width.ToString()) - 1;
-
-                                            //    OldPixel1 = bitmap2.GetPixel(1, 1);
-                                            //    OldPixel2 = bitmap2.GetPixel(width, 1);
-
-                                            //    if (OldPixel1 == CurrentPixel1 && OldPixel2 == CurrentPixel2)
-                                            //    {
-                                            //        return;
-                                            //    }                                            
-                                            }
-                                            else
-                                            {
-                                                clipboardImage = Clipboard.GetImage();
-                                            }
-
-                                            if (clipboardImage != null)
-                                            {
-                                                // Create a temporary file to store the clipboard image data
-                                                // then put the path into the image prompt field.
-                                                // Store a reference to the temporary paths so they can be cleaed up on close.
-                                                string tempClipboardImagePath = Path.GetTempFileName();
-                                                using (var fileStream = new FileStream(tempClipboardImagePath, FileMode.Create))
+                                                if (clipboardImage == null)
                                                 {
-                                                    BitmapEncoder encoder = new PngBitmapEncoder();
-                                                    encoder.Frames.Add((BitmapFrame.Create(clipboardImage as BitmapSource)));
-                                                    encoder.Save(fileStream);
+                                                    clipboardImage = Clipboard.GetImage();
                                                 }
 
-                                                tempClipboardImagePaths.Add(tempClipboardImagePath);
-
-                                                //if ((bool)chk_SequencialPrompting.IsChecked)
+                                                if (clipboardImage != null)
                                                 {
-                                                    //File tempClipboardImage = new File(tempClipboardImagePath);
-                                                    //FileAttributes tempClipboardImageAttributes = File.GetAttributes(tempClipboardImage);
-
-                                                    //tempClipboardImageAttributes.
-
-                                                    //File lastClipboardImage = new File(TempClipboardImagePath);
-                                                    //File.GetAttributes(TempClipboardImagePath);
-
-                                                    //if ()
+                                                    // Create a temporary file to store the clipboard image data
+                                                    // then put the path into the image prompt field.
+                                                    // Store a reference to the temporary paths so they can be cleaned up on close.
+                                                    string tempClipboardImagePath = Path.GetTempFileName();
+                                                    using (var fileStream = new FileStream(tempClipboardImagePath, FileMode.Create))
                                                     {
-
+                                                        BitmapEncoder encoder = new PngBitmapEncoder();
+                                                        encoder.Frames.Add((BitmapFrame.Create(clipboardImage as BitmapSource)));
+                                                        encoder.Save(fileStream);
                                                     }
-                                                }
-                                                //else
-                                                {
+
+                                                    tempClipboardImagePaths.Add(tempClipboardImagePath);
+
                                                     txt_ImagePrompt.Text = tempClipboardImagePath;
                                                 }
+
                                             }
-                                            
                                         }
                                     }
                                 }
-                            }
-                            catch { return; }
-                        });
-                    }
+                                catch { return; }
+                            });
+                        }
 
+                    }
                 }
 
             }
@@ -669,7 +625,7 @@ namespace MitchJourn_e
                     {
                         File.Delete(tempClipboardImagePaths);
                     }
-                    lastImg = "";
+                    lastInvokeImage = "";
                     stack_Images.Items.Clear();
                 }
             }
@@ -699,6 +655,7 @@ namespace MitchJourn_e
                     string menuHeader = directories[1];
 
                     MenuItem helperMenuItem = new MenuItem();
+                    helperMenuItem.StaysOpenOnClick = true;
 
                     // check if it's a unique directory
                     bool isUniqueDirectory = true;
@@ -716,7 +673,6 @@ namespace MitchJourn_e
                     if (isUniqueDirectory)
                     {
                         helperMenuItem.Header = topDirectory;
-                        helperMenuItem.StaysOpenOnClick = true;
                         menuItem_PromptHelper.Items.Add(helperMenuItem);
                     }
 
@@ -724,11 +680,7 @@ namespace MitchJourn_e
                     MenuItemPrompt.Header = menuHeader;
                     MenuItemPrompt.Tag = $"{topDirectory}/{value}";
                     MenuItemPrompt.Click += PromptHelperMenuItem_Click2;
-                    
-                    if (!allDirectories.Contains("GPT3"))
-                    {
-                        MenuItemPrompt.StaysOpenOnClick = true;
-                    }
+                    MenuItemPrompt.StaysOpenOnClick = true;
                     helperMenuItem.Items.Add(MenuItemPrompt);
 
                     // add the prompt helper editor text boxes and buttons
@@ -803,7 +755,7 @@ namespace MitchJourn_e
         /// <summary>
         /// Removes characters from the prompt that would disallow the generation to run
         /// </summary>
-        public string CleanPrompt(string promptText)
+        public string CleanPrompt(string promptText, bool processWildCards = true)
         {
             string output = "";
 
@@ -833,10 +785,13 @@ namespace MitchJourn_e
                 }
                 output = stringBuilder.ToString();
 
-                while (output.Contains("*random*"))
+                if (processWildCards)
                 {
-                    var regex = new Regex(Regex.Escape("*random*"));
-                    output = regex.Replace(output, randomWord.GetWord(), 1);
+                    while (output.Contains("*random*"))
+                    {
+                        var regex = new Regex(Regex.Escape("*random*"));
+                        output = regex.Replace(output, randomWord.GetWord(), 1);
+                    }
                 }
 
                 if ((bool)chk_AlternateToken.IsChecked)
@@ -897,7 +852,7 @@ namespace MitchJourn_e
                 string promptValue = "";
                 bool isNegativePrompt = ((MenuItem)sender).Header.ToString().ToLower().Contains("negative");
 
-                ((MenuItem)sender).Foreground = System.Windows.Media.Brushes.LightGray;
+                //((MenuItem)sender).Foreground = System.Windows.Media.Brushes.LightGray;
 
                 for (int i = 1; i < promptInfo.Length; i++)
                 {
@@ -915,13 +870,15 @@ namespace MitchJourn_e
                 }
                 else if (promptCategory.Contains("GPT3"))
                 {
-                    GPT3 gpt3 = new GPT3();
-
                     Application.Current.Dispatcher.Invoke((Action)async delegate
                     {
-                        string gptPrompt = promptValue;
-                        //if (promptCategory)
-                        await gpt3.PromptToGPT(gptPrompt, CleanPrompt(txt_Prompt.Text), isNegativePrompt);
+                        GPT3 gpt3 = new GPT3();
+                        string userInput = txt_Prompt.Text;
+                        if (promptValue.Contains("You are a random prompt generator."))
+                        {
+                            userInput = "(art, paintings, images, photography, video, cute)1";
+                        }
+                        gpt3.Chat(promptValue, CleanPrompt(userInput), isNegativePrompt);
                     });
                 }
                 else
@@ -978,7 +935,7 @@ namespace MitchJourn_e
             chk_ContinuouslyPrompt.IsChecked = false;
             chk_IncrementSeed.IsChecked = false;
 
-            StartRendering(image.prompt, false);
+            //StartRendering(image.prompt, false);
         }
 
         /// <summary>
@@ -1049,7 +1006,7 @@ namespace MitchJourn_e
                         break;
                     }
                 }
-                lastImg = "";
+                lastInvokeImage = "";
                 GC.Collect();
                 File.Delete(renderedImage.filePath);
             }
@@ -1094,30 +1051,28 @@ namespace MitchJourn_e
         }
 
         /// <summary>
-        /// Kill's a process by it's ID.
-        /// -1 = currentCMDProcessID (read as last run cmd process ID)
+        /// Close all the opened CMD windows
         /// </summary>
         /// <param name="processID"></param>
-        private void StopRendering(int processID = -1)
+        private void StopRendering()
         {
             promptFolderFiles = null;
+            int[] processIDs = { currentInvokeProcessID, currentAutomaticProcessID, currentInvokeWebProcessID };
 
-            if (processID == -1)
-            {
-                processID = currentCMDProcessID;
-            }
+            foreach (int processID in processIDs) {
 
-            if (processID != 0)
-            {
-                try
+                if (processID != 0)
                 {
-                    Process process = Process.GetProcessById(processID);
-                    process.Kill();
-                }
-                catch
-                {
-                    // Failed to kill the specified process
-                    return;
+                    try
+                    {
+                        Process process = Process.GetProcessById(processID);
+                        process.Kill();
+                    }
+                    catch
+                    {
+                        // Failed to kill the specified process
+                        return;
+                    }
                 }
             }
         }
@@ -1162,6 +1117,15 @@ namespace MitchJourn_e
                         }
                     }
                 }
+            }
+            catch { return; }
+        }
+
+        private void SaveSettings()
+        {
+            try 
+            { 
+                
             }
             catch { return; }
         }
@@ -1227,16 +1191,31 @@ namespace MitchJourn_e
         /// </summary>
         private void InitializeSettings()
         {
+            if (Settings.Default.FirstTimeRunningThisVersion)
+            {
+                Settings.Default.Upgrade();
+                Settings.Default.FirstTimeRunningThisVersion = false;
+                Settings.Default.Save();
+            }
+
             List<TextBox> textBoxes = new List<TextBox>();
             TextBox[] otherTextBoxes = new TextBox[] { txt_Scale, txt_Steps, txt_ImagePromptWeight };
             Slider[] otherTextBoxesSliders = new Slider[] { slider_PromptWeight, slider_Steps, slider_imagePromptWeight };
 
-            // Get all the settings text boxes
+            // Get all the settings text boxes from advanced settings
             foreach (Control control in stack_settings.Children)
             {
                 if (control is TextBox)
                 {
                     textBoxes.Add((TextBox)control);
+                }
+            }
+            // Get all the settings text boxes from the installation tab
+            foreach (Control control1 in stack_InstallPaths.Children)
+            {
+                if (control1 is TextBox)
+                {
+                    textBoxes.Add((TextBox)control1);
                 }
             }
 
@@ -1527,7 +1506,7 @@ namespace MitchJourn_e
 
         private void chk_HighRes_Checked(object sender, RoutedEventArgs e)
         {
-            firstUpscaleRequest = true;
+            //firstUpscaleRequest = true;
             chk_HighrezFix.IsChecked = true;
         }
 
@@ -2175,6 +2154,7 @@ namespace MitchJourn_e
             if (Directory.Exists(modelPath))
             {
                 string[] models = Directory.GetFiles(modelPath);
+                cmb_Model.Items.Clear();
 
                 foreach (string model in models)
                 {
@@ -2200,24 +2180,26 @@ namespace MitchJourn_e
         {
             if (!isFirstRun)
             {
-                string modelPath = $"{Settings.Default["MainPath"]}\\models\\ldm\\{((ComboBoxItem)(cmb_Model.SelectedItem)).Content}";
-                txt_ModelPath.Text = modelPath;
-                Settings.Default["ModelPath"] = modelPath;
-                Settings.Default.Save();
+                if (cmb_Model.SelectedItem != null)
+                {
+                    string modelPath = $"{Settings.Default["MainPath"]}\\models\\ldm\\{((ComboBoxItem)(cmb_Model.SelectedItem)).Content}";
+                    txt_ModelPath.Text = modelPath;
+                    Settings.Default["ModelPath"] = modelPath;
+                    Settings.Default.Save();
 
-                string configPath = $"{Settings.Default["MainPath"]}\\configs\\models.yaml";
-                string configText = "stable-diffusion-1.5:\r\n" +
-                    "  description: Generated by MitchJourn-E\r\n" +
-                    $"  weights: models/ldm/stable-diffusion-v1/{Path.GetFileName(Settings.Default["ModelPath"].ToString())}\r\n" +
-                    "  config: configs/stable-diffusion/v1-inference.yaml\r\n" +
-                    "  width: 512\r\n" +
-                    "  height: 512\r\n" +
-                    "  vae: ./models/ldm/stable-diffusion-v1/vae-ft-mse-840000-ema-pruned.ckpt\r\n" +
-                    "  default: true";
+                    string configPath = $"{Settings.Default["MainPath"]}\\configs\\models.yaml";
+                    string configText = "stable-diffusion-1.5:\r\n" +
+                        "  description: Generated by MitchJourn-E\r\n" +
+                        $"  weights: models/ldm/stable-diffusion-v1/{Path.GetFileName(Settings.Default["ModelPath"].ToString())}\r\n" +
+                        "  config: configs/stable-diffusion/v1-inference.yaml\r\n" +
+                        "  width: 512\r\n" +
+                        "  height: 512\r\n" +
+                        "  vae: ./models/ldm/stable-diffusion-v1/vae-ft-mse-840000-ema-pruned.ckpt\r\n" +
+                        "  default: true";
 
-                File.WriteAllText(configPath, configText);
-                StopRendering();
-                StartRendering();
+                    File.WriteAllText(configPath, configText);
+                    StopRendering();
+                }
             }
         }
 
@@ -2265,7 +2247,81 @@ namespace MitchJourn_e
             wrp_PromptBubbles.Children.Add(new PromptBubble().CreatePromptBubble("",0,true));
         }
 
-        private void cmb_Model_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void RunInvokeAIWebUI()
+        {
+            
+            bool webUIAlreadyStarted = invokeAIWebProcess != null && !invokeAIWebProcess.HasExited;
+            if (!webUIAlreadyStarted)
+            {
+                ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe");
+                processStartInfo.RedirectStandardInput = true;
+                processStartInfo.UseShellExecute = false;
+                processStartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+
+                Process process = Process.Start(processStartInfo);
+
+                // move the cmd directory to the main stable diffusion path and open the python environment called invokeAI (environment used at python install)
+                string prerequisites = $"cd {Settings.Default["MainPath"]} & call .venv\\Scripts\\activate.bat &";
+
+                // send the command to the CMD window to start the python script, enable the upsampler
+                process.StandardInput.WriteLine($"{prerequisites} python .venv\\scripts\\invoke.py --web");
+                invokeAIWebProcess = process;
+                currentInvokeWebProcessID = process.Id;
+            }
+        }
+
+        private void btn_InvokeAI_Click(object sender, RoutedEventArgs e) 
+        {
+            Process process = new Process();
+            ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe");
+            processStartInfo.RedirectStandardInput = true;
+            processStartInfo.UseShellExecute = false;
+            processStartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+
+            process = Process.Start(processStartInfo);
+
+            // move the cmd directory to the main stable diffusion path and open the python environment called invokeAI (environment used at python install)
+            string prerequisites = $"cd {Settings.Default["MainPath"]} & call .venv\\Scripts\\activate.bat &";
+
+            // send the command to the CMD window to start the python script, enable the upsampler
+            process.StandardInput.WriteLine($"{prerequisites} python .venv\\scripts\\invoke.py --web");
+
+            ProcessStartInfo openWebsite = new ProcessStartInfo {
+                FileName = "http://127.0.0.1:9090",
+                UseShellExecute = true
+            };
+            Process.Start(openWebsite);
+        }
+
+        private void tab_InvokeAI_GotFocus(object sender, RoutedEventArgs e)
+        {
+            RunInvokeAIWebUI();
+        }
+
+        private void RunAutomaticWebUI()
+        {
+            bool webUIAlreadyStarted = automaticWebProcess != null && !automaticWebProcess.HasExited;
+            if (!webUIAlreadyStarted)
+            {
+                ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe");
+                processStartInfo.RedirectStandardInput = true;
+                processStartInfo.UseShellExecute = false;
+                processStartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+
+                Process process = Process.Start(processStartInfo);
+
+                process.StandardInput.WriteLine($"cd {Settings.Default["AutomaticMainPath"]} && webui.bat");
+                automaticWebProcess = process;
+                currentAutomaticProcessID = process.Id;
+            }
+        }
+
+        private void tab_Automatic_GotFocus(object sender, RoutedEventArgs e)
+        {
+            RunAutomaticWebUI();
+        }
+
+        private void cmb_Model_DropDownOpened(object sender, EventArgs e)
         {
             ScanModels();
         }

@@ -35,7 +35,6 @@ namespace MitchJourn_e.Classes
         Button btnMoveLeft = new Button();
         Button btnMoveRight = new Button();
         MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-        Thread currentlyPreparingThread = null;
 
         public void promptBubble()
         {
@@ -57,6 +56,7 @@ namespace MitchJourn_e.Classes
             {
                 Padding = new Thickness(4)
             };
+            card.MouseRightButtonDown += Card_MouseRightButtonDown;
 
             if (!isNegativePrompt)
             {
@@ -177,11 +177,15 @@ namespace MitchJourn_e.Classes
             this.prompt = prompt;
             this.power = power;
 
-            var getFocus = new Thread(GetFocus);
-            getFocus.Start();
-            currentlyPreparingThread = getFocus;
+            //var getFocus = new Thread(GetFocus);
+            //getFocus.Start();
 
             return outputStackPanel;
+        }
+
+        private void Card_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            //throw new NotImplementedException();
         }
 
         private void GetFocus()
@@ -320,8 +324,14 @@ namespace MitchJourn_e.Classes
                     }
                 }
 
-                ((TextBox)sender).Text = mainWindow.CleanPrompt(firstPrompt);
-                mainWindow.wrp_PromptBubbles.Children.Insert(GetCurrentIndex() + 1, new PromptBubble().CreatePromptBubble(mainWindow.CleanPrompt(secondPrompt), power, isNegativePrompt));
+                if (secondPrompt == "") {
+                    mainWindow.RequestRendering();
+                }
+                else
+                {
+                    ((TextBox)sender).Text = mainWindow.CleanPrompt(firstPrompt, false);
+                    mainWindow.wrp_PromptBubbles.Children.Insert(GetCurrentIndex() + 1, new PromptBubble().CreatePromptBubble(mainWindow.CleanPrompt(secondPrompt, false), power, isNegativePrompt));
+                }
             }
         }
 
@@ -361,26 +371,26 @@ namespace MitchJourn_e.Classes
             prompt = ((TextBox)sender).Text;
 
             UIElement thisBubble = new UIElement();
-            if (prompt == "")
-            {
-                int totalBubbles = 0;
-                WrapPanel parent = ((WrapPanel)RootControl.Parent);
-                foreach (UIElement control in parent.Children)
-                {
-                    if (control == RootControl)
-                    {
-                        thisBubble = control;
-                    }
-                    if (control is StackPanel)
-                    {
-                        totalBubbles++;
-                    }
-                }
-                if (totalBubbles != 1)
-                {
-                    parent.Children.Remove(thisBubble);
-                }
-            }
+            //if (prompt == "")
+            //{
+            //    int totalBubbles = 0;
+            //    WrapPanel parent = ((WrapPanel)RootControl.Parent);
+            //    foreach (UIElement control in parent.Children)
+            //    {
+            //        if (control == RootControl)
+            //        {
+            //            thisBubble = control;
+            //        }
+            //        if (control is StackPanel)
+            //        {
+            //            totalBubbles++;
+            //        }
+            //    }
+            //    if (totalBubbles != 1)
+            //    {
+            //        parent.Children.Remove(thisBubble);
+            //    }
+            //}
             
             mainWindow.txt_Prompt.Text = mainWindow.ConvertPromptBubblesToString();
 

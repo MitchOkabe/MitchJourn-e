@@ -1,6 +1,8 @@
 ﻿using OpenAI_API;
+using OpenAI_API.Chat;
 using OpenAI_API.Completions;
 using OpenAI_API.Models;
+using OpenAI_API.Moderation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,15 +19,42 @@ namespace MitchJourn_e.Classes
     class GPT3
     {
         OpenAIAPI api;
+        MainWindow mainWindow = ((MainWindow)Application.Current.MainWindow);
         //public string CompletionResult { get; set; }
 
         public GPT3()
         {
-            string apiKey = Properties.Settings.Default["OpenAIAPIKey"].ToString();
+            InitializeAPI();
+        }
 
-            if (apiKey != "")
+        void InitializeAPI()
+        {
+            try
             {
-                api = new OpenAIAPI(apiKey);
+                string apiKey = Properties.Settings.Default["OpenAIAPIKey"].ToString();
+
+                if (apiKey != "")
+                {
+                    api = new OpenAIAPI(apiKey);
+                }
+                else
+                {
+                    apiKey = mainWindow.txt_OpenAIAPIKey.Text;
+                    if (apiKey != "")
+                    {
+                        api = new OpenAIAPI(apiKey);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to initialize OpenAI API key.");
+                        api = new();
+                    }
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Failed to initialize OpenAI API key.");
+                api = new();
             }
         }
 
@@ -59,7 +88,6 @@ namespace MitchJourn_e.Classes
                     //logProbs: null, echo: false, stopSequences: null),
                     //res => returnedRequest += res.ToString());
 
-                    MainWindow mainWindow = ((MainWindow)Application.Current.MainWindow);
                     StackPanel promptBubble = new PromptBubble().CreatePromptBubble("",0,isNegativePrompt);
                     mainWindow.wrp_PromptBubbles.Children.Add(promptBubble);
 
@@ -117,6 +145,60 @@ namespace MitchJourn_e.Classes
             }
 
             return output;
+        }
+
+        public async void Chat(string gptSystemMessage, string userInput, bool isNegativePrompt)
+        {
+            if (api == null)
+            {
+                InitializeAPI();
+            }
+
+            Conversation chat = api.Chat.CreateConversation();
+            StackPanel promptBubble = new PromptBubble().CreatePromptBubble("Loading...", 0, isNegativePrompt);
+            mainWindow.wrp_PromptBubbles.Children.Add(promptBubble);
+
+            try
+            {
+                // give instruction as System
+                chat.AppendSystemMessage(gptSystemMessage);
+                chat.AppendSystemMessage("Do not output things like: Im sorry, but the prompt does not make sense. Could you please provide a valid prompt for me to generate a description?");
+
+                // give a few examples as user and assistant
+                chat.AppendUserInput("(Digital art of a cat in space)1");
+                chat.AppendExampleChatbotOutput("masterpiece portrait of a cute adorable cat in space digital art 8k cgsociety highly detailed dramatic lightning rim light hyperrealistic photorealistic octante render elegant cinematic intricate graphic design 4k by Carl Barks");
+                chat.AppendUserInput("(Photo of a lady)1.1");
+                chat.AppendExampleChatbotOutput("beautiful portrait photo of a lady natural light hyper realistic ultra-detailed no filter high depth of field f/1.4 50mm 200iso 4k film grain 8k by lois van baarle");
+                //chat.AppendUserInput("(elena zay airlines redefining)0.9");
+                //chat.AppendExampleChatbotOutput("highly detailed photograph of elena zay airlines redefining 8k beautiful dramatic lighting 8k photoshop");
+
+                // now let's ask it a question'
+                chat.AppendUserInput(userInput);
+
+                // and get the response
+                string response = await chat.GetResponseFromChatbot();
+                string[] allWords = response.Split(' ');
+                response = "";
+                foreach (string word in allWords)
+                {
+                    if (response.Length < 130)
+                    {
+                        response += $"{word} ";
+                    }
+                    else
+                    {
+                        ((PromptBubble)promptBubble.Tag).textPrompt.Text = mainWindow.CleanPrompt(response);
+                        promptBubble = new PromptBubble().CreatePromptBubble("", 0, isNegativePrompt);
+                        mainWindow.wrp_PromptBubbles.Children.Add(promptBubble);
+                        response = "";
+                    }
+                }
+                ((PromptBubble)promptBubble.Tag).textPrompt.Text = mainWindow.CleanPrompt(response);
+            }
+            catch
+            {
+                ((PromptBubble)promptBubble.Tag).textPrompt.Text = ("[Failed. Check settings]");
+            }
         }
     }
 }

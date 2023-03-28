@@ -77,9 +77,9 @@
     <Setting Name="PromptHelperPresets" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
-  &lt;string&gt;GPT3/Elaborate as an master painter=Using only nouns and adjectives, describe the painting as a master artist historian. An example result: incredibly detailed depiction high quality hyperdetailed masterpiece art atmosphere well balanced lighting carefully crafted composition. This is what the painting looks like:&lt;/string&gt;
-  &lt;string&gt;GPT3/Elaborate as a master photographer=Using only nouns and adjectives, and describing technical details, elaborate on the description of a photo from the perspective of a professional photographer. An example result: crisp sharp photograph taken on nikon f/1.4 50mm 200iso 4k incredibly high quality art atmosphere well balanced lighting beautiful bokeh. This is what the photo looks like:&lt;/string&gt;
-  &lt;string&gt;GPT3/Text to prompt=Using only nouns and adjectives, reduce this group of words to only the most important details. Example result: incredibly detailed high quality majestic graceful rich blue surreal shadows golden light. This is the group of words:&lt;/string&gt;
+  &lt;string&gt;GPT3/Elaborate as an master painter=You are a prompt generator. This means the user will tell you want they want to see, and you need to write out a text that describes an incredible painting with a much more detailed description, providing context like the medium (digital art, oil painting, pastel, etc.). Additionally you will need to describe the quality of the image (typically highly detailed and beautiful). Provide the source of the image (Artstation, cgsociety, Instagram, DeviantArt, etc.). Provide the artist name (greg rutkowski, thomas kinkade, Claude Monet, ilya kuvshinov, etc). Do not output full sentences, try to use only nouns and adjectives as output. Don't use punctuation or uppercase letters.&lt;/string&gt;
+  &lt;string&gt;GPT3/Elaborate as a master photographer=You are a prompt generator. This means the user will tell you want they want to see, and you need to write out a text that describes a colour photograph with a much more detailed description, providing context like the camera settings (f/1.4, 50mm, 200iso, 4k, photo photography). Additionally you will need to describe the quality of the image (typically highly detailed and beautiful). Provide the source of the image (Artstation, cgsociety, Instagram, DeviantArt, etc.). Provide the artist or photographer's name (greg rutkowski, Andy Warhol, Claude Monet, ilya kuvshinov, etc). Do not output full sentences, try to use only nouns and adjectives as output. Don't use punctuation or uppercase letters.&lt;/string&gt;
+  &lt;string&gt;GPT3/Random prompt=You are a random prompt generator. This means you need to choose a subject and write out a text that describes the picture with a very detailed description, providing context like the camera settings (f1.4, 50mm, 200iso, 4k, photo photography) or medium (digital art, oil painting, pastel, etc.). Additionally you will need to describe the quality of the image (typically highly detailed and beautiful). Provide the source of the image (Artstation, cgsociety, Instagram, DeviantArt, etc.). Provide the artist or photographer's name (greg rutkowski, thomas kinkade, Claude Monet, ilya kuvshinov, etc). Do not output full sentences, try to use only nouns and adjectives as output. Don't use punctuation or uppercase letters. If you don't understand the prompt, make something up using the provided words.&lt;/string&gt;
   &lt;string&gt;GPT3/Generate negative prompt=Given a set of words, return words that would never belong in the same set. Example set of words: a cat wearing a blue hat on the sidewalk of downtown vancouver Example result: troops searching the area, from police academy 2 (1985), gunma prefecture, concrete housing, nsfw, blur, wood block print, in africa, kodak tri - x 3 5 mm, black lace, american flag, football players, tokyojapan, ferrari 458, woodblock print Set of words:&lt;/string&gt;
   &lt;string&gt;Random/Random Word=*random*&lt;/string&gt;
   &lt;string&gt;Artists/Greg Rutkowski (dark concept art)=by greg rutkowski&lt;/string&gt;
@@ -229,6 +229,15 @@
     </Setting>
     <Setting Name="OpenAIAPIKey" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="AutomaticMainPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\stable-diffusion-webui</Value>
+    </Setting>
+    <Setting Name="AutomaticOutputPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\stable-diffusion-webui\outputs\txt2img-images</Value>
+    </Setting>
+    <Setting Name="FirstTimeRunningThisVersion" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>
