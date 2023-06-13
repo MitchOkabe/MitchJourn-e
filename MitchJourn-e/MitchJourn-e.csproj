@@ -13,7 +13,7 @@
 	<PackageProjectUrl>https://github.com/MitchJaehrlich/MitchJourn-e</PackageProjectUrl>
 	<NoWin32Manifest>true</NoWin32Manifest>
 	<ApplicationIcon>mitch journ-e.ico</ApplicationIcon>
-	<FileVersion>2.0.0.0</FileVersion>
+	<FileVersion>2.1.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -77,6 +77,10 @@
 
 	<PropertyGroup>
 		<WebView2LoaderPreference>Static</WebView2LoaderPreference>
+		<Version>$(VersionPrefix)</Version>
+		<AssemblyVersion>2.1</AssemblyVersion>
+		<Authors>Mitch Okabe</Authors>
+		<SignAssembly>False</SignAssembly>
 	</PropertyGroup>
 
 	<ItemGroup>

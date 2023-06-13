@@ -1,4 +1,5 @@
-﻿using OpenAI_API;
+﻿using Microsoft.VisualBasic;
+using OpenAI_API;
 using OpenAI_API.Chat;
 using OpenAI_API.Completions;
 using OpenAI_API.Models;
@@ -147,7 +148,7 @@ namespace MitchJourn_e.Classes
             return output;
         }
 
-        public async void Chat(string gptSystemMessage, string userInput, bool isNegativePrompt)
+        public async void Chat(string gptSystemMessage, string userInput, bool isNegativePrompt, RandomWord addRandomWords)
         {
             if (api == null)
             {
@@ -160,20 +161,34 @@ namespace MitchJourn_e.Classes
 
             try
             {
+                chat.Model = new Model("gpt-4");
+                chat.RequestParameters.Temperature = 0.9;
+
                 // give instruction as System
                 chat.AppendSystemMessage(gptSystemMessage);
                 chat.AppendSystemMessage("Do not output things like: Im sorry, but the prompt does not make sense. Could you please provide a valid prompt for me to generate a description?");
 
                 // give a few examples as user and assistant
-                chat.AppendUserInput("(Digital art of a cat in space)1");
+                chat.AppendUserInput("Convert the following input into a prompt: (incredibly detailed high quality)0.5 ()1 [(framed ugly tiling poorly drawn out of frame disfigured deformed blurry blurred watermark grainy signature cut off draft compressed)0.5] [():1]");
+                chat.AppendExampleChatbotOutput("a collection of cute and charming art, paintings, images, photography, and video various styles and mediums such as oil painting, digital art, black and white photography, stop-motion animation, etc. heartwarming, whimsical, and delightful sourced from DeviantArt, Instagram, Artstation, etc. by a variety of talented artists like Pascal Campion, Mary Blair, Rob Hodgson, and Simone Giertz. ");
+                chat.AppendUserInput("Convert the following input into a prompt: (Digital art of a cat in space)1");
                 chat.AppendExampleChatbotOutput("masterpiece portrait of a cute adorable cat in space digital art 8k cgsociety highly detailed dramatic lightning rim light hyperrealistic photorealistic octante render elegant cinematic intricate graphic design 4k by Carl Barks");
-                chat.AppendUserInput("(Photo of a lady)1.1");
+                chat.AppendUserInput("Convert the following input into a prompt: (Photo of a lady)1.1");
                 chat.AppendExampleChatbotOutput("beautiful portrait photo of a lady natural light hyper realistic ultra-detailed no filter high depth of field f/1.4 50mm 200iso 4k film grain 8k by lois van baarle");
                 //chat.AppendUserInput("(elena zay airlines redefining)0.9");
                 //chat.AppendExampleChatbotOutput("highly detailed photograph of elena zay airlines redefining 8k beautiful dramatic lighting 8k photoshop");
 
-                // now let's ask it a question'
-                chat.AppendUserInput(userInput);
+                // Add random words to prompts about random
+                if (addRandomWords != null)
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        userInput += addRandomWords.GetWord();
+                    }
+                }
+
+                // Add user input
+                chat.AppendUserInput($"Convert the following input into a prompt: {userInput}");
 
                 // and get the response
                 string response = await chat.GetResponseFromChatbot();

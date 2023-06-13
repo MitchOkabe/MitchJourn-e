@@ -874,11 +874,13 @@ namespace MitchJourn_e
                     {
                         GPT3 gpt3 = new GPT3();
                         string userInput = txt_Prompt.Text;
-                        if (promptValue.Contains("You are a random prompt generator."))
+                        RandomWord tempRandomWord = null;
+                        if (promptValue.Contains("random"))
                         {
-                            userInput = "(art, paintings, images, photography, video, cute)1";
+                            userInput = "(art, paintings, images, photography, video, cute, beauty, inspiration, wonder)1";
+                            tempRandomWord = randomWord;
                         }
-                        gpt3.Chat(promptValue, CleanPrompt(userInput), isNegativePrompt);
+                        gpt3.Chat(promptValue, CleanPrompt(userInput), isNegativePrompt, tempRandomWord);
                     });
                 }
                 else
@@ -2310,7 +2312,7 @@ namespace MitchJourn_e
 
                 Process process = Process.Start(processStartInfo);
 
-                process.StandardInput.WriteLine($"cd {Settings.Default["AutomaticMainPath"]} && webui.bat");
+                process.StandardInput.WriteLine($"cd {Settings.Default["AutomaticMainPath"]} && webui.bat --theme dark");
                 automaticWebProcess = process;
                 currentAutomaticProcessID = process.Id;
             }
