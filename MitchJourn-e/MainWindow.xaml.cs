@@ -246,7 +246,7 @@ namespace MitchJourn_e
                     string useFullPrecision = "";
 
                     // move the cmd directory to the main stable diffusion path and open the python environment called invokeAI (environment used at python install)
-                    string prerequisites = $"cd {Settings.Default["MainPath"]} & call .venv\\Scripts\\activate.bat &";
+                    string prerequisites = $"cd /d {Settings.Default["MainPath"]} & call .venv\\Scripts\\activate.bat &";
 
                     // Full Precision
                     if (Settings.Default["UseFullPrecision"].ToString() == "1")
@@ -2263,7 +2263,7 @@ namespace MitchJourn_e
                 Process process = Process.Start(processStartInfo);
 
                 // move the cmd directory to the main stable diffusion path and open the python environment called invokeAI (environment used at python install)
-                string prerequisites = $"cd {Settings.Default["MainPath"]} & call .venv\\Scripts\\activate.bat &";
+                string prerequisites = $"cd /d {Settings.Default["MainPath"]} & call .venv\\Scripts\\activate.bat &";
 
                 // send the command to the CMD window to start the python script, enable the upsampler
                 process.StandardInput.WriteLine($"{prerequisites} python .venv\\scripts\\invoke.py --web");
@@ -2283,7 +2283,7 @@ namespace MitchJourn_e
             process = Process.Start(processStartInfo);
 
             // move the cmd directory to the main stable diffusion path and open the python environment called invokeAI (environment used at python install)
-            string prerequisites = $"cd {Settings.Default["MainPath"]} & call .venv\\Scripts\\activate.bat &";
+            string prerequisites = $"cd /d {Settings.Default["MainPath"]} & call .venv\\Scripts\\activate.bat &";
 
             // send the command to the CMD window to start the python script, enable the upsampler
             process.StandardInput.WriteLine($"{prerequisites} python .venv\\scripts\\invoke.py --web");
@@ -2312,7 +2312,7 @@ namespace MitchJourn_e
 
                 Process process = Process.Start(processStartInfo);
 
-                process.StandardInput.WriteLine($"cd {Settings.Default["AutomaticMainPath"]} && webui.bat --theme dark");
+                process.StandardInput.WriteLine($"cd /d {Settings.Default["AutomaticMainPath"]} && webui.bat --theme dark");
                 automaticWebProcess = process;
                 currentAutomaticProcessID = process.Id;
             }
